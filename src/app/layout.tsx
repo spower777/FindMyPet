@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar'
+import { Analytics } from '@vercel/analytics/next'
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
 
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full flex flex-col bg-gray-50 text-gray-900 antialiased font-sans">
         <Navbar />
         <main className="flex-1 flex flex-col">{children}</main>
+        <Analytics />
       </body>
     </html>
   )
