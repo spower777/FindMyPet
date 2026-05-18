@@ -177,7 +177,7 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
         <div className="h-48">
           <MapView
             pets={[petWithPhoto]}
-            defaultCenter={{ lat: pet.last_seen_lat, lng: pet.last_seen_lng }}
+            defaultCenter={[pet.last_seen_lat, pet.last_seen_lng]}
             defaultZoom={15}
             interactive={false}
           />

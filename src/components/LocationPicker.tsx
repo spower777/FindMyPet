@@ -1,7 +1,7 @@
 'use client'
 
-import { useCallback, useState } from 'react'
-import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps'
+import 'leaflet/dist/leaflet.css'
+import { useEffect, useState, useCallback } from 'react'
 
 interface Props {
   lat: number | null
@@ -10,18 +10,9 @@ interface Props {
 }
 
 export default function LocationPicker({ lat, lng, onChange }: Props) {
+  const [mounted, setMounted] = useState(false)
   const [loading, setLoading] = useState(false)
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-
-  const handleMapClick = useCallback(
-    async (event: { detail: { latLng: { lat: number; lng: number } | null } }) => {
-      if (!event.detail.latLng) return
-      const { lat: clickLat, lng: clickLng } = event.detail.latLng
-      const address = await reverseGeocode(clickLat, clickLng)
-      onChange(clickLat, clickLng, address)
-    },
-    [onChange]
-  )
+  useEffect(() => setMounted(true), [])
 
   async function useMyLocation() {
     if (!navigator.geolocation) return
@@ -37,60 +28,58 @@ export default function LocationPicker({ lat, lng, onChange }: Props) {
     )
   }
 
-  if (!apiKey || apiKey === 'your-google-maps-api-key') {
-    return (
-      <div className="space-y-2">
-        <div className="grid grid-cols-2 gap-2">
-          <input
-            type="number"
-            placeholder="Latitude"
-            value={lat ?? ''}
-            onChange={e => onChange(Number(e.target.value), lng ?? 0, '')}
-            className="input-field"
-            step="any"
-          />
-          <input
-            type="number"
-            placeholder="Longitude"
-            value={lng ?? ''}
-            onChange={e => onChange(lat ?? 0, Number(e.target.value), '')}
-            className="input-field"
-            step="any"
-          />
-        </div>
-        <button type="button" onClick={useMyLocation} disabled={loading} className="btn-secondary text-sm w-full">
-          {loading ? 'Pobieranie...' : 'Użyj mojej lokalizacji'}
-        </button>
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-2">
       <button type="button" onClick={useMyLocation} disabled={loading} className="btn-secondary text-sm w-full">
-        {loading ? 'Pobieranie lokalizacji...' : 'Użyj mojej lokalizacji GPS'}
+        {loading ? 'Pobieranie lokalizacji...' : '📍 Użyj mojej lokalizacji GPS'}
       </button>
-      <p className="text-xs text-gray-500">lub kliknij na mapie aby ustawić punkt</p>
-      <APIProvider apiKey={apiKey}>
-        <Map
-          className="w-full h-56 rounded-xl border border-gray-200"
-          defaultCenter={{ lat: lat ?? 52.2297, lng: lng ?? 21.0122 }}
-          defaultZoom={lat ? 15 : 12}
-          mapId="findmypet-picker"
-          gestureHandling="greedy"
-          onClick={handleMapClick}
-        >
-          {lat && lng && (
-            <AdvancedMarker position={{ lat, lng }} />
-          )}
-        </Map>
-      </APIProvider>
+      <p className="text-xs text-gray-400">lub kliknij na mapie aby ustawić punkt</p>
+      {mounted && (
+        <LeafletPicker lat={lat} lng={lng} onChange={onChange} />
+      )}
       {lat && lng && (
-        <p className="text-xs text-gray-500">
-          {lat.toFixed(5)}, {lng.toFixed(5)}
-        </p>
+        <p className="text-xs text-gray-400">{lat.toFixed(5)}, {lng.toFixed(5)}</p>
       )}
     </div>
+  )
+}
+
+function LeafletPicker({ lat, lng, onChange }: Props) {
+  const { MapContainer, TileLayer, Marker, useMapEvents } = require('react-leaflet')
+  const L = require('leaflet')
+
+  const icon = L.divIcon({
+    html: `<div style="width:20px;height:20px;border-radius:50%;background:#f97316;border:3px solid #c2410c;box-shadow:0 2px 6px rgba(0,0,0,0.35)"></div>`,
+    className: '',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  })
+
+  function ClickHandler() {
+    useMapEvents({
+      async click(e: { latlng: { lat: number; lng: number } }) {
+        const address = await reverseGeocode(e.latlng.lat, e.latlng.lng)
+        onChange(e.latlng.lat, e.latlng.lng, address)
+      },
+    })
+    return null
+  }
+
+  const center: [number, number] = lat && lng ? [lat, lng] : [52.2297, 21.0122]
+
+  return (
+    <MapContainer
+      center={center}
+      zoom={lat ? 15 : 12}
+      className="w-full h-52 rounded-xl border border-gray-200 z-0"
+    >
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+      <ClickHandler />
+      {lat && lng && <Marker position={[lat, lng]} icon={icon} />}
+    </MapContainer>
   )
 }
 
