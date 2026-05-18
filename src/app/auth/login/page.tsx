@@ -73,23 +73,6 @@ function LoginForm() {
           <p className="text-sm text-gray-500 mt-1">Zaloguj się aby zgłosić lub szukać pupila</p>
         </div>
 
-        <button
-          onClick={signInWithGoogle}
-          className="w-full flex items-center justify-center gap-2 border border-gray-200 rounded-xl py-3 text-sm font-medium hover:bg-gray-50 transition mb-5"
-        >
-          <GoogleIcon />
-          Kontynuuj z Google
-        </button>
-
-        <div className="relative mb-5">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-100" />
-          </div>
-          <div className="relative text-center">
-            <span className="bg-white px-3 text-xs text-gray-400">lub email</span>
-          </div>
-        </div>
-
         <form onSubmit={signIn} className="space-y-3">
           <input
             type="email"
