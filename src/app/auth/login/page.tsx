@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 
@@ -23,7 +23,12 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const next = searchParams.get('next') ?? '/'
+  const errorParam = searchParams.get('error')
   const supabase = createClient()
+
+  useEffect(() => {
+    if (errorParam) setMessage({ text: `Błąd: ${decodeURIComponent(errorParam)}`, type: 'error' })
+  }, [errorParam])
 
   async function signInWithGoogle() {
     await supabase.auth.signInWithOAuth({
