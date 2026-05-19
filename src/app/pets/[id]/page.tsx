@@ -6,9 +6,57 @@ import MapView from '@/components/MapView'
 import PetCard from '@/components/PetCard'
 import { resolvePet, updateMatchStatus } from '@/app/actions/pets'
 import type { PetWithPhotos, Match } from '@/lib/types'
+import type { Metadata } from 'next'
 
 const SPECIES_EMOJI: Record<string, string> = {
   dog: '🐕', cat: '🐈', bird: '🐦', rabbit: '🐇', other: '🐾',
+}
+
+const SPECIES_PL: Record<string, string> = {
+  dog: 'Pies', cat: 'Kot', bird: 'Ptak', rabbit: 'Królik', other: 'Zwierzę',
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+  const { data: pet } = await supabase
+    .from('pets')
+    .select('*, photos:pet_photos(*)')
+    .eq('id', id)
+    .single()
+
+  if (!pet) return {}
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const photos = pet.photos ?? []
+  const primary = photos.find((p: { is_primary: boolean }) => p.is_primary) ?? photos[0]
+  const imageUrl = primary
+    ? `${supabaseUrl}/storage/v1/object/public/pet-photos/${primary.storage_path}`
+    : undefined
+
+  const status = pet.type === 'lost' ? 'Zaginął' : 'Znaleziony'
+  const species = SPECIES_PL[pet.species] ?? 'Zwierzę'
+  const name = pet.name ? `${species} ${pet.name}` : species
+  const title = `${status}: ${name}`
+  const description = pet.last_seen_address
+    ? `${pet.description} • ${pet.last_seen_address}`
+    : pet.description
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: imageUrl ? [{ url: imageUrl, width: 800, height: 600, alt: name }] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: imageUrl ? [imageUrl] : [],
+    },
+  }
 }
 
 export default async function PetDetailPage({ params }: { params: Promise<{ id: string }> }) {
