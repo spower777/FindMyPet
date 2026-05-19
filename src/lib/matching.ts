@@ -1,5 +1,6 @@
 import OpenAI from 'openai'
 import { createAdminClient } from '@/lib/supabase/server'
+import { sendMatchEmail } from '@/lib/email'
 import type { Pet, PetPhoto } from '@/lib/types'
 
 const MATCH_THRESHOLD = 0.55
@@ -43,16 +44,52 @@ export async function runMatching(petId: string) {
     try {
       const result = await compareImages(openai, petPhotoUrl, candidatePhotoUrl)
       if (result.score >= MATCH_THRESHOLD) {
-        const lostId = pet.type === 'lost' ? pet.id : candidate.id
-        const foundId = pet.type === 'found' ? pet.id : candidate.id
+        const lostPet = pet.type === 'lost' ? pet : candidate
+        const foundPet = pet.type === 'found' ? pet : candidate
 
         await supabase.from('matches').upsert({
-          lost_pet_id: lostId,
-          found_pet_id: foundId,
+          lost_pet_id: lostPet.id,
+          found_pet_id: foundPet.id,
           similarity_score: result.score,
           reasoning: result.reasoning,
           status: 'pending',
         }, { onConflict: 'lost_pet_id,found_pet_id' })
+
+        // Send email notifications to both owners (best-effort)
+        const { data: owners } = await supabase
+          .from('profiles')
+          .select('id, email')
+          .in('id', [lostPet.user_id, foundPet.user_id])
+
+        const ownerMap = Object.fromEntries((owners ?? []).map(o => [o.id, o.email]))
+        const matchedCandidatePhotoUrl = getPrimaryPhotoUrl(candidate)
+
+        await Promise.allSettled([
+          ownerMap[lostPet.user_id] && sendMatchEmail({
+            toEmail: ownerMap[lostPet.user_id],
+            ownerPetName: lostPet.name ?? lostPet.species,
+            ownerPetType: 'lost',
+            ownerPetSpecies: lostPet.species,
+            matchedPetName: foundPet.name ?? foundPet.species,
+            matchedPetSpecies: foundPet.species,
+            similarityScore: result.score,
+            reasoning: result.reasoning,
+            petUrl: `/pets/${lostPet.id}`,
+            matchPhotoUrl: matchedCandidatePhotoUrl,
+          }),
+          ownerMap[foundPet.user_id] && ownerMap[foundPet.user_id] !== ownerMap[lostPet.user_id] && sendMatchEmail({
+            toEmail: ownerMap[foundPet.user_id],
+            ownerPetName: foundPet.name ?? foundPet.species,
+            ownerPetType: 'found',
+            ownerPetSpecies: foundPet.species,
+            matchedPetName: lostPet.name ?? lostPet.species,
+            matchedPetSpecies: lostPet.species,
+            similarityScore: result.score,
+            reasoning: result.reasoning,
+            petUrl: `/pets/${foundPet.id}`,
+            matchPhotoUrl: petPhotoUrl,
+          }),
+        ])
       }
     } catch {
       // skip failed comparisons
