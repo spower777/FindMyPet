@@ -27,9 +27,12 @@ export default function NavbarAuth({ user }: { user: User | null }) {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="hidden sm:block text-sm text-gray-500 max-w-[140px] truncate">
-        {user.email}
-      </span>
+      <Link
+        href="/profile"
+        className="text-sm font-medium text-gray-700 hover:text-orange-500 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-orange-50 transition"
+      >
+        Mój profil
+      </Link>
       <button
         onClick={signOut}
         className="text-sm text-gray-500 hover:text-gray-800 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition"

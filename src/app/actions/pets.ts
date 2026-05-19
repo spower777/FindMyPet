@@ -76,6 +76,17 @@ export async function resolvePet(petId: string) {
   revalidatePath(`/pets/${petId}`)
 }
 
+export async function deletePet(petId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  await supabase.from('pets').delete().eq('id', petId).eq('user_id', user.id)
+
+  revalidatePath('/')
+  redirect('/profile')
+}
+
 export async function updateMatchStatus(matchId: string, status: 'accepted' | 'rejected') {
   const supabase = await createClient()
   await supabase.from('matches').update({ status }).eq('id', matchId)
