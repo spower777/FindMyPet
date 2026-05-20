@@ -159,7 +159,11 @@ export default function HomeClient({ pets }: { pets: PetWithPhotos[] }) {
               )}
             </div>
           ) : (
-            filtered.map(pet => <PetCard key={pet.id} pet={pet} />)
+            filtered.map((pet, i) => (
+              <div key={pet.id} className="animate-fade-in" style={{ animationDelay: `${i * 40}ms` }}>
+                <PetCard pet={pet} />
+              </div>
+            ))
           )}
         </div>
       </div>
