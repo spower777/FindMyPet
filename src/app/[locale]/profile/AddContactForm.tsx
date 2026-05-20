@@ -3,17 +3,19 @@
 import { useState, useTransition } from 'react'
 import { createContact } from '@/app/actions/contacts'
 import { useTranslations } from 'next-intl'
-import type { ContactType, AnimalType } from '@/lib/types'
+import type { ContactType, AnimalType, PetSummary } from '@/lib/types'
 
 const CONTACT_TYPE_EMOJIS: Record<ContactType, string> = {
   owner: '👤', vet: '🏥', shelter: '🏠', emergency: '🚨', volunteer: '🙋', other: '📋',
 }
-
 const ANIMAL_TYPE_EMOJIS: Record<AnimalType, string> = {
   dog: '🐕', cat: '🐈', bird: '🐦', rabbit: '🐇', exotic: '🦎', other: '🐾',
 }
+const SPECIES_EMOJI: Record<string, string> = {
+  dog: '🐕', cat: '🐈', bird: '🐦', rabbit: '🐇', other: '🐾',
+}
 
-export default function AddContactForm() {
+export default function AddContactForm({ pets = [] }: { pets?: PetSummary[] }) {
   const t = useTranslations('profile')
   const tc = useTranslations('contact_types')
   const ta = useTranslations('animal_types')
@@ -24,6 +26,7 @@ export default function AddContactForm() {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [animalType, setAnimalType] = useState<AnimalType | ''>('')
+  const [petId, setPetId] = useState('')
 
   const contactTypes: ContactType[] = ['owner', 'vet', 'shelter', 'emergency', 'volunteer', 'other']
   const animalTypes: AnimalType[] = ['dog', 'cat', 'bird', 'rabbit', 'exotic', 'other']
@@ -44,9 +47,11 @@ export default function AddContactForm() {
           phone: fd.get('phone') as string,
           email: fd.get('email') as string,
           note: fd.get('note') as string,
+          pet_id: petId || null,
         })
         setOpen(false)
         setAnimalType('')
+        setPetId('')
         ;(e.target as HTMLFormElement).reset()
       } catch {
         setError(t('contact_error'))
@@ -109,6 +114,20 @@ export default function AddContactForm() {
           ))}
         </div>
       </div>
+
+      {/* Pet association */}
+      {pets.length > 0 && (
+        <div className="flex gap-1.5 flex-wrap">
+          <button type="button" onClick={() => setPetId('')}
+            className={`px-2.5 py-1.5 rounded-lg border text-xs font-medium transition ${petId === '' ? 'border-orange-400 bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300' : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300'}`}
+          >🐾 —</button>
+          {pets.map(p => (
+            <button key={p.id} type="button" onClick={() => setPetId(p.id)}
+              className={`px-2.5 py-1.5 rounded-lg border text-xs font-medium transition ${petId === p.id ? 'border-orange-400 bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300' : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300'}`}
+            >{SPECIES_EMOJI[p.species]} {p.name ?? p.species}</button>
+          ))}
+        </div>
+      )}
 
       <input name="name" placeholder={tf('name_placeholder')} required className={inputCls} />
       <input name="phone" type="tel" placeholder={tf('phone_placeholder')} className={inputCls} />

@@ -17,6 +17,7 @@ export async function createContact(data: CreateContactData) {
     phone: data.phone.trim() || null,
     email: data.email.trim() || null,
     note: data.note.trim() || null,
+    pet_id: data.pet_id || null,
   })
 
   if (error) throw new Error(error.message)
@@ -38,6 +39,7 @@ export async function updateContact(contactId: string, data: CreateContactData) 
       phone: data.phone.trim() || null,
       email: data.email.trim() || null,
       note: data.note.trim() || null,
+      pet_id: data.pet_id || null,
     })
     .eq('id', contactId)
     .eq('user_id', user.id)

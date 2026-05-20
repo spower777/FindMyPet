@@ -112,6 +112,7 @@ export interface UserContact {
   note: string | null
   lat: number | null
   lng: number | null
+  pet_id: string | null
   created_at: string
   updated_at: string
 }
@@ -123,6 +124,13 @@ export interface CreateContactData {
   phone: string
   email: string
   note: string
+  pet_id?: string | null
+}
+
+export interface PetSummary {
+  id: string
+  name: string | null
+  species: PetSpecies
 }
 
 export type VetSpecialization = 'general' | 'surgery' | 'exotic' | 'dentistry' | 'dermatology' | 'orthopedics' | 'oncology' | 'other'
