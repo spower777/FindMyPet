@@ -62,7 +62,20 @@
     "match_score": "Trafność",
     "share": "Udostępnij",
     "share_copied": "Link skopiowany ✓",
-    "share_help": "Udostępnij — możesz pomóc!"
+    "share_help": "Udostępnij — możesz pomóc!",
+    "gender_label": "Płeć",
+    "male": "Samiec",
+    "female": "Samica",
+    "unknown_gender": "Nieznana",
+    "age_label": "Wiek",
+    "age_years": "{n} lat",
+    "age_months": "{n} mies.",
+    "chip_label": "Chip",
+    "character_label": "Charakter",
+    "allergies_label": "Alergie",
+    "neutered": "Kastrowany/Sterylizowany",
+    "profile_data": "Profil pupila",
+    "identity": "Tożsamość"
   },
   "species": {
     "dog": "Pies",
@@ -190,6 +203,16 @@
     "name_placeholder": "Imię / nazwa *",
     "phone_placeholder": "Telefon",
     "email_placeholder": "Email",
-    "note_placeholder": "Notatka"
+    "note_placeholder": "Notatka",
+    "pet_profile": "Dane pupila (opcjonalne)",
+    "gender": "Płeć",
+    "gender_male": "♂ Samiec",
+    "gender_female": "♀ Samica",
+    "gender_unknown": "? Nieznana",
+    "birth_date": "Data urodzenia",
+    "chip_id": "Numer chipa (15 cyfr)",
+    "character": "Charakter / osobowość",
+    "allergies": "Alergie / choroby",
+    "is_neutered": "Kastrowany / Sterylizowany"
   }
 }

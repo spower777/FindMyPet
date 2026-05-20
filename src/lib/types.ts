@@ -1,6 +1,7 @@
 export type PetType = 'lost' | 'found'
 export type PetSpecies = 'dog' | 'cat' | 'bird' | 'rabbit' | 'other'
 export type PetStatus = 'active' | 'resolved'
+export type PetGender = 'male' | 'female' | 'unknown'
 
 export interface Pet {
   id: string
@@ -11,6 +12,12 @@ export interface Pet {
   breed: string | null
   description: string
   color: string | null
+  gender: PetGender
+  birth_date: string | null
+  chip_id: string | null
+  character: string | null
+  allergies: string | null
+  is_neutered: boolean | null
   last_seen_lat: number
   last_seen_lng: number
   last_seen_address: string | null
@@ -164,4 +171,11 @@ export interface CreatePetData {
   contact_phone: string
   contact_email: string
   photo_paths: string[]
+  // Profile fields (optional — added in Sprint B)
+  gender?: PetGender
+  birth_date?: string
+  chip_id?: string
+  character?: string
+  allergies?: string
+  is_neutered?: boolean | null
 }

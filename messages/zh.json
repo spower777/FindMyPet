@@ -62,7 +62,20 @@
     "match_score": "匹配度",
     "share": "分享",
     "share_copied": "链接已复制 ✓",
-    "share_help": "分享 — 你可以帮助！"
+    "share_help": "分享 — 你可以帮助！",
+    "gender_label": "性别",
+    "male": "雄性",
+    "female": "雌性",
+    "unknown_gender": "未知",
+    "age_label": "年龄",
+    "age_years": "{n}岁",
+    "age_months": "{n}月",
+    "chip_label": "芯片",
+    "character_label": "性格",
+    "allergies_label": "过敏",
+    "neutered": "已绝育",
+    "profile_data": "宠物档案",
+    "identity": "身份"
   },
   "species": {
     "dog": "狗",
@@ -190,6 +203,16 @@
     "name_placeholder": "姓名 *",
     "phone_placeholder": "电话",
     "email_placeholder": "邮箱",
-    "note_placeholder": "备注"
+    "note_placeholder": "备注",
+    "pet_profile": "宠物资料（可选）",
+    "gender": "性别",
+    "gender_male": "♂ 雄性",
+    "gender_female": "♀ 雌性",
+    "gender_unknown": "? 未知",
+    "birth_date": "出生日期",
+    "chip_id": "芯片号码（15位数字）",
+    "character": "性格 / 气质",
+    "allergies": "过敏 / 疾病",
+    "is_neutered": "已绝育"
   }
 }

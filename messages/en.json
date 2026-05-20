@@ -62,7 +62,20 @@
     "match_score": "Score",
     "share": "Share",
     "share_copied": "Link copied ✓",
-    "share_help": "Share — you can help!"
+    "share_help": "Share — you can help!",
+    "gender_label": "Gender",
+    "male": "Male",
+    "female": "Female",
+    "unknown_gender": "Unknown",
+    "age_label": "Age",
+    "age_years": "{n} yr",
+    "age_months": "{n} mo",
+    "chip_label": "Chip",
+    "character_label": "Personality",
+    "allergies_label": "Allergies",
+    "neutered": "Neutered/Spayed",
+    "profile_data": "Pet profile",
+    "identity": "Identity"
   },
   "species": {
     "dog": "Dog",
@@ -190,6 +203,16 @@
     "name_placeholder": "Name *",
     "phone_placeholder": "Phone",
     "email_placeholder": "Email",
-    "note_placeholder": "Note"
+    "note_placeholder": "Note",
+    "pet_profile": "Pet details (optional)",
+    "gender": "Gender",
+    "gender_male": "♂ Male",
+    "gender_female": "♀ Female",
+    "gender_unknown": "? Unknown",
+    "birth_date": "Date of birth",
+    "chip_id": "Chip number (15 digits)",
+    "character": "Personality / temperament",
+    "allergies": "Allergies / conditions",
+    "is_neutered": "Neutered / Spayed"
   }
 }

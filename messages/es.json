@@ -62,7 +62,20 @@
     "match_score": "Puntuación",
     "share": "Compartir",
     "share_copied": "Enlace copiado ✓",
-    "share_help": "Comparte — ¡puedes ayudar!"
+    "share_help": "Comparte — ¡puedes ayudar!",
+    "gender_label": "Género",
+    "male": "Macho",
+    "female": "Hembra",
+    "unknown_gender": "Desconocido",
+    "age_label": "Edad",
+    "age_years": "{n} a.",
+    "age_months": "{n} m.",
+    "chip_label": "Chip",
+    "character_label": "Carácter",
+    "allergies_label": "Alergias",
+    "neutered": "Castrado/Esterilizado",
+    "profile_data": "Perfil de mascota",
+    "identity": "Identidad"
   },
   "species": {
     "dog": "Perro",
@@ -190,6 +203,16 @@
     "name_placeholder": "Nombre *",
     "phone_placeholder": "Teléfono",
     "email_placeholder": "Email",
-    "note_placeholder": "Nota"
+    "note_placeholder": "Nota",
+    "pet_profile": "Datos de la mascota (opcional)",
+    "gender": "Género",
+    "gender_male": "♂ Macho",
+    "gender_female": "♀ Hembra",
+    "gender_unknown": "? Desconocido",
+    "birth_date": "Fecha de nacimiento",
+    "chip_id": "Número de chip (15 dígitos)",
+    "character": "Carácter / temperamento",
+    "allergies": "Alergias / enfermedades",
+    "is_neutered": "Castrado / Esterilizado"
   }
 }
