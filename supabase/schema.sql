@@ -349,6 +349,14 @@ create trigger vet_profiles_updated_at
 -- Add secured_by_vet_id to pets (nullable FK to vet_profiles)
 alter table pets add column if not exists secured_by_vet_id uuid references vet_profiles(id) on delete set null;
 
+-- Pet profile fields (Sprint B)
+alter table pets add column if not exists gender text check (gender in ('male', 'female', 'unknown')) default 'unknown';
+alter table pets add column if not exists birth_date date;
+alter table pets add column if not exists chip_id text;
+alter table pets add column if not exists character text;
+alter table pets add column if not exists allergies text;
+alter table pets add column if not exists is_neutered boolean;
+
 -- Storage bucket for pet photos
 insert into storage.buckets (id, name, public)
 values ('pet-photos', 'pet-photos', true)
