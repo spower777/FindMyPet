@@ -8,16 +8,13 @@ import { resolvePet, updateMatchStatus } from '@/app/actions/pets'
 import type { PetWithPhotos, Match } from '@/lib/types'
 import type { Metadata } from 'next'
 import { startConversation } from '@/app/actions/chat'
+import { getTranslations } from 'next-intl/server'
 
 const SPECIES_EMOJI: Record<string, string> = {
   dog: '🐕', cat: '🐈', bird: '🐦', rabbit: '🐇', other: '🐾',
 }
 
-const SPECIES_PL: Record<string, string> = {
-  dog: 'Pies', cat: 'Kot', bird: 'Ptak', rabbit: 'Królik', other: 'Zwierzę',
-}
-
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string; locale: string }> }): Promise<Metadata> {
   const { id } = await params
   const supabase = await createClient()
   const { data: pet } = await supabase
@@ -35,9 +32,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     ? `${supabaseUrl}/storage/v1/object/public/pet-photos/${primary.storage_path}`
     : undefined
 
-  const status = pet.type === 'lost' ? 'Zaginął' : 'Znaleziony'
-  const species = SPECIES_PL[pet.species] ?? 'Zwierzę'
-  const name = pet.name ? `${species} ${pet.name}` : species
+  const status = pet.type === 'lost' ? 'Lost' : 'Found'
+  const name = pet.name ?? pet.species
   const title = `${status}: ${name}`
   const description = pet.last_seen_address
     ? `${pet.description} • ${pet.last_seen_address}`
@@ -47,16 +43,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     title,
     description,
     openGraph: {
-      title,
-      description,
+      title, description,
       images: imageUrl ? [{ url: imageUrl, width: 800, height: 600, alt: name }] : [],
     },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: imageUrl ? [imageUrl] : [],
-    },
+    twitter: { card: 'summary_large_image', title, description, images: imageUrl ? [imageUrl] : [] },
   }
 }
 
@@ -65,6 +55,8 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const t = await getTranslations('pet')
+  const ts = await getTranslations('species')
 
   const { data: pet } = await supabase
     .from('pets')
@@ -80,14 +72,12 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
 
   const photos = pet.photos ?? []
   const primaryPhoto = photos.find((p: { is_primary: boolean }) => p.is_primary) ?? photos[0]
-
   const petWithPhoto: PetWithPhotos = {
     ...pet,
     photos,
     primary_photo_url: primaryPhoto ? getPhotoUrl(primaryPhoto.storage_path) : null,
   }
 
-  // Fetch matches
   const matchField = pet.type === 'lost' ? 'lost_pet_id' : 'found_pet_id'
   const { data: rawMatches } = await supabase
     .from('matches')
@@ -114,30 +104,24 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
   const matchedPets = matches.map(m => pet.type === 'lost' ? m.found_pet! : m.lost_pet!)
 
   return (
-    <div className="max-w-2xl mx-auto w-full px-4 py-8 space-y-6">
-      {/* Back */}
+    <div className="max-w-2xl mx-auto w-full px-4 py-8 space-y-5">
       <Link href="/" className="text-sm text-orange-500 hover:text-orange-600 flex items-center gap-1">
-        ← Wróć do mapy
+        ←
       </Link>
 
-      {/* Header */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      {/* Main card */}
+      <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
         {/* Photos */}
         {photos.length > 0 ? (
-          <div className={`grid gap-1 ${photos.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          <div className={`grid gap-0.5 ${photos.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
             {photos.slice(0, 4).map((photo: { id: string; storage_path: string }) => (
-              <div key={photo.id} className="relative aspect-video bg-gray-100">
-                <Image
-                  src={getPhotoUrl(photo.storage_path)}
-                  alt={pet.name ?? pet.species}
-                  fill
-                  className="object-cover"
-                />
+              <div key={photo.id} className="relative aspect-video bg-gray-100 dark:bg-gray-800">
+                <Image src={getPhotoUrl(photo.storage_path)} alt={pet.name ?? pet.species} fill className="object-cover" />
               </div>
             ))}
           </div>
         ) : (
-          <div className="h-48 bg-gray-50 flex items-center justify-center text-6xl text-gray-200">
+          <div className="h-56 bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-7xl text-gray-200 dark:text-gray-700">
             {SPECIES_EMOJI[pet.species]}
           </div>
         )}
@@ -145,58 +129,47 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
         <div className="p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <span
-                className={`inline-block text-xs font-bold text-white px-2.5 py-0.5 rounded-full mb-2 ${
-                  pet.type === 'lost' ? 'bg-red-500' : 'bg-green-500'
-                }`}
-              >
-                {pet.type === 'lost' ? 'Zaginął' : 'Znaleziony'}
+              <span className={`inline-block text-xs font-bold text-white px-3 py-1 rounded-full mb-2 shadow-sm ${pet.type === 'lost' ? 'bg-red-500' : 'bg-green-500'}`}>
+                {pet.type === 'lost' ? t('lost') : t('found')}
               </span>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {SPECIES_EMOJI[pet.species]} {pet.name ?? pet.species}
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {SPECIES_EMOJI[pet.species]} {pet.name ?? ts(pet.species as 'dog' | 'cat' | 'bird' | 'rabbit' | 'other')}
               </h1>
-              {pet.breed && <p className="text-gray-500 text-sm mt-0.5">{pet.breed}</p>}
+              {pet.breed && <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">{pet.breed}</p>}
             </div>
             {pet.status === 'resolved' && (
-              <span className="bg-gray-100 text-gray-500 text-xs font-medium px-3 py-1 rounded-full shrink-0">
-                Rozwiązane
+              <span className="bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs font-medium px-3 py-1 rounded-full shrink-0">
+                {t('resolved')}
               </span>
             )}
           </div>
 
-          <div className="mt-4 space-y-2 text-sm text-gray-700">
-            {pet.color && (
-              <p><span className="font-medium">Kolor:</span> {pet.color}</p>
-            )}
+          <div className="mt-4 space-y-2 text-sm text-gray-700 dark:text-gray-300">
+            {pet.color && <p><span className="font-medium">{pet.color}</span></p>}
             <p className="leading-relaxed">{pet.description}</p>
             {pet.last_seen_address && (
-              <p><span className="font-medium">Lokalizacja:</span> {pet.last_seen_address}</p>
+              <p className="flex items-start gap-1.5">
+                <span className="shrink-0">📍</span>
+                <span>{pet.last_seen_address}</span>
+              </p>
             )}
-            <p className="text-gray-400 text-xs">
-              Dodano: {new Date(pet.created_at).toLocaleDateString('pl-PL', {
-                day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
-              })}
+            <p className="text-gray-400 dark:text-gray-500 text-xs">
+              {new Date(pet.created_at).toLocaleDateString([], { day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
           </div>
 
-          {/* Contact */}
+          {/* Contact info */}
           {(pet.contact_phone || pet.contact_email) && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <p className="text-sm font-medium text-gray-700 mb-2">Kontakt:</p>
-              <div className="flex gap-3 flex-wrap">
+            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{t('contact_label')}</p>
+              <div className="flex gap-2 flex-wrap">
                 {pet.contact_phone && (
-                  <a
-                    href={`tel:${pet.contact_phone}`}
-                    className="flex items-center gap-1.5 text-sm bg-orange-50 text-orange-700 border border-orange-200 px-3 py-2 rounded-xl hover:bg-orange-100 transition"
-                  >
+                  <a href={`tel:${pet.contact_phone}`} className="flex items-center gap-1.5 text-sm bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800 px-3 py-2 rounded-xl hover:bg-orange-100 dark:hover:bg-orange-900 transition">
                     📞 {pet.contact_phone}
                   </a>
                 )}
                 {pet.contact_email && (
-                  <a
-                    href={`mailto:${pet.contact_email}`}
-                    className="flex items-center gap-1.5 text-sm bg-orange-50 text-orange-700 border border-orange-200 px-3 py-2 rounded-xl hover:bg-orange-100 transition"
-                  >
+                  <a href={`mailto:${pet.contact_email}`} className="flex items-center gap-1.5 text-sm bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800 px-3 py-2 rounded-xl hover:bg-orange-100 dark:hover:bg-orange-900 transition">
                     ✉️ {pet.contact_email}
                   </a>
                 )}
@@ -204,36 +177,27 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
             </div>
           )}
 
-          {/* Owner actions */}
+          {/* Owner: mark resolved */}
           {isOwner && pet.status === 'active' && (
-            <form action={resolvePet.bind(null, pet.id)} className="mt-4 pt-4 border-t border-gray-100">
-              <button
-                type="submit"
-                className="text-sm text-gray-500 border border-gray-200 px-4 py-2 rounded-xl hover:bg-gray-50 transition"
-              >
-                Oznacz jako rozwiązane (zwierzę wróciło do domu)
+            <form action={resolvePet.bind(null, pet.id)} className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+              <button type="submit" className="text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                {t('mark_resolved')}
               </button>
             </form>
           )}
 
-          {/* Contact owner (for non-owners) */}
+          {/* Non-owner: contact button */}
           {!isOwner && user && pet.status === 'active' && (
-            <form action={startConversation.bind(null, pet.id, pet.user_id)} className="mt-4 pt-4 border-t border-gray-100">
-              <button
-                type="submit"
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl text-sm transition active:scale-95"
-              >
-                💬 Napisz do właściciela
+            <form action={startConversation.bind(null, pet.id, pet.user_id)} className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+              <button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-2xl text-sm transition active:scale-95 shadow-sm shadow-orange-200 dark:shadow-orange-900">
+                💬 {t('contact_owner')}
               </button>
             </form>
           )}
           {!isOwner && !user && pet.status === 'active' && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <Link
-                href={`/auth/login?next=/pets/${pet.id}`}
-                className="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl text-sm transition"
-              >
-                💬 Zaloguj się żeby napisać
+            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+              <Link href={`/auth/login?next=/pets/${pet.id}`} className="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-2xl text-sm transition shadow-sm shadow-orange-200 dark:shadow-orange-900">
+                💬 {t('contact_owner')}
               </Link>
             </div>
           )}
@@ -241,67 +205,49 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
       </div>
 
       {/* Map */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-gray-100">
-          <h2 className="font-semibold text-gray-900 text-sm">Ostatnia lokalizacja</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+        <div className="px-5 py-3 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{t('location_label')}</h2>
         </div>
-        <div className="h-48">
-          <MapView
-            pets={[petWithPhoto]}
-            defaultCenter={[pet.last_seen_lat, pet.last_seen_lng]}
-            defaultZoom={15}
-            interactive={false}
-          />
+        <div className="h-52">
+          <MapView pets={[petWithPhoto]} defaultCenter={[pet.last_seen_lat, pet.last_seen_lng]} defaultZoom={15} interactive={false} />
         </div>
       </div>
 
       {/* AI Matches */}
       {matches.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-          <h2 className="font-semibold text-gray-900 mb-1">
-            Potencjalne dopasowania AI ({matches.length})
+        <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+          <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            {t('ai_matches', { n: matches.length })}
           </h2>
-          <p className="text-xs text-gray-500 mb-4">
-            AI porównała zdjęcia i znalazła podobne zwierzęta
-          </p>
           <div className="space-y-4">
             {matches.map(match => {
               const matchedPet = pet.type === 'lost' ? match.found_pet! : match.lost_pet!
               const score = Math.round(match.similarity_score * 100)
               return (
-                <div key={match.id} className="border border-gray-100 rounded-xl p-3">
-                  <div className="flex items-start gap-3">
-                    <div className="shrink-0">
-                      <PetCard pet={matchedPet} />
-                    </div>
-                  </div>
-                  <div className="mt-2 flex items-center justify-between">
+                <div key={match.id} className="border border-gray-100 dark:border-gray-800 rounded-2xl p-3 space-y-3">
+                  <PetCard pet={matchedPet} />
+                  <div className="flex items-center justify-between flex-wrap gap-2">
                     <div>
-                      <span
-                        className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                          score >= 80
-                            ? 'bg-green-100 text-green-700'
-                            : score >= 60
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-gray-100 text-gray-600'
-                        }`}
-                      >
-                        {score}% podobieństwo
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+                        score >= 80 ? 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300'
+                        : score >= 60 ? 'bg-yellow-100 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                      }`}>
+                        {t('match_score')}: {score}%
                       </span>
-                      {match.reasoning && (
-                        <p className="text-xs text-gray-500 mt-1">{match.reasoning}</p>
-                      )}
+                      {match.reasoning && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{match.reasoning}</p>}
                     </div>
                     {isOwner && (
                       <div className="flex gap-2">
                         <form action={updateMatchStatus.bind(null, match.id, 'accepted')}>
-                          <button type="submit" className="text-xs bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 transition">
-                            To on!
+                          <button type="submit" className="text-xs bg-green-500 text-white px-3 py-1.5 rounded-xl hover:bg-green-600 transition">
+                            {t('match_accept')}
                           </button>
                         </form>
                         <form action={updateMatchStatus.bind(null, match.id, 'rejected')}>
-                          <button type="submit" className="text-xs border border-gray-200 text-gray-500 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition">
-                            Nie ten
+                          <button type="submit" className="text-xs border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 px-3 py-1.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                            {t('match_reject')}
                           </button>
                         </form>
                       </div>
@@ -314,17 +260,15 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
         </div>
       )}
 
-      {/* Share */}
-      <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 text-sm text-center text-orange-800">
-        Pomóż znaleźć właściciela — udostępnij to zgłoszenie znajomym! 🐾
-      </div>
-
-      {/* All matches as pet cards for rendering check */}
+      {/* No matches info for owner */}
       {isOwner && matchedPets.length === 0 && pet.status === 'active' && (
-        <p className="text-center text-sm text-gray-400 py-4">
-          Brak dopasowań AI. Zostaną automatycznie dodane gdy pojawią się podobne zgłoszenia.
-        </p>
+        <p className="text-center text-sm text-gray-400 py-4">{t('no_ai_matches')}</p>
       )}
+
+      {/* Share nudge */}
+      <div className="bg-orange-50 dark:bg-orange-950 border border-orange-100 dark:border-orange-900 rounded-2xl p-4 text-sm text-center text-orange-800 dark:text-orange-200">
+        🐾 Udostępnij to zgłoszenie — możesz pomóc!
+      </div>
     </div>
   )
 }

@@ -22,8 +22,6 @@ export default function MapView({
 const LeafletMap = dynamic(() => import('@/components/LeafletMap'), {
   ssr: false,
   loading: () => (
-    <div className="w-full flex-1 min-h-[400px] bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
-      Ładowanie mapy...
-    </div>
+    <div className="w-full flex-1 min-h-[400px] bg-gray-100 dark:bg-gray-800 animate-pulse" />
   ),
 })
