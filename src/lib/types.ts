@@ -17,6 +17,7 @@ export interface Pet {
   contact_phone: string | null
   contact_email: string | null
   status: PetStatus
+  secured_by_vet_id: string | null
   created_at: string
   updated_at: string
 }

@@ -62,7 +62,7 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
 
   const { data: pet } = await supabase
     .from('pets')
-    .select('*, photos:pet_photos(*), secured_by:vet_profiles!pets_secured_by_vet_id_fkey(*)')
+    .select('*, photos:pet_photos(*)')
     .eq('id', id)
     .single()
 
@@ -166,7 +166,7 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
             </div>
           )}
 
-          {(pet as { secured_by_vet_id?: string | null }).secured_by_vet_id && (
+          {pet.secured_by_vet_id && (
             <div className="mt-2">
               <span className="text-xs font-medium bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-2.5 py-1 rounded-full">
                 🏥 {tv('secured_label')}
@@ -217,7 +217,7 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
           )}
 
           {/* Vet: secure animal button (found pets not yet secured, vet is not owner) */}
-          {isVet && !isOwner && pet.type === 'found' && pet.status === 'active' && !(pet as { secured_by_vet_id?: string | null }).secured_by_vet_id && (
+          {isVet && !isOwner && pet.type === 'found' && pet.status === 'active' && !pet.secured_by_vet_id && (
             <form action={secureAnimal.bind(null, pet.id)} className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
               <button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-2xl text-sm transition active:scale-95 shadow-sm shadow-blue-200 dark:shadow-blue-900">
                 {tv('secure_animal')}
