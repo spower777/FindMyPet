@@ -6,7 +6,7 @@
     "profile": "My profile",
     "logout": "Sign out",
     "chat": "Messages",
-    "trop": "Browse",
+    "trop": "Trop",
     "contacts": "Contacts"
   },
   "home": {
@@ -112,7 +112,12 @@
     "subtitle": "Vets, shelters, volunteers",
     "no_contacts": "No contacts yet",
     "no_contacts_hint": "Add your first contact below",
-    "animal_type": "Animal type"
+    "animal_type": "Animal type",
+    "edit": "Edit",
+    "save_changes": "Save changes",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "message": "Send message"
   },
   "chat": {
     "title": "Messages",

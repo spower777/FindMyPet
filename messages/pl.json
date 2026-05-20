@@ -134,7 +134,12 @@
     "subtitle": "Weterynarze, schroniska, wolontariusze",
     "no_contacts": "Brak kontaktów",
     "no_contacts_hint": "Dodaj pierwszy kontakt poniżej",
-    "animal_type": "Gatunek zwierzaka"
+    "animal_type": "Gatunek zwierzaka",
+    "edit": "Edytuj",
+    "save_changes": "Zapisz zmiany",
+    "cancel": "Anuluj",
+    "delete": "Usuń",
+    "message": "Wyślij wiadomość"
   },
   "vet": {
     "title": "Profil weterynarza",

@@ -6,7 +6,7 @@
     "profile": "Mein Profil",
     "logout": "Abmelden",
     "chat": "Nachrichten",
-    "trop": "Suchen",
+    "trop": "Trop",
     "contacts": "Kontakte"
   },
   "home": {
@@ -112,7 +112,12 @@
     "subtitle": "Tierärzte, Tierheime, Freiwillige",
     "no_contacts": "Keine Kontakte",
     "no_contacts_hint": "Ersten Kontakt unten hinzufügen",
-    "animal_type": "Tierart"
+    "animal_type": "Tierart",
+    "edit": "Bearbeiten",
+    "save_changes": "Änderungen speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "message": "Nachricht senden"
   },
   "chat": {
     "title": "Nachrichten",

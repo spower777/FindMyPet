@@ -6,7 +6,7 @@
     "profile": "Mi perfil",
     "logout": "Cerrar sesión",
     "chat": "Mensajes",
-    "trop": "Explorar",
+    "trop": "Trop",
     "contacts": "Contactos"
   },
   "home": {
@@ -112,7 +112,12 @@
     "subtitle": "Veterinarios, refugios, voluntarios",
     "no_contacts": "Sin contactos",
     "no_contacts_hint": "Añade tu primer contacto abajo",
-    "animal_type": "Tipo de animal"
+    "animal_type": "Tipo de animal",
+    "edit": "Editar",
+    "save_changes": "Guardar cambios",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "message": "Enviar mensaje"
   },
   "chat": {
     "title": "Mensajes",

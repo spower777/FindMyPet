@@ -6,7 +6,7 @@
     "profile": "我的主页",
     "logout": "退出",
     "chat": "消息",
-    "trop": "浏览",
+    "trop": "Trop",
     "contacts": "联系人"
   },
   "home": {
@@ -112,7 +112,12 @@
     "subtitle": "兽医、收容所、志愿者",
     "no_contacts": "暂无联系人",
     "no_contacts_hint": "在下方添加第一个联系人",
-    "animal_type": "动物类型"
+    "animal_type": "动物类型",
+    "edit": "编辑",
+    "save_changes": "保存更改",
+    "cancel": "取消",
+    "delete": "删除",
+    "message": "发送消息"
   },
   "chat": {
     "title": "消息",
