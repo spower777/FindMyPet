@@ -112,6 +112,35 @@ export interface CreateContactData {
   note: string
 }
 
+export type VetSpecialization = 'general' | 'surgery' | 'exotic' | 'dentistry' | 'dermatology' | 'orthopedics' | 'oncology' | 'other'
+
+export interface VetProfile {
+  id: string
+  user_id: string
+  clinic_name: string
+  vet_name: string
+  specialization: VetSpecialization
+  license_number: string | null
+  phone: string | null
+  email: string | null
+  address: string | null
+  website: string | null
+  verified: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateVetProfileData {
+  clinic_name: string
+  vet_name: string
+  specialization: VetSpecialization
+  license_number: string
+  phone: string
+  email: string
+  address: string
+  website: string
+}
+
 export interface CreatePetData {
   type: PetType
   species: PetSpecies

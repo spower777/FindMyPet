@@ -5,7 +5,8 @@ import Link from 'next/link'
 import MapView from '@/components/MapView'
 import PetCard from '@/components/PetCard'
 import { resolvePet, updateMatchStatus } from '@/app/actions/pets'
-import type { PetWithPhotos, Match } from '@/lib/types'
+import { secureAnimal } from '@/app/actions/vet'
+import type { PetWithPhotos, Match, VetProfile } from '@/lib/types'
 import type { Metadata } from 'next'
 import { startConversation } from '@/app/actions/chat'
 import { getTranslations } from 'next-intl/server'
@@ -57,14 +58,23 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const t = await getTranslations('pet')
   const ts = await getTranslations('species')
+  const tv = await getTranslations('vet')
 
   const { data: pet } = await supabase
     .from('pets')
-    .select('*, photos:pet_photos(*)')
+    .select('*, photos:pet_photos(*), secured_by:vet_profiles!pets_secured_by_vet_id_fkey(*)')
     .eq('id', id)
     .single()
 
   if (!pet) notFound()
+
+  const [{ data: ownerVetData }, { data: currentUserVetData }] = await Promise.all([
+    supabase.from('vet_profiles').select('*').eq('user_id', pet.user_id).single(),
+    user ? supabase.from('vet_profiles').select('id').eq('user_id', user.id).single() : Promise.resolve({ data: null }),
+  ])
+
+  const ownerVetProfile = ownerVetData as VetProfile | null
+  const isVet = !!currentUserVetData
 
   function getPhotoUrl(path: string) {
     return `${supabaseUrl}/storage/v1/object/public/pet-photos/${path}`
@@ -144,6 +154,26 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
             )}
           </div>
 
+          {ownerVetProfile && (
+            <div className="mt-2 flex items-center gap-1.5">
+              <span className={`text-xs font-medium px-2.5 py-1 rounded-full border inline-flex items-center gap-1 ${
+                ownerVetProfile.verified
+                  ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800'
+                  : 'bg-yellow-50 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800'
+              }`}>
+                🏥 {tv('badge')}{ownerVetProfile.verified ? ` — ${ownerVetProfile.clinic_name}` : ''}
+              </span>
+            </div>
+          )}
+
+          {(pet as { secured_by_vet_id?: string | null }).secured_by_vet_id && (
+            <div className="mt-2">
+              <span className="text-xs font-medium bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-2.5 py-1 rounded-full">
+                🏥 {tv('secured_label')}
+              </span>
+            </div>
+          )}
+
           <div className="mt-4 space-y-2 text-sm text-gray-700 dark:text-gray-300">
             {pet.color && <p><span className="font-medium">{pet.color}</span></p>}
             <p className="leading-relaxed">{pet.description}</p>
@@ -182,6 +212,15 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
             <form action={resolvePet.bind(null, pet.id)} className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
               <button type="submit" className="text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition">
                 {t('mark_resolved')}
+              </button>
+            </form>
+          )}
+
+          {/* Vet: secure animal button (found pets not yet secured, vet is not owner) */}
+          {isVet && !isOwner && pet.type === 'found' && pet.status === 'active' && !(pet as { secured_by_vet_id?: string | null }).secured_by_vet_id && (
+            <form action={secureAnimal.bind(null, pet.id)} className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+              <button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-2xl text-sm transition active:scale-95 shadow-sm shadow-blue-200 dark:shadow-blue-900">
+                {tv('secure_animal')}
               </button>
             </form>
           )}

@@ -303,6 +303,41 @@ begin
 end;
 $$;
 
+-- Vet profiles
+create table if not exists vet_profiles (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references profiles(id) on delete cascade not null unique,
+  clinic_name text not null,
+  vet_name text not null,
+  specialization text check (specialization in ('general','surgery','exotic','dentistry','dermatology','orthopedics','oncology','other')) default 'general' not null,
+  license_number text,
+  phone text,
+  email text,
+  address text,
+  website text,
+  verified boolean default false not null,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table vet_profiles enable row level security;
+
+drop policy if exists "vet_profiles_select" on vet_profiles;
+drop policy if exists "vet_profiles_insert" on vet_profiles;
+drop policy if exists "vet_profiles_update" on vet_profiles;
+
+create policy "vet_profiles_select" on vet_profiles for select using (true);
+create policy "vet_profiles_insert" on vet_profiles for insert with check (auth.uid() = user_id);
+create policy "vet_profiles_update" on vet_profiles for update using (auth.uid() = user_id);
+
+drop trigger if exists vet_profiles_updated_at on vet_profiles;
+create trigger vet_profiles_updated_at
+  before update on vet_profiles
+  for each row execute procedure update_updated_at();
+
+-- Add secured_by_vet_id to pets (nullable FK to vet_profiles)
+alter table pets add column if not exists secured_by_vet_id uuid references vet_profiles(id) on delete set null;
+
 -- Storage bucket for pet photos
 insert into storage.buckets (id, name, public)
 values ('pet-photos', 'pet-photos', true)

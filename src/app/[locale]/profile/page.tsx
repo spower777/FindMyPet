@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { resolvePet, deletePet } from '@/app/actions/pets'
 import type { Metadata } from 'next'
-import type { PetWithPhotos, UserContact } from '@/lib/types'
+import type { PetWithPhotos, UserContact, VetProfile } from '@/lib/types'
 import DeletePetForm from './DeletePetForm'
 import AddContactForm from './AddContactForm'
 import DeleteContactButton from './DeleteContactButton'
@@ -31,9 +31,10 @@ export default async function ProfilePage() {
 
   const t = await getTranslations('profile')
   const tc = await getTranslations('contact_types')
+  const tv = await getTranslations('vet')
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 
-  const [{ data: pets }, { data: contacts }] = await Promise.all([
+  const [{ data: pets }, { data: contacts }, { data: vetData }] = await Promise.all([
     supabase
       .from('pets')
       .select('*, photos:pet_photos(*)')
@@ -44,7 +45,14 @@ export default async function ProfilePage() {
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: true }),
+    supabase
+      .from('vet_profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .single(),
   ])
+
+  const vetProfile = vetData as VetProfile | null
 
   function getPhotoUrl(path: string) {
     return `${supabaseUrl}/storage/v1/object/public/pet-photos/${path}`
@@ -71,9 +79,20 @@ export default async function ProfilePage() {
           ) : '🐾'}
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            {user.user_metadata?.full_name ?? user.email}
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {user.user_metadata?.full_name ?? user.email}
+            </h1>
+            {vetProfile && (
+              <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
+                vetProfile.verified
+                  ? 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800'
+                  : 'bg-yellow-100 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800'
+              }`}>
+                🏥 {tv('badge')}
+              </span>
+            )}
+          </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{user.email}</p>
         </div>
       </div>
@@ -131,6 +150,38 @@ export default async function ProfilePage() {
           <p className="text-sm mt-1">{t('no_reports_hint')}</p>
         </div>
       )}
+
+      {/* Vet section */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-semibold text-gray-900 dark:text-gray-100">🏥 {tv('title')}</h2>
+          <Link
+            href="/vet"
+            className="text-sm text-green-600 dark:text-green-400 border border-green-200 dark:border-green-800 px-3 py-1.5 rounded-xl hover:bg-green-50 dark:hover:bg-green-950 transition"
+          >
+            {vetProfile ? tv('edit_profile') : tv('register_cta')}
+          </Link>
+        </div>
+        {vetProfile && (
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="font-semibold text-gray-900 dark:text-gray-100">{vetProfile.clinic_name}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{vetProfile.vet_name}</p>
+                {vetProfile.phone && <p className="text-xs text-orange-500 mt-1">📞 {vetProfile.phone}</p>}
+                {vetProfile.address && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">📍 {vetProfile.address}</p>}
+              </div>
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
+                vetProfile.verified
+                  ? 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300'
+                  : 'bg-yellow-100 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300'
+              }`}>
+                {vetProfile.verified ? `✓ ${tv('verified')}` : `⏳ ${tv('pending_verification')}`}
+              </span>
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* Contacts */}
       <section>
