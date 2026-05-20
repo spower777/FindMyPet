@@ -307,6 +307,8 @@ $$;
 alter table user_contacts add column if not exists animal_type text check (animal_type in ('dog','cat','bird','rabbit','exotic','other'));
 alter table user_contacts add column if not exists lat double precision;
 alter table user_contacts add column if not exists lng double precision;
+-- Sprint D: link contact to a specific pet
+alter table user_contacts add column if not exists pet_id uuid references pets(id) on delete set null;
 -- Add volunteer contact type (alter check constraint)
 -- Note: PostgreSQL doesn't support ALTER CHECK directly — drop and recreate if needed:
 -- alter table user_contacts drop constraint if exists user_contacts_type_check;
