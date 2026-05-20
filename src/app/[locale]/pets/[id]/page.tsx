@@ -6,7 +6,7 @@ import MapView from '@/components/MapView'
 import PetCard from '@/components/PetCard'
 import { resolvePet, updateMatchStatus } from '@/app/actions/pets'
 import { secureAnimal } from '@/app/actions/vet'
-import type { PetWithPhotos, Match, VetProfile, PetVaccination, PetMedicalRecord } from '@/lib/types'
+import type { PetWithPhotos, Match, VetProfile, PetVaccination, PetMedicalRecord, VetDocument } from '@/lib/types'
 import type { Metadata } from 'next'
 import { startConversation } from '@/app/actions/chat'
 import { getTranslations } from 'next-intl/server'
@@ -126,16 +126,26 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
   const isLost = pet.type === 'lost'
   const profileUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://findmypet.app'}/pets/${id}`
 
-  // Fetch medical data — only for the owner, parallel
-  const [{ data: rawVaccinations }, { data: rawRecords }] = isOwner
+  // Fetch medical data + vet documents — only for the owner, parallel
+  const [{ data: rawVaccinations }, { data: rawRecords }, { data: rawVetDocs }] = isOwner
     ? await Promise.all([
         supabase.from('pet_vaccinations').select('*').eq('pet_id', id).order('date_given', { ascending: false }),
         supabase.from('pet_medical_records').select('*').eq('pet_id', id).order('date', { ascending: false }),
+        supabase.from('vet_documents').select('*, vet_profile:vet_profiles(vet_name, clinic_name)').eq('pet_id', id).order('created_at', { ascending: false }),
       ])
-    : [{ data: [] }, { data: [] }]
+    : [{ data: [] }, { data: [] }, { data: [] }]
 
   const vaccinations = (rawVaccinations ?? []) as PetVaccination[]
   const medicalRecords = (rawRecords ?? []) as PetMedicalRecord[]
+  const vetDocuments = (rawVetDocs ?? []) as VetDocument[]
+
+  // Pre-generate signed download URLs for vet documents (1h expiry)
+  const vetDocsWithUrls = isOwner
+    ? await Promise.all(vetDocuments.map(async doc => {
+        const { data } = await supabase.storage.from('pet-documents').createSignedUrl(doc.document_path, 3600)
+        return { ...doc, signedUrl: data?.signedUrl ?? null }
+      }))
+    : []
   const petName = pet.name ?? ts(pet.species as 'dog' | 'cat' | 'bird' | 'rabbit' | 'other')
 
   // Age calculation
@@ -531,6 +541,51 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
                 <MedicalRecordsSection petId={id} records={medicalRecords} />
               </div>
             </div>
+
+            {vetDocsWithUrls.length > 0 && (
+              <div className={sectionCls}>
+                <div className={sectionHeaderCls}>
+                  <span className="text-base">📎</span>
+                  <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm flex-1">
+                    {tv('vet_documents')}
+                  </h2>
+                  <span className="text-xs bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full">
+                    {vetDocsWithUrls.length}
+                  </span>
+                </div>
+                <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {vetDocsWithUrls.map(doc => (
+                    <div key={doc.id} className="px-5 py-4 flex items-start gap-3">
+                      <span className="text-xl shrink-0 mt-0.5">📋</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">{doc.title}</p>
+                        {doc.vet_profile && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                            {doc.vet_profile.vet_name} · {doc.vet_profile.clinic_name}
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                          {new Date(doc.created_at).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                        {doc.notes && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">{doc.notes}</p>
+                        )}
+                      </div>
+                      {doc.signedUrl && (
+                        <a
+                          href={doc.signedUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 text-xs bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900 px-3 py-1.5 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900 transition"
+                        >
+                          ⬇ PDF
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
 
