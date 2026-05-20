@@ -13,6 +13,7 @@ import { getTranslations } from 'next-intl/server'
 import ShareButton from '@/components/ShareButton'
 import VaccinationSection from '@/components/medical/VaccinationSection'
 import MedicalRecordsSection from '@/components/medical/MedicalRecordsSection'
+import QrChipCode from '@/components/QrChipCode'
 
 const SPECIES_EMOJI: Record<string, string> = {
   dog: '🐕', cat: '🐈', bird: '🐦', rabbit: '🐇', other: '🐾',
@@ -123,6 +124,7 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
 
   const isOwner = user?.id === pet.user_id
   const isLost = pet.type === 'lost'
+  const profileUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://findmypet.app'}/pets/${id}`
 
   // Fetch medical data — only for the owner, parallel
   const [{ data: rawVaccinations }, { data: rawRecords }] = isOwner
@@ -252,6 +254,9 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
                   <span className="text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-full font-medium font-mono">
                     🏷️ {pet.chip_id}
                   </span>
+                )}
+                {(pet.chip_id || isOwner) && (
+                  <QrChipCode chipId={pet.chip_id} petName={petName} profileUrl={profileUrl} />
                 )}
                 {pet.is_neutered && (
                   <span className="text-xs bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-100 dark:border-teal-900 px-3 py-1.5 rounded-full font-medium">
