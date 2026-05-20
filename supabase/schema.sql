@@ -357,6 +357,73 @@ alter table pets add column if not exists character text;
 alter table pets add column if not exists allergies text;
 alter table pets add column if not exists is_neutered boolean;
 
+-- ============================================================
+-- Sprint C — Medical history
+-- ============================================================
+
+create table if not exists pet_vaccinations (
+  id uuid primary key default gen_random_uuid(),
+  pet_id uuid references pets(id) on delete cascade not null,
+  user_id uuid references profiles(id) on delete cascade not null,
+  name text not null,
+  date_given date not null,
+  next_due date,
+  vet_name text,
+  batch_number text,
+  notes text,
+  created_at timestamptz default now()
+);
+
+alter table pet_vaccinations enable row level security;
+create index if not exists pet_vaccinations_pet_id_idx on pet_vaccinations(pet_id);
+
+drop policy if exists "vaccinations_select_owner" on pet_vaccinations;
+drop policy if exists "vaccinations_insert_owner" on pet_vaccinations;
+drop policy if exists "vaccinations_delete_owner" on pet_vaccinations;
+create policy "vaccinations_select_owner" on pet_vaccinations for select using (auth.uid() = user_id);
+create policy "vaccinations_insert_owner" on pet_vaccinations for insert with check (auth.uid() = user_id);
+create policy "vaccinations_delete_owner" on pet_vaccinations for delete using (auth.uid() = user_id);
+
+create table if not exists pet_medical_records (
+  id uuid primary key default gen_random_uuid(),
+  pet_id uuid references pets(id) on delete cascade not null,
+  user_id uuid references profiles(id) on delete cascade not null,
+  type text check (type in ('visit', 'treatment', 'surgery', 'test', 'prescription', 'other')) not null default 'visit',
+  title text not null,
+  date date not null,
+  vet_name text,
+  clinic_name text,
+  notes text,
+  document_path text,
+  created_at timestamptz default now()
+);
+
+alter table pet_medical_records enable row level security;
+create index if not exists pet_medical_records_pet_id_idx on pet_medical_records(pet_id);
+
+drop policy if exists "medical_select_owner" on pet_medical_records;
+drop policy if exists "medical_insert_owner" on pet_medical_records;
+drop policy if exists "medical_delete_owner" on pet_medical_records;
+create policy "medical_select_owner" on pet_medical_records for select using (auth.uid() = user_id);
+create policy "medical_insert_owner" on pet_medical_records for insert with check (auth.uid() = user_id);
+create policy "medical_delete_owner" on pet_medical_records for delete using (auth.uid() = user_id);
+
+-- Private storage for pet documents (PDFs) — user-scoped
+insert into storage.buckets (id, name, public)
+values ('pet-documents', 'pet-documents', false)
+on conflict (id) do nothing;
+
+drop policy if exists "pet_docs_select_own" on storage.objects;
+drop policy if exists "pet_docs_insert_own" on storage.objects;
+drop policy if exists "pet_docs_delete_own" on storage.objects;
+
+create policy "pet_docs_select_own" on storage.objects
+  for select using (bucket_id = 'pet-documents' and auth.uid()::text = (storage.foldername(name))[1]);
+create policy "pet_docs_insert_own" on storage.objects
+  for insert with check (bucket_id = 'pet-documents' and auth.role() = 'authenticated' and auth.uid()::text = (storage.foldername(name))[1]);
+create policy "pet_docs_delete_own" on storage.objects
+  for delete using (bucket_id = 'pet-documents' and auth.uid()::text = (storage.foldername(name))[1]);
+
 -- Storage bucket for pet photos
 insert into storage.buckets (id, name, public)
 values ('pet-photos', 'pet-photos', true)
