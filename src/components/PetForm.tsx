@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { createPet } from '@/app/actions/pets'
 import LocationPicker from './LocationPicker'
 import { useTranslations } from 'next-intl'
-import type { PetSpecies, PetType } from '@/lib/types'
+import type { PetSpecies, PetType, PetGender } from '@/lib/types'
 
 export default function PetForm({ type }: { type: PetType }) {
   const t = useTranslations('form')
@@ -25,6 +25,14 @@ export default function PetForm({ type }: { type: PetType }) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  // Profile fields
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [gender, setGender] = useState<PetGender>('unknown')
+  const [birthDate, setBirthDate] = useState('')
+  const [chipId, setChipId] = useState('')
+  const [character, setCharacter] = useState('')
+  const [allergies, setAllergies] = useState('')
+  const [isNeutered, setIsNeutered] = useState<boolean | null>(null)
 
   const SPECIES_LIST: { value: PetSpecies; emoji: string }[] = [
     { value: 'dog', emoji: '🐕' },
@@ -84,6 +92,12 @@ export default function PetForm({ type }: { type: PetType }) {
         contact_phone: contactPhone.trim(),
         contact_email: contactEmail.trim(),
         photo_paths: photoPaths,
+        gender,
+        birth_date: birthDate,
+        chip_id: chipId.trim(),
+        character: character.trim(),
+        allergies: allergies.trim(),
+        is_neutered: isNeutered,
       })
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Nieznany błąd'
@@ -204,6 +218,115 @@ export default function PetForm({ type }: { type: PetType }) {
                 )}
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── Pet Profile (optional collapsible) ── */}
+      <div className="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setProfileOpen(o => !o)}
+          className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+        >
+          <span>🐾 {t('pet_profile')}</span>
+          <span className="text-gray-400 text-xs">{profileOpen ? '▲' : '▼'}</span>
+        </button>
+
+        {profileOpen && (
+          <div className="px-4 pb-4 space-y-4 border-t border-gray-100 dark:border-gray-800 pt-4">
+            {/* Gender */}
+            <div>
+              <label className={labelCls}>{t('gender')}</label>
+              <div className="flex gap-2 mt-1">
+                {(['unknown', 'male', 'female'] as PetGender[]).map(g => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => setGender(g)}
+                    className={`flex-1 py-2 px-3 rounded-xl border text-sm font-medium transition ${
+                      gender === g
+                        ? 'border-orange-400 bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300'
+                        : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300'
+                    }`}
+                  >
+                    {t(`gender_${g}` as 'gender_unknown' | 'gender_male' | 'gender_female')}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Birth date + chip in 2 cols */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className={labelCls}>{t('birth_date')}</label>
+                <input
+                  type="date"
+                  value={birthDate}
+                  onChange={e => setBirthDate(e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>{t('chip_id')}</label>
+                <input
+                  type="text"
+                  value={chipId}
+                  onChange={e => setChipId(e.target.value.replace(/\D/g, '').slice(0, 15))}
+                  placeholder="123456789012345"
+                  maxLength={15}
+                  className={`${inputCls} font-mono`}
+                />
+              </div>
+            </div>
+
+            {/* Character */}
+            <div>
+              <label className={labelCls}>{t('character')}</label>
+              <textarea
+                value={character}
+                onChange={e => setCharacter(e.target.value)}
+                rows={2}
+                placeholder="np. przyjazny, energiczny, lubi dzieci..."
+                className={`${inputCls} resize-none`}
+              />
+            </div>
+
+            {/* Allergies */}
+            <div>
+              <label className={labelCls}>{t('allergies')}</label>
+              <input
+                type="text"
+                value={allergies}
+                onChange={e => setAllergies(e.target.value)}
+                placeholder="np. kurczak, pyłki..."
+                className={inputCls}
+              />
+            </div>
+
+            {/* Neutered toggle */}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsNeutered(n => n === null ? true : n === true ? false : null)}
+                className={`w-10 h-6 rounded-full transition-all duration-200 relative shrink-0 ${
+                  isNeutered === true
+                    ? 'bg-teal-500'
+                    : isNeutered === false
+                    ? 'bg-gray-200 dark:bg-gray-700'
+                    : 'bg-gray-200 dark:bg-gray-700'
+                }`}
+              >
+                <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-200 ${
+                  isNeutered === true ? 'left-5' : 'left-1'
+                }`} />
+              </button>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                {t('is_neutered')}
+                {isNeutered === true && <span className="ml-1 text-teal-600 dark:text-teal-400 font-medium">✓</span>}
+              </span>
+            </div>
           </div>
         )}
       </div>
