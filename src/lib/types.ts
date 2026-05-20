@@ -145,6 +145,37 @@ export interface VetProfile {
   updated_at: string
 }
 
+// ── Medical history ──────────────────────────────────────────
+
+export interface PetVaccination {
+  id: string
+  pet_id: string
+  user_id: string
+  name: string
+  date_given: string
+  next_due: string | null
+  vet_name: string | null
+  batch_number: string | null
+  notes: string | null
+  created_at: string
+}
+
+export type MedicalRecordType = 'visit' | 'treatment' | 'surgery' | 'test' | 'prescription' | 'other'
+
+export interface PetMedicalRecord {
+  id: string
+  pet_id: string
+  user_id: string
+  type: MedicalRecordType
+  title: string
+  date: string
+  vet_name: string | null
+  clinic_name: string | null
+  notes: string | null
+  document_path: string | null
+  created_at: string
+}
+
 export interface CreateVetProfileData {
   clinic_name: string
   vet_name: string
