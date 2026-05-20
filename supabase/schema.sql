@@ -202,6 +202,43 @@ create policy "messages_insert_participants" on messages for insert with check (
   )
 );
 
+-- ============================================================
+-- User contacts
+-- ============================================================
+
+create table if not exists user_contacts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references profiles(id) on delete cascade not null,
+  type text check (type in ('owner', 'vet', 'shelter', 'emergency', 'other')) not null default 'other',
+  name text not null,
+  phone text,
+  email text,
+  note text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table user_contacts enable row level security;
+
+create index if not exists user_contacts_user_id_idx on user_contacts(user_id);
+
+create policy "contacts_select_own" on user_contacts for select using (auth.uid() = user_id);
+create policy "contacts_insert_own" on user_contacts for insert with check (auth.uid() = user_id);
+create policy "contacts_update_own" on user_contacts for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "contacts_delete_own" on user_contacts for delete using (auth.uid() = user_id);
+
+create or replace function update_user_contacts_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+create trigger user_contacts_updated_at
+  before update on user_contacts
+  for each row execute function update_user_contacts_updated_at();
+
 -- Auto-create profile on user signup
 create or replace function handle_new_user()
 returns trigger as $$

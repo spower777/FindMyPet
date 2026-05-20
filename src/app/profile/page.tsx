@@ -4,13 +4,23 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { resolvePet, deletePet } from '@/app/actions/pets'
 import type { Metadata } from 'next'
-import type { PetWithPhotos } from '@/lib/types'
+import type { PetWithPhotos, UserContact } from '@/lib/types'
 import DeletePetForm from './DeletePetForm'
+import AddContactForm from './AddContactForm'
+import DeleteContactButton from './DeleteContactButton'
 
 export const metadata: Metadata = { title: 'Mój profil' }
 
 const SPECIES_EMOJI: Record<string, string> = {
   dog: '🐕', cat: '🐈', bird: '🐦', rabbit: '🐇', other: '🐾',
+}
+
+const CONTACT_TYPE_LABEL: Record<string, { label: string; emoji: string; color: string }> = {
+  owner:     { label: 'Właściciel',        emoji: '👤', color: 'bg-blue-100 text-blue-700' },
+  vet:       { label: 'Weterynarz',        emoji: '🏥', color: 'bg-green-100 text-green-700' },
+  shelter:   { label: 'Schronisko',        emoji: '🏠', color: 'bg-purple-100 text-purple-700' },
+  emergency: { label: 'Kontakt awaryjny',  emoji: '🚨', color: 'bg-red-100 text-red-700' },
+  other:     { label: 'Inny',              emoji: '📋', color: 'bg-gray-100 text-gray-600' },
 }
 
 export default async function ProfilePage() {
@@ -20,11 +30,18 @@ export default async function ProfilePage() {
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 
-  const { data: pets } = await supabase
-    .from('pets')
-    .select('*, photos:pet_photos(*)')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
+  const [{ data: pets }, { data: contacts }] = await Promise.all([
+    supabase
+      .from('pets')
+      .select('*, photos:pet_photos(*)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('user_contacts')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: true }),
+  ])
 
   function getPhotoUrl(path: string) {
     return `${supabaseUrl}/storage/v1/object/public/pet-photos/${path}`
@@ -38,6 +55,7 @@ export default async function ProfilePage() {
 
   const active = petsWithPhotos.filter(p => p.status === 'active')
   const resolved = petsWithPhotos.filter(p => p.status === 'resolved')
+  const userContacts = (contacts ?? []) as UserContact[]
 
   return (
     <div className="max-w-2xl mx-auto w-full px-4 py-8 space-y-8">
@@ -104,12 +122,51 @@ export default async function ProfilePage() {
       )}
 
       {petsWithPhotos.length === 0 && (
-        <div className="text-center py-16 text-gray-400">
+        <div className="text-center py-10 text-gray-400">
           <p className="text-4xl mb-3">🐾</p>
           <p className="font-medium">Brak zgłoszeń</p>
           <p className="text-sm mt-1">Dodaj pierwsze zgłoszenie powyżej</p>
         </div>
       )}
+
+      {/* Contacts */}
+      <section>
+        <h2 className="font-semibold text-gray-900 mb-3">Kontakty</h2>
+        <div className="space-y-2 mb-3">
+          {userContacts.map(contact => {
+            const meta = CONTACT_TYPE_LABEL[contact.type] ?? CONTACT_TYPE_LABEL.other
+            return (
+              <div key={contact.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${meta.color}`}>
+                        {meta.emoji} {meta.label}
+                      </span>
+                    </div>
+                    <p className="font-semibold text-gray-900 text-sm">{contact.name}</p>
+                    {contact.phone && (
+                      <a href={`tel:${contact.phone}`} className="text-xs text-orange-500 hover:underline block mt-0.5">
+                        📞 {contact.phone}
+                      </a>
+                    )}
+                    {contact.email && (
+                      <a href={`mailto:${contact.email}`} className="text-xs text-orange-500 hover:underline block mt-0.5">
+                        ✉️ {contact.email}
+                      </a>
+                    )}
+                    {contact.note && (
+                      <p className="text-xs text-gray-400 mt-1">{contact.note}</p>
+                    )}
+                  </div>
+                  <DeleteContactButton contactId={contact.id} />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+        <AddContactForm />
+      </section>
     </div>
   )
 }

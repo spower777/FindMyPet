@@ -90,6 +90,28 @@ export interface ConversationDetail {
   inquirer: ProfileSummary | null
 }
 
+export type ContactType = 'owner' | 'vet' | 'shelter' | 'emergency' | 'other'
+
+export interface UserContact {
+  id: string
+  user_id: string
+  type: ContactType
+  name: string
+  phone: string | null
+  email: string | null
+  note: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateContactData {
+  type: ContactType
+  name: string
+  phone: string
+  email: string
+  note: string
+}
+
 export interface CreatePetData {
   type: PetType
   species: PetSpecies

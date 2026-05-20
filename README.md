@@ -108,6 +108,12 @@ src/
     └── types.ts              # Typy TypeScript
 ```
 
+## Future / Roadmap
+
+- **TODO: live image search / AI pet recognition** — wyszukiwanie zwierząt na żywo po zdjęciu (upload foto → AI szuka pasujących zgłoszeń w bazie)
+- Powiadomienia push o nowych zgłoszeniach w okolicy
+- Moderacja zgłoszeń
+
 ## Licencja
 
 Copyright © 2026 Sebastian Repela. Wszelkie prawa zastrzeżone.  
