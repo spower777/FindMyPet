@@ -47,7 +47,13 @@
     "description": "Beschreibung",
     "matches": "KI-Treffer",
     "match_accept": "Das ist mein Tier",
-    "match_reject": "Anderes Tier"
+    "match_reject": "Anderes Tier",
+    "delete_confirm": "Meldung löschen?",
+    "contact_label": "Kontakt",
+    "location_label": "Letzter Standort",
+    "ai_matches": "KI-Treffer ({n})",
+    "no_ai_matches": "Noch keine KI-Treffer. Sie erscheinen automatisch bei ähnlichen Meldungen.",
+    "match_score": "Übereinstimmung"
   },
   "species": {
     "dog": "Hund",
@@ -89,7 +95,11 @@
     "no_messages_hint": "Kontaktiere den Besitzer über die Meldeseite",
     "you": "Du",
     "placeholder": "Nachricht schreiben…",
-    "send": "Senden"
+    "send": "Senden",
+    "first_message": "Erste Nachricht schreiben",
+    "user": "Benutzer",
+    "lost_pet": "vermisst",
+    "found_pet": "gefunden"
   },
   "auth": {
     "login_title": "Anmelden",
@@ -113,6 +123,10 @@
     "email": "E-Mail",
     "photos": "Fotos",
     "submit_lost": "Als vermisst melden",
-    "submit_found": "Als gefunden melden"
+    "submit_found": "Als gefunden melden",
+    "name_placeholder": "Name *",
+    "phone_placeholder": "Telefon",
+    "email_placeholder": "E-Mail",
+    "note_placeholder": "Notiz"
   }
 }

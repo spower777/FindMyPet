@@ -47,7 +47,13 @@
     "description": "Opis",
     "matches": "Potencjalne dopasowania AI",
     "match_accept": "To mój pupil",
-    "match_reject": "Inne zwierzę"
+    "match_reject": "Inne zwierzę",
+    "delete_confirm": "Usunąć to zgłoszenie?",
+    "contact_label": "Kontakt",
+    "location_label": "Ostatnia lokalizacja",
+    "ai_matches": "Potencjalne dopasowania AI ({n})",
+    "no_ai_matches": "Brak dopasowań AI. Zostaną automatycznie dodane gdy pojawią się podobne zgłoszenia.",
+    "match_score": "Trafność"
   },
   "species": {
     "dog": "Pies",
@@ -89,7 +95,11 @@
     "no_messages_hint": "Napisz do właściciela ze strony zgłoszenia",
     "you": "Ty",
     "placeholder": "Napisz wiadomość…",
-    "send": "Wyślij"
+    "send": "Wyślij",
+    "first_message": "Napisz pierwszą wiadomość",
+    "user": "Użytkownik",
+    "lost_pet": "zaginiony",
+    "found_pet": "znaleziony"
   },
   "auth": {
     "login_title": "Zaloguj się",
@@ -113,6 +123,10 @@
     "email": "Email kontaktowy",
     "photos": "Zdjęcia",
     "submit_lost": "Zgłoś zaginięcie",
-    "submit_found": "Zgłoś znalezienie"
+    "submit_found": "Zgłoś znalezienie",
+    "name_placeholder": "Imię / nazwa *",
+    "phone_placeholder": "Telefon",
+    "email_placeholder": "Email",
+    "note_placeholder": "Notatka"
   }
 }

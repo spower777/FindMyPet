@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import ChatWindow from './ChatWindow'
+import { getTranslations } from 'next-intl/server'
 import type {
   ChatMessage,
   ConversationDetail,
@@ -61,18 +62,18 @@ export default async function ChatPage({ params }: { params: Promise<{ id: strin
   const messages = (rawMessages ?? []) as ChatMessage[]
   const other = conv.pet_owner?.id === user.id ? conv.inquirer : conv.pet_owner
   const pet = conv.pet
+  const t = await getTranslations('chat')
 
   return (
     <div className="max-w-2xl mx-auto w-full px-4 py-6 flex flex-col h-[calc(100vh-64px)]">
-      {/* Header */}
       <div className="flex items-center gap-3 mb-4 shrink-0">
         <Link href="/chat" className="text-sm text-orange-500 hover:text-orange-600">←</Link>
         <div className="flex-1">
-          <p className="font-semibold text-gray-900 text-sm">
-            {other?.full_name ?? other?.email ?? 'Użytkownik'}
+          <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
+            {other?.full_name ?? other?.email ?? t('user')}
           </p>
           <Link href={`/pets/${pet?.id}`} className="text-xs text-orange-500 hover:underline">
-            re: {pet?.name ?? pet?.species} ({pet?.type === 'lost' ? 'zaginiony' : 'znaleziony'}) →
+            re: {pet?.name ?? pet?.species} ({pet?.type === 'lost' ? t('lost_pet') : t('found_pet')}) →
           </Link>
         </div>
       </div>

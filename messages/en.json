@@ -47,7 +47,13 @@
     "description": "Description",
     "matches": "AI potential matches",
     "match_accept": "This is my pet",
-    "match_reject": "Different animal"
+    "match_reject": "Different animal",
+    "delete_confirm": "Delete this report?",
+    "contact_label": "Contact",
+    "location_label": "Last location",
+    "ai_matches": "AI potential matches ({n})",
+    "no_ai_matches": "No AI matches yet. They will appear automatically when similar reports are added.",
+    "match_score": "Score"
   },
   "species": {
     "dog": "Dog",
@@ -89,7 +95,11 @@
     "no_messages_hint": "Message the owner from the report page",
     "you": "You",
     "placeholder": "Write a message…",
-    "send": "Send"
+    "send": "Send",
+    "first_message": "Write the first message",
+    "user": "User",
+    "lost_pet": "lost",
+    "found_pet": "found"
   },
   "auth": {
     "login_title": "Sign in",
@@ -113,6 +123,10 @@
     "email": "Contact email",
     "photos": "Photos",
     "submit_lost": "Report as lost",
-    "submit_found": "Report as found"
+    "submit_found": "Report as found",
+    "name_placeholder": "Name *",
+    "phone_placeholder": "Phone",
+    "email_placeholder": "Email",
+    "note_placeholder": "Note"
   }
 }

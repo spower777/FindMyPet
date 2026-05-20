@@ -2,27 +2,29 @@
 
 import { useState, useTransition } from 'react'
 import { createContact } from '@/app/actions/contacts'
+import { useTranslations } from 'next-intl'
 import type { ContactType } from '@/lib/types'
 
-const CONTACT_TYPES: { value: ContactType; label: string; emoji: string }[] = [
-  { value: 'owner', label: 'Właściciel', emoji: '👤' },
-  { value: 'vet', label: 'Weterynarz', emoji: '🏥' },
-  { value: 'shelter', label: 'Schronisko', emoji: '🏠' },
-  { value: 'emergency', label: 'Kontakt awaryjny', emoji: '🚨' },
-  { value: 'other', label: 'Inny', emoji: '📋' },
-]
+const CONTACT_TYPE_EMOJIS: Record<ContactType, string> = {
+  owner: '👤', vet: '🏥', shelter: '🏠', emergency: '🚨', other: '📋',
+}
 
 export default function AddContactForm() {
+  const t = useTranslations('profile')
+  const tc = useTranslations('contact_types')
+  const tf = useTranslations('form')
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+
+  const contactTypes: ContactType[] = ['owner', 'vet', 'shelter', 'emergency', 'other']
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
     const fd = new FormData(e.currentTarget)
     const name = (fd.get('name') as string).trim()
-    if (!name) { setError('Imię / nazwa jest wymagana'); return }
+    if (!name) { setError(t('name_required')); return }
 
     startTransition(async () => {
       try {
@@ -36,7 +38,7 @@ export default function AddContactForm() {
         setOpen(false)
         ;(e.target as HTMLFormElement).reset()
       } catch {
-        setError('Błąd podczas zapisywania kontaktu')
+        setError(t('contact_error'))
       }
     })
   }
@@ -45,68 +47,40 @@ export default function AddContactForm() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="w-full border-2 border-dashed border-gray-200 rounded-2xl py-3 text-sm text-gray-400 hover:border-orange-300 hover:text-orange-400 transition"
+        className="w-full border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl py-3 text-sm text-gray-400 hover:border-orange-300 hover:text-orange-400 transition"
       >
-        + Dodaj kontakt
+        {t('add_contact')}
       </button>
     )
   }
 
-  return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-orange-200 shadow-sm p-4 space-y-3">
-      <p className="font-semibold text-gray-900 text-sm">Nowy kontakt</p>
+  const inputCls = 'w-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300'
 
-      <select
-        name="type"
-        defaultValue="other"
-        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
-      >
-        {CONTACT_TYPES.map(t => (
-          <option key={t.value} value={t.value}>{t.emoji} {t.label}</option>
+  return (
+    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 rounded-2xl border border-orange-200 dark:border-orange-900 shadow-sm p-4 space-y-3">
+      <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{t('new_contact')}</p>
+
+      <select name="type" defaultValue="other" className={inputCls}>
+        {contactTypes.map(type => (
+          <option key={type} value={type}>
+            {CONTACT_TYPE_EMOJIS[type]} {tc(type)}
+          </option>
         ))}
       </select>
 
-      <input
-        name="name"
-        placeholder="Imię / nazwa *"
-        required
-        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
-      />
-      <input
-        name="phone"
-        type="tel"
-        placeholder="Telefon"
-        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
-      />
-      <input
-        name="email"
-        type="email"
-        placeholder="Email"
-        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
-      />
-      <textarea
-        name="note"
-        placeholder="Notatka"
-        rows={2}
-        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 resize-none"
-      />
+      <input name="name" placeholder={tf('name_placeholder')} required className={inputCls} />
+      <input name="phone" type="tel" placeholder={tf('phone_placeholder')} className={inputCls} />
+      <input name="email" type="email" placeholder={tf('email_placeholder')} className={inputCls} />
+      <textarea name="note" placeholder={tf('note_placeholder')} rows={2} className={`${inputCls} resize-none`} />
 
       {error && <p className="text-xs text-red-500">{error}</p>}
 
       <div className="flex gap-2">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold py-2 rounded-xl text-sm transition"
-        >
-          {isPending ? 'Zapisuję…' : 'Zapisz'}
+        <button type="submit" disabled={isPending} className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold py-2 rounded-xl text-sm transition">
+          {isPending ? t('saving') : t('save')}
         </button>
-        <button
-          type="button"
-          onClick={() => { setOpen(false); setError(null) }}
-          className="px-4 py-2 rounded-xl text-sm text-gray-500 hover:bg-gray-100 transition"
-        >
-          Anuluj
+        <button type="button" onClick={() => { setOpen(false); setError(null) }} className="px-4 py-2 rounded-xl text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+          {t('cancel')}
         </button>
       </div>
     </form>

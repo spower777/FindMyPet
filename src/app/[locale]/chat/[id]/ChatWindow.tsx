@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { sendMessage } from '@/app/actions/chat'
+import { useTranslations } from 'next-intl'
 import type { ChatMessage } from '@/lib/types'
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function ChatWindow({ conversationId, initialMessages, currentUserId }: Props) {
+  const t = useTranslations('chat')
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages)
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
@@ -47,7 +49,6 @@ export default function ChatWindow({ conversationId, initialMessages, currentUse
     setSending(true)
     const content = input.trim()
     setInput('')
-    // Optimistic update
     setMessages(prev => [...prev, {
       id: crypto.randomUUID(),
       conversation_id: conversationId,
@@ -63,17 +64,16 @@ export default function ChatWindow({ conversationId, initialMessages, currentUse
   }
 
   function formatTime(dateStr: string) {
-    return new Date(dateStr).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
+    return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }
 
   return (
     <>
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto space-y-2 py-2">
         {messages.length === 0 && (
           <div className="text-center py-12 text-gray-400">
             <p className="text-3xl mb-2">👋</p>
-            <p className="text-sm">Napisz pierwszą wiadomość</p>
+            <p className="text-sm">{t('first_message')}</p>
           </div>
         )}
         {messages.map(msg => {
@@ -83,7 +83,7 @@ export default function ChatWindow({ conversationId, initialMessages, currentUse
               <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm ${
                 isMe
                   ? 'bg-orange-500 text-white rounded-br-md'
-                  : 'bg-white border border-gray-100 text-gray-900 rounded-bl-md shadow-sm'
+                  : 'bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-md shadow-sm'
               }`}>
                 <p className="leading-relaxed">{msg.content}</p>
                 <p className={`text-xs mt-1 ${isMe ? 'text-orange-200' : 'text-gray-400'}`}>
@@ -96,21 +96,20 @@ export default function ChatWindow({ conversationId, initialMessages, currentUse
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
-      <form onSubmit={handleSend} className="flex gap-2 pt-3 border-t border-gray-100 shrink-0">
+      <form onSubmit={handleSend} className="flex gap-2 pt-3 border-t border-gray-100 dark:border-gray-800 shrink-0">
         <input
           type="text"
           value={input}
           onChange={e => setInput(e.target.value)}
-          placeholder="Wpisz wiadomość..."
-          className="flex-1 border border-gray-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-400 transition"
+          placeholder={t('placeholder')}
+          className="flex-1 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-400 transition"
         />
         <button
           type="submit"
           disabled={!input.trim() || sending}
           className="bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold px-5 py-2.5 rounded-2xl text-sm transition active:scale-95"
         >
-          Wyślij
+          {t('send')}
         </button>
       </form>
     </>

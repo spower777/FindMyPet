@@ -47,7 +47,13 @@
     "description": "描述",
     "matches": "AI 匹配",
     "match_accept": "这是我的宠物",
-    "match_reject": "不同动物"
+    "match_reject": "不同动物",
+    "delete_confirm": "删除此公告？",
+    "contact_label": "联系方式",
+    "location_label": "最后位置",
+    "ai_matches": "AI 匹配 ({n})",
+    "no_ai_matches": "暂无 AI 匹配。出现相似公告时将自动添加。",
+    "match_score": "匹配度"
   },
   "species": {
     "dog": "狗",
@@ -89,7 +95,11 @@
     "no_messages_hint": "从公告页面联系主人",
     "you": "你",
     "placeholder": "写消息…",
-    "send": "发送"
+    "send": "发送",
+    "first_message": "写第一条消息",
+    "user": "用户",
+    "lost_pet": "走失",
+    "found_pet": "找到"
   },
   "auth": {
     "login_title": "登录",
@@ -113,6 +123,10 @@
     "email": "联系邮箱",
     "photos": "照片",
     "submit_lost": "报告走失",
-    "submit_found": "报告找到"
+    "submit_found": "报告找到",
+    "name_placeholder": "姓名 *",
+    "phone_placeholder": "电话",
+    "email_placeholder": "邮箱",
+    "note_placeholder": "备注"
   }
 }

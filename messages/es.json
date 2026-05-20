@@ -47,7 +47,13 @@
     "description": "Descripción",
     "matches": "Coincidencias AI",
     "match_accept": "Es mi mascota",
-    "match_reject": "Otro animal"
+    "match_reject": "Otro animal",
+    "delete_confirm": "¿Eliminar este reporte?",
+    "contact_label": "Contacto",
+    "location_label": "Última ubicación",
+    "ai_matches": "Coincidencias AI ({n})",
+    "no_ai_matches": "Sin coincidencias AI aún. Aparecerán automáticamente con reportes similares.",
+    "match_score": "Puntuación"
   },
   "species": {
     "dog": "Perro",
@@ -89,7 +95,11 @@
     "no_messages_hint": "Escribe al dueño desde la página del reporte",
     "you": "Tú",
     "placeholder": "Escribe un mensaje…",
-    "send": "Enviar"
+    "send": "Enviar",
+    "first_message": "Escribe el primer mensaje",
+    "user": "Usuario",
+    "lost_pet": "perdido",
+    "found_pet": "encontrado"
   },
   "auth": {
     "login_title": "Iniciar sesión",
@@ -113,6 +123,10 @@
     "email": "Email de contacto",
     "photos": "Fotos",
     "submit_lost": "Reportar como perdido",
-    "submit_found": "Reportar como encontrado"
+    "submit_found": "Reportar como encontrado",
+    "name_placeholder": "Nombre *",
+    "phone_placeholder": "Teléfono",
+    "email_placeholder": "Email",
+    "note_placeholder": "Nota"
   }
 }
