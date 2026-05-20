@@ -3,23 +3,16 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { sendMessage } from '@/app/actions/chat'
-
-interface Message {
-  id: string
-  conversation_id: string
-  sender_id: string
-  content: string
-  created_at: string
-}
+import type { ChatMessage } from '@/lib/types'
 
 interface Props {
   conversationId: string
-  initialMessages: Message[]
+  initialMessages: ChatMessage[]
   currentUserId: string
 }
 
 export default function ChatWindow({ conversationId, initialMessages, currentUserId }: Props) {
-  const [messages, setMessages] = useState<Message[]>(initialMessages)
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages)
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -40,7 +33,7 @@ export default function ChatWindow({ conversationId, initialMessages, currentUse
       }, (payload) => {
         setMessages(prev => {
           if (prev.find(m => m.id === payload.new.id)) return prev
-          return [...prev, payload.new as Message]
+          return [...prev, payload.new as ChatMessage]
         })
       })
       .subscribe()

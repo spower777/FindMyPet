@@ -2,6 +2,23 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import type {
+  ConversationListItem,
+  ConversationPetSummary,
+  ProfileSummary,
+} from '@/lib/types'
+
+type Relation<T> = T | T[] | null
+
+interface RawConversationListItem extends Omit<ConversationListItem, 'pet' | 'pet_owner' | 'inquirer'> {
+  pet: Relation<ConversationPetSummary>
+  pet_owner: Relation<ProfileSummary>
+  inquirer: Relation<ProfileSummary>
+}
+
+function firstRelation<T>(value: Relation<T>): T | null {
+  return Array.isArray(value) ? value[0] ?? null : value
+}
 
 export const metadata: Metadata = { title: 'Wiadomości' }
 
@@ -10,17 +27,24 @@ export default async function ChatListPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login?next=/chat')
 
-  const { data: conversations } = await supabase
+  const { data } = await supabase
     .from('conversations')
     .select(`
-      id, created_at,
+      id, created_at, updated_at,
       pet:pets(id, name, species, type),
       pet_owner:profiles!conversations_pet_owner_id_fkey(id, email, full_name),
       inquirer:profiles!conversations_inquirer_id_fkey(id, email, full_name),
       messages(content, created_at, sender_id)
     `)
     .or(`pet_owner_id.eq.${user.id},inquirer_id.eq.${user.id}`)
-    .order('created_at', { ascending: false })
+    .order('updated_at', { ascending: false })
+
+  const conversations = ((data ?? []) as unknown as RawConversationListItem[]).map(conv => ({
+    ...conv,
+    pet: firstRelation(conv.pet),
+    pet_owner: firstRelation(conv.pet_owner),
+    inquirer: firstRelation(conv.inquirer),
+  }))
 
   const SPECIES_EMOJI: Record<string, string> = {
     dog: '🐕', cat: '🐈', bird: '🐦', rabbit: '🐇', other: '🐾',
@@ -38,9 +62,9 @@ export default async function ChatListPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {conversations.map((conv: any) => {
+          {conversations.map(conv => {
             const other = conv.pet_owner?.id === user.id ? conv.inquirer : conv.pet_owner
-            const lastMsg = conv.messages?.sort((a: any, b: any) =>
+            const lastMsg = [...(conv.messages ?? [])].sort((a, b) =>
               new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
             )[0]
             return (
@@ -50,7 +74,7 @@ export default async function ChatListPage() {
                 className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 p-4 hover:border-orange-200 hover:shadow-md transition-all"
               >
                 <div className="w-11 h-11 rounded-full bg-orange-100 flex items-center justify-center text-xl shrink-0">
-                  {SPECIES_EMOJI[conv.pet?.species] ?? '🐾'}
+                  {conv.pet ? SPECIES_EMOJI[conv.pet.species] : '🐾'}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">

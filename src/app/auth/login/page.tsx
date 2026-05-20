@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 
@@ -16,19 +16,17 @@ function GoogleIcon() {
 }
 
 function LoginForm() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [message, setMessage] = useState<{ text: string; type: 'error' | 'info' } | null>(null)
-  const [loading, setLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const next = searchParams.get('next') ?? '/'
   const errorParam = searchParams.get('error')
   const supabase = createClient()
-
-  useEffect(() => {
-    if (errorParam) setMessage({ text: `Błąd: ${decodeURIComponent(errorParam)}`, type: 'error' })
-  }, [errorParam])
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [message, setMessage] = useState<{ text: string; type: 'error' | 'info' } | null>(() =>
+    errorParam ? { text: `Błąd: ${decodeURIComponent(errorParam)}`, type: 'error' } : null
+  )
+  const [loading, setLoading] = useState(false)
 
   async function signInWithGoogle() {
     await supabase.auth.signInWithOAuth({

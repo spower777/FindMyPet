@@ -7,6 +7,15 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import type { CreatePetData } from '@/lib/types'
 
+interface MatchOwnership {
+  lost_pet: { user_id: string } | { user_id: string }[] | null
+  found_pet: { user_id: string } | { user_id: string }[] | null
+}
+
+function firstRelation<T>(value: T | T[] | null): T | null {
+  return Array.isArray(value) ? value[0] ?? null : value
+}
+
 export async function createPet(data: CreatePetData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -89,6 +98,26 @@ export async function deletePet(petId: string) {
 
 export async function updateMatchStatus(matchId: string, status: 'accepted' | 'rejected') {
   const supabase = await createClient()
-  await supabase.from('matches').update({ status }).eq('id', matchId)
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { data: match } = await supabase
+    .from('matches')
+    .select(`
+      lost_pet:pets!matches_lost_pet_id_fkey(user_id),
+      found_pet:pets!matches_found_pet_id_fkey(user_id)
+    `)
+    .eq('id', matchId)
+    .single()
+
+  const ownership = match as MatchOwnership | null
+  const lostPet = firstRelation(ownership?.lost_pet ?? null)
+  const foundPet = firstRelation(ownership?.found_pet ?? null)
+  const canUpdate = lostPet?.user_id === user.id || foundPet?.user_id === user.id
+  if (!canUpdate) throw new Error('Unauthorized')
+
+  const { error } = await supabase.from('matches').update({ status }).eq('id', matchId)
+  if (error) throw new Error(error.message)
+
   revalidatePath('/')
 }

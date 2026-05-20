@@ -9,6 +9,7 @@ Aplikacja webowa pomagająca odnaleźć zagubione zwierzęta. Właściciele mog�
 - **Leaflet / OpenStreetMap** — interaktywna mapa bez kosztów
 - **OpenAI Vision** — AI matching zdjęć zwierząt
 - **Web Push** — powiadomienia push o potencjalnych dopasowaniach
+- **Resend** — email alerty o dopasowaniach AI
 - **Tailwind CSS v4**
 
 ## Funkcje
@@ -17,8 +18,11 @@ Aplikacja webowa pomagająca odnaleźć zagubione zwierzęta. Właściciele mog�
 - Formularz zgłoszenia z wyborem lokalizacji na mapie i GPS
 - Upload zdjęć do Supabase Storage
 - AI matching — porównywanie zdjęć i opisów przez OpenAI Vision
+- Email alerty o dopasowaniach AI
 - Web Push notifications dla właścicieli przy nowym dopasowaniu
 - Autentykacja (Supabase Auth — email/hasło)
+- Czat między właścicielem zgłoszenia i osobą pytającą
+- Panel profilu: lista zgłoszeń, oznaczanie jako rozwiązane, usuwanie
 
 ## Uruchomienie lokalne
 
@@ -38,6 +42,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
 
 OPENAI_API_KEY=sk-proj-...
+MATCH_API_SECRET=...
+
+RESEND_API_KEY=re_...
 
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=...
 VAPID_PRIVATE_KEY=...
@@ -56,6 +63,8 @@ npx web-push generate-vapid-keys
 
 W panelu Supabase → SQL Editor → wklej i uruchom `supabase/schema.sql`.
 
+Schema tworzy tabele dla zgłoszeń, zdjęć, dopasowań AI, subskrypcji push oraz czatu (`conversations`, `messages`) z RLS i realtime dla wiadomości.
+
 ### 4. Uruchom dev server
 
 ```bash
@@ -63,6 +72,15 @@ npm run dev
 ```
 
 Aplikacja dostępna pod [http://localhost:3000](http://localhost:3000).
+
+### 5. Kontrole przed deployem
+
+```bash
+npm run lint
+npm run build
+```
+
+Endpoint `POST /api/match` jest przeznaczony do ręcznego/adminowego odpalenia matchingu i wymaga nagłówka `x-match-secret` albo `Authorization: Bearer ...` zgodnego z `MATCH_API_SECRET`.
 
 ## Struktura projektu
 
@@ -73,6 +91,8 @@ src/
 │   ├── report/lost/          # Formularz zgłoszenia zaginionego
 │   ├── report/found/         # Formularz zgłoszenia znalezionego
 │   ├── pets/[id]/            # Szczegóły zgłoszenia
+│   ├── profile/              # Panel użytkownika
+│   ├── chat/                 # Lista rozmów i okno czatu
 │   ├── auth/                 # Login / callback
 │   └── api/
 │       ├── match/            # AI matching endpoint

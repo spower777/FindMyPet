@@ -48,7 +48,7 @@ export default function PetForm({ type }: { type: PetType }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!lat || !lng) { setError('Wybierz lokalizację na mapie'); return }
+    if (lat === null || lng === null) { setError('Wybierz lokalizację na mapie'); return }
     if (!description.trim()) { setError('Opis jest wymagany'); return }
     setSubmitting(true)
     setError(null)

@@ -10,10 +10,18 @@ export async function startConversation(petId: string, petOwnerId: string) {
   if (!user) redirect(`/auth/login?next=/pets/${petId}`)
   if (user.id === petOwnerId) return
 
+  const { data: existing } = await supabase
+    .from('conversations')
+    .select('id')
+    .eq('pet_id', petId)
+    .eq('inquirer_id', user.id)
+    .maybeSingle()
+
+  if (existing) redirect(`/chat/${existing.id}`)
+
   const { data, error } = await supabase
     .from('conversations')
-    .upsert({ pet_id: petId, pet_owner_id: petOwnerId, inquirer_id: user.id },
-      { onConflict: 'pet_id,inquirer_id' })
+    .insert({ pet_id: petId, pet_owner_id: petOwnerId, inquirer_id: user.id })
     .select('id')
     .single()
 
@@ -29,11 +37,13 @@ export async function sendMessage(conversationId: string, content: string) {
   const trimmed = content.trim()
   if (!trimmed) return
 
-  await supabase.from('messages').insert({
+  const { error } = await supabase.from('messages').insert({
     conversation_id: conversationId,
     sender_id: user.id,
     content: trimmed,
   })
+
+  if (error) throw new Error(error.message)
 
   revalidatePath(`/chat/${conversationId}`)
 }

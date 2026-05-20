@@ -320,7 +320,7 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
       </div>
 
       {/* All matches as pet cards for rendering check */}
-      {matchedPets.length === 0 && pet.status === 'active' && (
+      {isOwner && matchedPets.length === 0 && pet.status === 'active' && (
         <p className="text-center text-sm text-gray-400 py-4">
           Brak dopasowań AI. Zostaną automatycznie dodane gdy pojawią się podobne zgłoszenia.
         </p>

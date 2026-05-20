@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { resolvePet, deletePet } from '@/app/actions/pets'
 import type { Metadata } from 'next'
 import type { PetWithPhotos } from '@/lib/types'
+import DeletePetForm from './DeletePetForm'
 
 export const metadata: Metadata = { title: 'Mój profil' }
 
@@ -44,7 +45,8 @@ export default async function ProfilePage() {
       <div className="flex items-center gap-4">
         <div className="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center text-2xl shrink-0">
           {user.user_metadata?.avatar_url ? (
-            <Image src={user.user_metadata.avatar_url} alt="avatar" width={56} height={56} className="rounded-full" />
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={user.user_metadata.avatar_url} alt="avatar" width={56} height={56} className="rounded-full" />
           ) : '🐾'}
         </div>
         <div>
@@ -159,15 +161,7 @@ function PetRow({ pet }: { pet: PetWithPhotos }) {
             </button>
           </form>
         )}
-        <form action={deletePet.bind(null, pet.id)} className="flex-1 border-l border-gray-100">
-          <button
-            type="submit"
-            className="w-full text-xs text-red-400 hover:bg-red-50 py-2.5 transition font-medium"
-            onClick={e => { if (!confirm('Usunąć to zgłoszenie?')) e.preventDefault() }}
-          >
-            Usuń
-          </button>
-        </form>
+        <DeletePetForm petId={pet.id} deletePetAction={deletePet} />
       </div>
     </div>
   )

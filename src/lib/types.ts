@@ -46,6 +46,50 @@ export interface Match {
   found_pet?: PetWithPhotos
 }
 
+export interface ProfileSummary {
+  id: string
+  email: string | null
+  full_name: string | null
+}
+
+export interface ConversationPetSummary {
+  id: string
+  name: string | null
+  species: PetSpecies
+  type: PetType
+}
+
+export interface ChatMessage {
+  id: string
+  conversation_id: string
+  sender_id: string
+  content: string
+  created_at: string
+}
+
+export interface ChatMessagePreview {
+  content: string
+  created_at: string
+  sender_id: string
+}
+
+export interface ConversationListItem {
+  id: string
+  created_at: string
+  updated_at: string
+  pet: ConversationPetSummary | null
+  pet_owner: ProfileSummary | null
+  inquirer: ProfileSummary | null
+  messages: ChatMessagePreview[] | null
+}
+
+export interface ConversationDetail {
+  id: string
+  pet: ConversationPetSummary | null
+  pet_owner: ProfileSummary | null
+  inquirer: ProfileSummary | null
+}
+
 export interface CreatePetData {
   type: PetType
   species: PetSpecies
