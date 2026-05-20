@@ -95,6 +95,7 @@
     "resolved_reports": "Resolved ({n})",
     "no_reports": "No reports",
     "no_reports_hint": "Add your first report above",
+    "my_pets": "My pets",
     "contacts": "Contacts",
     "add_contact": "+ Add contact",
     "new_contact": "New contact",

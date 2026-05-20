@@ -91,22 +91,19 @@ export default async function ProfilePage() {
             )}
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{user.email}</p>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm p-5 text-center">
-          <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{petsWithPhotos.length}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('total')}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm p-5 text-center">
-          <p className="text-3xl font-bold text-orange-500">{active.length}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('active')}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm p-5 text-center">
-          <p className="text-3xl font-bold text-green-500">{resolved.length}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('resolved')}</p>
+          {petsWithPhotos.length > 0 && (
+            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+              <span className="text-xs text-gray-400 dark:text-gray-500">🐾 {petsWithPhotos.length} {t('total').toLowerCase()}</span>
+              {active.length > 0 && <>
+                <span className="text-gray-200 dark:text-gray-700">·</span>
+                <span className="text-xs text-orange-500">{active.length} {t('active').toLowerCase()}</span>
+              </>}
+              {resolved.length > 0 && <>
+                <span className="text-gray-200 dark:text-gray-700">·</span>
+                <span className="text-xs text-green-500">{resolved.length} {t('resolved').toLowerCase()}</span>
+              </>}
+            </div>
+          )}
         </div>
       </div>
 
@@ -120,23 +117,18 @@ export default async function ProfilePage() {
         </Link>
       </div>
 
-      {/* Active */}
-      {active.length > 0 && (
+      {/* Pets */}
+      {petsWithPhotos.length > 0 && (
         <section>
-          <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">{t('active_reports', { n: active.length })}</h2>
+          <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">🐾 {t('my_pets')}</h2>
           <div className="space-y-3">
             {active.map(pet => <PetRow key={pet.id} pet={pet} tPet={petRowT} locale={locale} />)}
           </div>
-        </section>
-      )}
-
-      {/* Resolved */}
-      {resolved.length > 0 && (
-        <section>
-          <h2 className="font-semibold text-gray-500 dark:text-gray-400 mb-3">{t('resolved_reports', { n: resolved.length })}</h2>
-          <div className="space-y-3 opacity-60">
-            {resolved.map(pet => <PetRow key={pet.id} pet={pet} tPet={petRowT} locale={locale} />)}
-          </div>
+          {resolved.length > 0 && (
+            <div className="space-y-3 mt-3 opacity-60">
+              {resolved.map(pet => <PetRow key={pet.id} pet={pet} tPet={petRowT} locale={locale} />)}
+            </div>
+          )}
         </section>
       )}
 
@@ -216,22 +208,22 @@ function PetRow({ pet, tPet, locale }: { pet: PetWithPhotos; tPet: PetRowT; loca
           ) : SPECIES_EMOJI[pet.species]}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className={`text-xs font-bold px-2 py-0.5 rounded-full text-white ${pet.type === 'lost' ? 'bg-red-500' : 'bg-green-500'}`}>
+          <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">
+            {SPECIES_EMOJI[pet.species]} {pet.name ?? pet.species}
+            {pet.breed ? <span className="font-normal text-gray-400 dark:text-gray-500"> · {pet.breed}</span> : null}
+          </p>
+          <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full text-white ${pet.type === 'lost' ? 'bg-red-400' : 'bg-green-400'}`}>
               {pet.type === 'lost' ? tPet.lost : tPet.found}
             </span>
             {pet.status === 'resolved' && (
-              <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full">{tPet.resolved}</span>
+              <span className="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 px-1.5 py-0.5 rounded-full">{tPet.resolved}</span>
             )}
+            <span className="text-[10px] text-gray-400 dark:text-gray-500">
+              {new Date(pet.created_at).toLocaleDateString(locale, { day: 'numeric', month: 'short' })}
+              {pet.last_seen_address && ` · ${pet.last_seen_address.split(',')[0]}`}
+            </span>
           </div>
-          <p className="font-semibold text-gray-900 dark:text-gray-100 mt-1 truncate">
-            {SPECIES_EMOJI[pet.species]} {pet.name ?? pet.species}
-            {pet.breed ? ` (${pet.breed})` : ''}
-          </p>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-            {new Date(pet.created_at).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })}
-            {pet.last_seen_address && ` • ${pet.last_seen_address.split(',')[0]}`}
-          </p>
         </div>
       </div>
       <div className="flex border-t border-gray-100 dark:border-gray-800">
