@@ -59,7 +59,10 @@
     "location_label": "Última ubicación",
     "ai_matches": "Coincidencias AI ({n})",
     "no_ai_matches": "Sin coincidencias AI aún. Aparecerán automáticamente con reportes similares.",
-    "match_score": "Puntuación"
+    "match_score": "Puntuación",
+    "share": "Compartir",
+    "share_copied": "Enlace copiado ✓",
+    "share_help": "Comparte — ¡puedes ayudar!"
   },
   "species": {
     "dog": "Perro",

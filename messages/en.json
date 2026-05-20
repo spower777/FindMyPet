@@ -59,7 +59,10 @@
     "location_label": "Last location",
     "ai_matches": "AI potential matches ({n})",
     "no_ai_matches": "No AI matches yet. They will appear automatically when similar reports are added.",
-    "match_score": "Score"
+    "match_score": "Score",
+    "share": "Share",
+    "share_copied": "Link copied ✓",
+    "share_help": "Share — you can help!"
   },
   "species": {
     "dog": "Dog",

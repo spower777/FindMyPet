@@ -59,7 +59,10 @@
     "location_label": "Ostatnia lokalizacja",
     "ai_matches": "Potencjalne dopasowania AI ({n})",
     "no_ai_matches": "Brak dopasowań AI. Zostaną automatycznie dodane gdy pojawią się podobne zgłoszenia.",
-    "match_score": "Trafność"
+    "match_score": "Trafność",
+    "share": "Udostępnij",
+    "share_copied": "Link skopiowany ✓",
+    "share_help": "Udostępnij — możesz pomóc!"
   },
   "species": {
     "dog": "Pies",

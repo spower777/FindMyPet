@@ -59,7 +59,10 @@
     "location_label": "Letzter Standort",
     "ai_matches": "KI-Treffer ({n})",
     "no_ai_matches": "Noch keine KI-Treffer. Sie erscheinen automatisch bei ähnlichen Meldungen.",
-    "match_score": "Übereinstimmung"
+    "match_score": "Übereinstimmung",
+    "share": "Teilen",
+    "share_copied": "Link kopiert ✓",
+    "share_help": "Teilen — du kannst helfen!"
   },
   "species": {
     "dog": "Hund",

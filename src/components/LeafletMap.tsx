@@ -3,6 +3,7 @@
 import { divIcon } from 'leaflet'
 import { Link } from '@/i18n/navigation'
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
+import MarkerClusterGroup from 'react-leaflet-cluster'
 import { useTranslations } from 'next-intl'
 import type { PetWithPhotos, VetProfile, UserContact } from '@/lib/types'
 
@@ -83,41 +84,43 @@ export default function LeafletMap({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      {/* Report markers */}
-      {pets.map(pet => (
-        <Marker
-          key={pet.id}
-          position={[pet.last_seen_lat, pet.last_seen_lng]}
-          icon={makeReportIcon(pet.type)}
-        >
-          <Popup maxWidth={220}>
-            <div className="min-w-[180px]">
-              {pet.primary_photo_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={pet.primary_photo_url}
-                  alt={pet.name ?? pet.species}
-                  className="w-full h-28 object-cover rounded mb-2"
-                />
-              )}
-              <div className={`text-xs font-bold uppercase mb-1 ${pet.type === 'lost' ? 'text-red-600' : 'text-green-600'}`}>
-                {pet.type === 'lost' ? `🔴 ${t('lost')}` : `🟢 ${t('found')}`}
+      {/* Report markers — clustered */}
+      <MarkerClusterGroup chunkedLoading maxClusterRadius={60}>
+        {pets.map(pet => (
+          <Marker
+            key={pet.id}
+            position={[pet.last_seen_lat, pet.last_seen_lng]}
+            icon={makeReportIcon(pet.type)}
+          >
+            <Popup maxWidth={220}>
+              <div className="min-w-[180px]">
+                {pet.primary_photo_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={pet.primary_photo_url}
+                    alt={pet.name ?? pet.species}
+                    className="w-full h-28 object-cover rounded mb-2"
+                  />
+                )}
+                <div className={`text-xs font-bold uppercase mb-1 ${pet.type === 'lost' ? 'text-red-600' : 'text-green-600'}`}>
+                  {pet.type === 'lost' ? `🔴 ${t('lost')}` : `🟢 ${t('found')}`}
+                </div>
+                <p className="font-semibold text-sm text-gray-900">
+                  {SPECIES_EMOJI[pet.species]} {pet.name ?? pet.species}
+                  {pet.breed ? ` (${pet.breed})` : ''}
+                </p>
+                <p className="text-xs text-gray-600 mt-1 line-clamp-2">{pet.description}</p>
+                <Link
+                  href={`/pets/${pet.id}`}
+                  className="mt-2 block text-center text-xs bg-orange-500 text-white py-1.5 px-3 rounded font-medium hover:bg-orange-600 transition"
+                >
+                  {t('see')} →
+                </Link>
               </div>
-              <p className="font-semibold text-sm text-gray-900">
-                {SPECIES_EMOJI[pet.species]} {pet.name ?? pet.species}
-                {pet.breed ? ` (${pet.breed})` : ''}
-              </p>
-              <p className="text-xs text-gray-600 mt-1 line-clamp-2">{pet.description}</p>
-              <Link
-                href={`/pets/${pet.id}`}
-                className="mt-2 block text-center text-xs bg-orange-500 text-white py-1.5 px-3 rounded font-medium hover:bg-orange-600 transition"
-              >
-                {t('see')} →
-              </Link>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+            </Popup>
+          </Marker>
+        ))}
+      </MarkerClusterGroup>
 
       {/* Vet markers */}
       {vets.filter(v => v.lat && v.lng).map(vet => (

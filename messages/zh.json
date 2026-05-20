@@ -59,7 +59,10 @@
     "location_label": "最后位置",
     "ai_matches": "AI 匹配 ({n})",
     "no_ai_matches": "暂无 AI 匹配。出现相似公告时将自动添加。",
-    "match_score": "匹配度"
+    "match_score": "匹配度",
+    "share": "分享",
+    "share_copied": "链接已复制 ✓",
+    "share_help": "分享 — 你可以帮助！"
   },
   "species": {
     "dog": "狗",

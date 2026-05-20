@@ -10,6 +10,7 @@ import type { PetWithPhotos, Match, VetProfile } from '@/lib/types'
 import type { Metadata } from 'next'
 import { startConversation } from '@/app/actions/chat'
 import { getTranslations } from 'next-intl/server'
+import ShareButton from '@/components/ShareButton'
 
 const SPECIES_EMOJI: Record<string, string> = {
   dog: '🐕', cat: '🐈', bird: '🐦', rabbit: '🐇', other: '🐾',
@@ -304,10 +305,8 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
         <p className="text-center text-sm text-gray-400 py-4">{t('no_ai_matches')}</p>
       )}
 
-      {/* Share nudge */}
-      <div className="bg-orange-50 dark:bg-orange-950 border border-orange-100 dark:border-orange-900 rounded-2xl p-4 text-sm text-center text-orange-800 dark:text-orange-200">
-        🐾 Udostępnij to zgłoszenie — możesz pomóc!
-      </div>
+      {/* Share */}
+      <ShareButton petName={pet.name ?? pet.species} />
     </div>
   )
 }
