@@ -185,7 +185,15 @@
     "edit_profile": "Tierarzt-Profil bearbeiten",
     "pending_verification": "Verifizierung ausstehend",
     "website_invalid": "Gültige Adresse eingeben (z.B. klinik.de oder https://klinik.de)",
-    "location": "Klinikstandort (optional)"
+    "location": "Klinikstandort (optional)",
+    "send_document": "Dokument an Tierhalter senden",
+    "search_pet_placeholder": "Chipnummer oder Tiername",
+    "pet_not_found": "Tier nicht gefunden",
+    "document_title": "Dokumenttitel",
+    "send_to_owner": "An Tierhalter senden",
+    "document_sent": "Dokument gesendet",
+    "sent_documents": "Gesendete Dokumente",
+    "vet_documents": "Dokumente vom Tierarzt"
   },
   "form": {
     "lost_title": "Vermisstes Tier melden",

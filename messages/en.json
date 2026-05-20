@@ -185,7 +185,15 @@
     "edit_profile": "Edit vet profile",
     "pending_verification": "Pending verification",
     "website_invalid": "Enter a valid address (e.g. clinic.com or https://clinic.com)",
-    "location": "Clinic location (optional)"
+    "location": "Clinic location (optional)",
+    "send_document": "Send document to owner",
+    "search_pet_placeholder": "Chip number or pet name",
+    "pet_not_found": "Pet not found",
+    "document_title": "Document title",
+    "send_to_owner": "Send to owner",
+    "document_sent": "Document sent",
+    "sent_documents": "Sent documents",
+    "vet_documents": "Documents from vet"
   },
   "form": {
     "lost_title": "Report lost pet",

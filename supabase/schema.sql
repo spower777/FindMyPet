@@ -360,6 +360,40 @@ alter table pets add column if not exists allergies text;
 alter table pets add column if not exists is_neutered boolean;
 
 -- ============================================================
+-- Sprint D — Vet document sharing
+-- ============================================================
+
+create table if not exists vet_documents (
+  id uuid primary key default gen_random_uuid(),
+  vet_id uuid references vet_profiles(id) on delete cascade not null,
+  pet_id uuid references pets(id) on delete cascade not null,
+  title text not null,
+  notes text,
+  document_path text not null,
+  created_at timestamptz default now()
+);
+
+alter table vet_documents enable row level security;
+create index if not exists vet_documents_pet_id_idx on vet_documents(pet_id);
+create index if not exists vet_documents_vet_id_idx on vet_documents(vet_id);
+
+drop policy if exists "vet_docs_select" on vet_documents;
+drop policy if exists "vet_docs_insert" on vet_documents;
+drop policy if exists "vet_docs_delete" on vet_documents;
+
+-- Vet can see their own uploads; pet owner sees docs for their pets
+create policy "vet_docs_select" on vet_documents for select using (
+  exists (select 1 from vet_profiles where id = vet_id and user_id = auth.uid())
+  or exists (select 1 from pets where id = pet_id and user_id = auth.uid())
+);
+create policy "vet_docs_insert" on vet_documents for insert with check (
+  exists (select 1 from vet_profiles where id = vet_id and user_id = auth.uid())
+);
+create policy "vet_docs_delete" on vet_documents for delete using (
+  exists (select 1 from vet_profiles where id = vet_id and user_id = auth.uid())
+);
+
+-- ============================================================
 -- Sprint C — Medical history
 -- ============================================================
 

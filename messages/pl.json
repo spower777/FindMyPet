@@ -185,7 +185,15 @@
     "edit_profile": "Edytuj profil weterynarza",
     "pending_verification": "Oczekuje na weryfikację",
     "website_invalid": "Podaj poprawny adres (np. klinika.pl lub https://klinika.pl)",
-    "location": "Lokalizacja kliniki (opcjonalnie)"
+    "location": "Lokalizacja kliniki (opcjonalnie)",
+    "send_document": "Wyślij dokument do właściciela",
+    "search_pet_placeholder": "Numer chipa lub imię pupila",
+    "pet_not_found": "Nie znaleziono zwierzęcia",
+    "document_title": "Tytuł dokumentu",
+    "send_to_owner": "Wyślij do właściciela",
+    "document_sent": "Dokument wysłany",
+    "sent_documents": "Wysłane dokumenty",
+    "vet_documents": "Dokumenty od lekarza"
   },
   "form": {
     "lost_title": "Zgłoś zaginione zwierzę",

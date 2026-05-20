@@ -184,6 +184,17 @@ export interface PetMedicalRecord {
   created_at: string
 }
 
+export interface VetDocument {
+  id: string
+  vet_id: string
+  pet_id: string
+  title: string
+  notes: string | null
+  document_path: string
+  created_at: string
+  vet_profile?: { vet_name: string; clinic_name: string }
+}
+
 export interface CreateVetProfileData {
   clinic_name: string
   vet_name: string

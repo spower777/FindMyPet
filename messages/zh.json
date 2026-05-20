@@ -185,7 +185,15 @@
     "edit_profile": "编辑兽医资料",
     "pending_verification": "等待认证",
     "website_invalid": "请输入有效地址（如 clinic.com 或 https://clinic.com）",
-    "location": "诊所位置（可选）"
+    "location": "诊所位置（可选）",
+    "send_document": "向宠物主人发送文件",
+    "search_pet_placeholder": "芯片号码或宠物名称",
+    "pet_not_found": "未找到宠物",
+    "document_title": "文件标题",
+    "send_to_owner": "发送给主人",
+    "document_sent": "文件已发送",
+    "sent_documents": "已发送文件",
+    "vet_documents": "兽医文件"
   },
   "form": {
     "lost_title": "报告走失宠物",
