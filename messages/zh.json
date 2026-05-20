@@ -1,0 +1,118 @@
+{
+  "nav": {
+    "lost": "走失",
+    "found": "找到",
+    "login": "登录",
+    "profile": "我的主页",
+    "logout": "退出",
+    "chat": "消息"
+  },
+  "home": {
+    "active": "活跃公告",
+    "lost_count": "{n} 只走失",
+    "found_count": "{n} 只找到",
+    "all": "全部",
+    "lost_filter": "走失",
+    "found_filter": "找到",
+    "no_results": "没有符合条件的结果",
+    "clear_filters": "清除筛选",
+    "report_lost": "报告走失",
+    "report_found": "报告找到"
+  },
+  "filters": {
+    "all_species": "全部",
+    "dogs": "狗",
+    "cats": "猫",
+    "birds": "鸟",
+    "rabbits": "兔子",
+    "other": "其他",
+    "all_time": "所有时间",
+    "today": "今天",
+    "week": "本周",
+    "month": "本月"
+  },
+  "pet": {
+    "lost": "走失",
+    "found": "找到",
+    "resolved": "已解决",
+    "just_now": "刚刚",
+    "min_ago": "{n} 分钟前",
+    "hours_ago": "{n} 小时前",
+    "days_ago": "{n} 天前",
+    "see": "查看",
+    "mark_resolved": "标记已解决 ✓",
+    "delete": "删除",
+    "contact_owner": "联系主人",
+    "last_seen": "最后目击",
+    "description": "描述",
+    "matches": "AI 匹配",
+    "match_accept": "这是我的宠物",
+    "match_reject": "不同动物"
+  },
+  "species": {
+    "dog": "狗",
+    "cat": "猫",
+    "bird": "鸟",
+    "rabbit": "兔子",
+    "other": "动物"
+  },
+  "profile": {
+    "title": "我的主页",
+    "total": "总计",
+    "active": "活跃",
+    "resolved": "已解决",
+    "add_lost": "+ 走失",
+    "add_found": "+ 找到",
+    "active_reports": "活跃公告 ({n})",
+    "resolved_reports": "已解决 ({n})",
+    "no_reports": "暂无公告",
+    "no_reports_hint": "在上方添加第一条公告",
+    "contacts": "联系人",
+    "add_contact": "+ 添加联系人",
+    "new_contact": "新联系人",
+    "name_required": "姓名为必填项",
+    "save": "保存",
+    "saving": "保存中…",
+    "cancel": "取消",
+    "contact_error": "保存联系人时出错"
+  },
+  "contact_types": {
+    "owner": "主人",
+    "vet": "兽医",
+    "shelter": "收容所",
+    "emergency": "紧急联系人",
+    "other": "其他"
+  },
+  "chat": {
+    "title": "消息",
+    "no_messages": "暂无消息",
+    "no_messages_hint": "从公告页面联系主人",
+    "you": "你",
+    "placeholder": "写消息…",
+    "send": "发送"
+  },
+  "auth": {
+    "login_title": "登录",
+    "email": "邮箱",
+    "password": "密码",
+    "login": "登录",
+    "register": "注册",
+    "google": "使用 Google 登录",
+    "no_account": "没有账号？",
+    "have_account": "已有账号？"
+  },
+  "form": {
+    "lost_title": "报告走失宠物",
+    "found_title": "报告找到宠物",
+    "name": "宠物名字",
+    "breed": "品种",
+    "color": "颜色",
+    "description": "描述",
+    "location": "最后已知位置",
+    "phone": "联系电话",
+    "email": "联系邮箱",
+    "photos": "照片",
+    "submit_lost": "报告走失",
+    "submit_found": "报告找到"
+  }
+}

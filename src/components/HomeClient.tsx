@@ -4,23 +4,8 @@ import { useState, useMemo } from 'react'
 import MapView from '@/components/MapView'
 import PetCard from '@/components/PetCard'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import type { PetWithPhotos, PetType, PetSpecies } from '@/lib/types'
-
-const SPECIES_OPTIONS: { value: PetSpecies | 'all'; label: string }[] = [
-  { value: 'all', label: 'Wszystkie' },
-  { value: 'dog', label: '🐕 Psy' },
-  { value: 'cat', label: '🐈 Koty' },
-  { value: 'bird', label: '🐦 Ptaki' },
-  { value: 'rabbit', label: '🐇 Króliki' },
-  { value: 'other', label: '🐾 Inne' },
-]
-
-const DATE_OPTIONS = [
-  { value: 'all', label: 'Zawsze' },
-  { value: 'today', label: 'Dziś' },
-  { value: 'week', label: 'Tydzień' },
-  { value: 'month', label: 'Miesiąc' },
-]
 
 interface Filters {
   type: PetType | 'all'
@@ -29,7 +14,25 @@ interface Filters {
 }
 
 export default function HomeClient({ pets }: { pets: PetWithPhotos[] }) {
+  const t = useTranslations('home')
+  const tf = useTranslations('filters')
   const [filters, setFilters] = useState<Filters>({ type: 'all', species: 'all', date: 'all' })
+
+  const SPECIES_OPTIONS: { value: PetSpecies | 'all'; label: string }[] = [
+    { value: 'all', label: tf('all_species') },
+    { value: 'dog', label: `🐕 ${tf('dogs')}` },
+    { value: 'cat', label: `🐈 ${tf('cats')}` },
+    { value: 'bird', label: `🐦 ${tf('birds')}` },
+    { value: 'rabbit', label: `🐇 ${tf('rabbits')}` },
+    { value: 'other', label: `🐾 ${tf('other')}` },
+  ]
+
+  const DATE_OPTIONS = [
+    { value: 'all', label: tf('all_time') },
+    { value: 'today', label: tf('today') },
+    { value: 'week', label: tf('week') },
+    { value: 'month', label: tf('month') },
+  ]
 
   const filtered = useMemo(() => {
     const now = new Date()
@@ -38,8 +41,7 @@ export default function HomeClient({ pets }: { pets: PetWithPhotos[] }) {
       if (filters.species !== 'all' && pet.species !== filters.species) return false
       if (filters.date !== 'all') {
         const created = new Date(pet.created_at)
-        const diffMs = now.getTime() - created.getTime()
-        const diffDays = diffMs / (1000 * 60 * 60 * 24)
+        const diffDays = (now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24)
         if (filters.date === 'today' && diffDays > 1) return false
         if (filters.date === 'week' && diffDays > 7) return false
         if (filters.date === 'month' && diffDays > 30) return false
@@ -63,72 +65,69 @@ export default function HomeClient({ pets }: { pets: PetWithPhotos[] }) {
         <MapView pets={filtered} />
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10 lg:hidden">
           <Link href="/report/lost" className="bg-red-500 hover:bg-red-600 text-white font-semibold text-sm px-4 py-2.5 rounded-full shadow-lg transition">
-            🔴 Zaginął
+            🔴 {t('lost_filter')}
           </Link>
           <Link href="/report/found" className="bg-green-500 hover:bg-green-600 text-white font-semibold text-sm px-4 py-2.5 rounded-full shadow-lg transition">
-            🟢 Znalazłem
+            🟢 {t('found_filter')}
           </Link>
         </div>
       </div>
 
       {/* Sidebar */}
-      <div className="w-full lg:w-96 flex flex-col bg-white border-l border-gray-100 lg:overflow-hidden">
+      <div className="w-full lg:w-96 flex flex-col bg-white dark:bg-gray-900 border-l border-gray-100 dark:border-gray-800 lg:overflow-hidden">
         {/* Header */}
-        <div className="p-4 border-b border-gray-100 shrink-0 space-y-3">
+        <div className="p-4 border-b border-gray-100 dark:border-gray-800 shrink-0 space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900">Aktywne zgłoszenia</h2>
+            <h2 className="font-semibold text-gray-900 dark:text-gray-100">{t('active')}</h2>
             <div className="flex gap-2 text-xs">
-              <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">
-                {lostCount} zagubionych
+              <span className="bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-full font-medium">
+                {t('lost_count', { n: lostCount })}
               </span>
-              <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
-                {foundCount} znalezionych
+              <span className="bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full font-medium">
+                {t('found_count', { n: foundCount })}
               </span>
             </div>
           </div>
 
           {/* Filters */}
           <div className="space-y-2">
-            {/* Type */}
             <div className="flex gap-1.5">
-              {(['all', 'lost', 'found'] as const).map(t => (
+              {(['all', 'lost', 'found'] as const).map(type => (
                 <button
-                  key={t}
-                  onClick={() => set('type', t)}
-                  className={`flex-1 text-xs font-medium py-1.5 rounded-lg border transition ${
-                    filters.type === t
-                      ? t === 'lost' ? 'bg-red-500 border-red-500 text-white'
-                      : t === 'found' ? 'bg-green-500 border-green-500 text-white'
+                  key={type}
+                  onClick={() => set('type', type)}
+                  className={`flex-1 text-xs font-medium py-1.5 rounded-xl border transition ${
+                    filters.type === type
+                      ? type === 'lost' ? 'bg-red-500 border-red-500 text-white'
+                      : type === 'found' ? 'bg-green-500 border-green-500 text-white'
                       : 'bg-orange-500 border-orange-500 text-white'
-                      : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                      : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300'
                   }`}
                 >
-                  {t === 'all' ? 'Wszystkie' : t === 'lost' ? '🔴 Zaginione' : '🟢 Znalezione'}
+                  {type === 'all' ? t('all') : type === 'lost' ? `🔴 ${t('lost_filter')}` : `🟢 ${t('found_filter')}`}
                 </button>
               ))}
             </div>
 
-            {/* Species + Date */}
             <div className="flex gap-2">
               <select
                 value={filters.species}
                 onChange={e => set('species', e.target.value as PetSpecies | 'all')}
-                className="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-orange-400"
+                className="flex-1 text-xs border border-gray-200 dark:border-gray-700 rounded-xl px-2 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:border-orange-400"
               >
                 {SPECIES_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
               <select
                 value={filters.date}
                 onChange={e => set('date', e.target.value as Filters['date'])}
-                className="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-orange-400"
+                className="flex-1 text-xs border border-gray-200 dark:border-gray-700 rounded-xl px-2 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:border-orange-400"
               >
                 {DATE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
               {isFiltered && (
                 <button
                   onClick={() => setFilters({ type: 'all', species: 'all', date: 'all' })}
-                  className="text-xs text-gray-400 hover:text-gray-600 px-2 border border-gray-200 rounded-lg transition"
-                  title="Wyczyść filtry"
+                  className="text-xs text-gray-400 hover:text-gray-600 px-2 border border-gray-200 dark:border-gray-700 rounded-xl transition"
                 >
                   ✕
                 </button>
@@ -138,10 +137,10 @@ export default function HomeClient({ pets }: { pets: PetWithPhotos[] }) {
 
           <div className="hidden lg:flex gap-2">
             <Link href="/report/lost" className="flex-1 text-center bg-red-500 hover:bg-red-600 text-white font-semibold text-sm py-2.5 rounded-xl transition">
-              🔴 Zgłoś zagubione
+              🔴 {t('report_lost')}
             </Link>
             <Link href="/report/found" className="flex-1 text-center bg-green-500 hover:bg-green-600 text-white font-semibold text-sm py-2.5 rounded-xl transition">
-              🟢 Zgłoś znalezione
+              🟢 {t('report_found')}
             </Link>
           </div>
         </div>
@@ -151,10 +150,10 @@ export default function HomeClient({ pets }: { pets: PetWithPhotos[] }) {
           {filtered.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
               <p className="text-3xl mb-2">🔍</p>
-              <p className="text-sm">Brak wyników dla tych filtrów</p>
+              <p className="text-sm">{t('no_results')}</p>
               {isFiltered && (
                 <button onClick={() => setFilters({ type: 'all', species: 'all', date: 'all' })} className="mt-2 text-xs text-orange-500 hover:underline">
-                  Wyczyść filtry
+                  {t('clear_filters')}
                 </button>
               )}
             </div>

@@ -1,0 +1,118 @@
+{
+  "nav": {
+    "lost": "Zaginął",
+    "found": "Znaleziony",
+    "login": "Zaloguj się",
+    "profile": "Mój profil",
+    "logout": "Wyloguj",
+    "chat": "Wiadomości"
+  },
+  "home": {
+    "active": "Aktywne zgłoszenia",
+    "lost_count": "{n} zagubionych",
+    "found_count": "{n} znalezionych",
+    "all": "Wszystkie",
+    "lost_filter": "Zaginione",
+    "found_filter": "Znalezione",
+    "no_results": "Brak wyników dla tych filtrów",
+    "clear_filters": "Wyczyść filtry",
+    "report_lost": "Zgłoś zagubione",
+    "report_found": "Zgłoś znalezione"
+  },
+  "filters": {
+    "all_species": "Wszystkie",
+    "dogs": "Psy",
+    "cats": "Koty",
+    "birds": "Ptaki",
+    "rabbits": "Króliki",
+    "other": "Inne",
+    "all_time": "Zawsze",
+    "today": "Dziś",
+    "week": "Tydzień",
+    "month": "Miesiąc"
+  },
+  "pet": {
+    "lost": "Zaginął",
+    "found": "Znaleziony",
+    "resolved": "Rozwiązane",
+    "just_now": "przed chwilą",
+    "min_ago": "{n} min temu",
+    "hours_ago": "{n} godz. temu",
+    "days_ago": "{n} dni temu",
+    "see": "Zobacz",
+    "mark_resolved": "Rozwiązane ✓",
+    "delete": "Usuń",
+    "contact_owner": "Napisz do właściciela",
+    "last_seen": "Ostatnio widziano",
+    "description": "Opis",
+    "matches": "Potencjalne dopasowania AI",
+    "match_accept": "To mój pupil",
+    "match_reject": "Inne zwierzę"
+  },
+  "species": {
+    "dog": "Pies",
+    "cat": "Kot",
+    "bird": "Ptak",
+    "rabbit": "Królik",
+    "other": "Zwierzę"
+  },
+  "profile": {
+    "title": "Mój profil",
+    "total": "Wszystkich",
+    "active": "Aktywnych",
+    "resolved": "Rozwiązanych",
+    "add_lost": "+ Zaginął",
+    "add_found": "+ Znaleziony",
+    "active_reports": "Aktywne zgłoszenia ({n})",
+    "resolved_reports": "Rozwiązane ({n})",
+    "no_reports": "Brak zgłoszeń",
+    "no_reports_hint": "Dodaj pierwsze zgłoszenie powyżej",
+    "contacts": "Kontakty",
+    "add_contact": "+ Dodaj kontakt",
+    "new_contact": "Nowy kontakt",
+    "name_required": "Imię / nazwa jest wymagana",
+    "save": "Zapisz",
+    "saving": "Zapisuję…",
+    "cancel": "Anuluj",
+    "contact_error": "Błąd podczas zapisywania kontaktu"
+  },
+  "contact_types": {
+    "owner": "Właściciel",
+    "vet": "Weterynarz",
+    "shelter": "Schronisko",
+    "emergency": "Kontakt awaryjny",
+    "other": "Inny"
+  },
+  "chat": {
+    "title": "Wiadomości",
+    "no_messages": "Brak wiadomości",
+    "no_messages_hint": "Napisz do właściciela ze strony zgłoszenia",
+    "you": "Ty",
+    "placeholder": "Napisz wiadomość…",
+    "send": "Wyślij"
+  },
+  "auth": {
+    "login_title": "Zaloguj się",
+    "email": "Email",
+    "password": "Hasło",
+    "login": "Zaloguj się",
+    "register": "Zarejestruj się",
+    "google": "Zaloguj przez Google",
+    "no_account": "Nie masz konta?",
+    "have_account": "Masz już konto?"
+  },
+  "form": {
+    "lost_title": "Zgłoś zaginione zwierzę",
+    "found_title": "Zgłoś znalezione zwierzę",
+    "name": "Imię zwierzęcia",
+    "breed": "Rasa",
+    "color": "Kolor",
+    "description": "Opis",
+    "location": "Ostatnia znana lokalizacja",
+    "phone": "Telefon kontaktowy",
+    "email": "Email kontaktowy",
+    "photos": "Zdjęcia",
+    "submit_lost": "Zgłoś zaginięcie",
+    "submit_found": "Zgłoś znalezienie"
+  }
+}

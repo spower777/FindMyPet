@@ -1,0 +1,118 @@
+{
+  "nav": {
+    "lost": "Lost",
+    "found": "Found",
+    "login": "Sign in",
+    "profile": "My profile",
+    "logout": "Sign out",
+    "chat": "Messages"
+  },
+  "home": {
+    "active": "Active reports",
+    "lost_count": "{n} lost",
+    "found_count": "{n} found",
+    "all": "All",
+    "lost_filter": "Lost",
+    "found_filter": "Found",
+    "no_results": "No results for these filters",
+    "clear_filters": "Clear filters",
+    "report_lost": "Report lost",
+    "report_found": "Report found"
+  },
+  "filters": {
+    "all_species": "All",
+    "dogs": "Dogs",
+    "cats": "Cats",
+    "birds": "Birds",
+    "rabbits": "Rabbits",
+    "other": "Other",
+    "all_time": "Any time",
+    "today": "Today",
+    "week": "This week",
+    "month": "This month"
+  },
+  "pet": {
+    "lost": "Lost",
+    "found": "Found",
+    "resolved": "Resolved",
+    "just_now": "just now",
+    "min_ago": "{n} min ago",
+    "hours_ago": "{n} h ago",
+    "days_ago": "{n} days ago",
+    "see": "View",
+    "mark_resolved": "Mark resolved ✓",
+    "delete": "Delete",
+    "contact_owner": "Message owner",
+    "last_seen": "Last seen",
+    "description": "Description",
+    "matches": "AI potential matches",
+    "match_accept": "This is my pet",
+    "match_reject": "Different animal"
+  },
+  "species": {
+    "dog": "Dog",
+    "cat": "Cat",
+    "bird": "Bird",
+    "rabbit": "Rabbit",
+    "other": "Animal"
+  },
+  "profile": {
+    "title": "My profile",
+    "total": "Total",
+    "active": "Active",
+    "resolved": "Resolved",
+    "add_lost": "+ Lost",
+    "add_found": "+ Found",
+    "active_reports": "Active reports ({n})",
+    "resolved_reports": "Resolved ({n})",
+    "no_reports": "No reports",
+    "no_reports_hint": "Add your first report above",
+    "contacts": "Contacts",
+    "add_contact": "+ Add contact",
+    "new_contact": "New contact",
+    "name_required": "Name is required",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "contact_error": "Error saving contact"
+  },
+  "contact_types": {
+    "owner": "Owner",
+    "vet": "Veterinarian",
+    "shelter": "Shelter",
+    "emergency": "Emergency contact",
+    "other": "Other"
+  },
+  "chat": {
+    "title": "Messages",
+    "no_messages": "No messages",
+    "no_messages_hint": "Message the owner from the report page",
+    "you": "You",
+    "placeholder": "Write a message…",
+    "send": "Send"
+  },
+  "auth": {
+    "login_title": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "login": "Sign in",
+    "register": "Create account",
+    "google": "Continue with Google",
+    "no_account": "Don't have an account?",
+    "have_account": "Already have an account?"
+  },
+  "form": {
+    "lost_title": "Report lost pet",
+    "found_title": "Report found pet",
+    "name": "Pet name",
+    "breed": "Breed",
+    "color": "Color",
+    "description": "Description",
+    "location": "Last known location",
+    "phone": "Contact phone",
+    "email": "Contact email",
+    "photos": "Photos",
+    "submit_lost": "Report as lost",
+    "submit_found": "Report as found"
+  }
+}

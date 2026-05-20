@@ -3,10 +3,12 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import type { User } from '@supabase/supabase-js'
 
 export default function NavbarAuth({ user }: { user: User | null }) {
   const router = useRouter()
+  const t = useTranslations('nav')
 
   async function signOut() {
     const supabase = createClient()
@@ -18,9 +20,9 @@ export default function NavbarAuth({ user }: { user: User | null }) {
     return (
       <Link
         href="/auth/login"
-        className="text-sm font-medium text-orange-500 border border-orange-300 px-3 py-1.5 rounded-lg hover:bg-orange-50 transition"
+        className="text-sm font-medium text-orange-500 border border-orange-300 dark:border-orange-700 px-3 py-1.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 transition"
       >
-        Zaloguj się
+        {t('login')}
       </Link>
     )
   }
@@ -29,21 +31,21 @@ export default function NavbarAuth({ user }: { user: User | null }) {
     <div className="flex items-center gap-2">
       <Link
         href="/chat"
-        className="text-sm font-medium text-gray-700 hover:text-orange-500 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-orange-50 transition"
+        className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 transition"
       >
         💬
       </Link>
       <Link
         href="/profile"
-        className="text-sm font-medium text-gray-700 hover:text-orange-500 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-orange-50 transition"
+        className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 transition"
       >
-        Mój profil
+        {t('profile')}
       </Link>
       <button
         onClick={signOut}
-        className="text-sm text-gray-500 hover:text-gray-800 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition"
+        className="hidden sm:block text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition"
       >
-        Wyloguj
+        {t('logout')}
       </button>
     </div>
   )

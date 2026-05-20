@@ -1,0 +1,118 @@
+{
+  "nav": {
+    "lost": "Perdido",
+    "found": "Encontrado",
+    "login": "Iniciar sesión",
+    "profile": "Mi perfil",
+    "logout": "Cerrar sesión",
+    "chat": "Mensajes"
+  },
+  "home": {
+    "active": "Reportes activos",
+    "lost_count": "{n} perdidos",
+    "found_count": "{n} encontrados",
+    "all": "Todos",
+    "lost_filter": "Perdidos",
+    "found_filter": "Encontrados",
+    "no_results": "Sin resultados para estos filtros",
+    "clear_filters": "Limpiar filtros",
+    "report_lost": "Reportar perdido",
+    "report_found": "Reportar encontrado"
+  },
+  "filters": {
+    "all_species": "Todos",
+    "dogs": "Perros",
+    "cats": "Gatos",
+    "birds": "Pájaros",
+    "rabbits": "Conejos",
+    "other": "Otros",
+    "all_time": "Siempre",
+    "today": "Hoy",
+    "week": "Esta semana",
+    "month": "Este mes"
+  },
+  "pet": {
+    "lost": "Perdido",
+    "found": "Encontrado",
+    "resolved": "Resuelto",
+    "just_now": "hace un momento",
+    "min_ago": "hace {n} min",
+    "hours_ago": "hace {n} h",
+    "days_ago": "hace {n} días",
+    "see": "Ver",
+    "mark_resolved": "Marcar resuelto ✓",
+    "delete": "Eliminar",
+    "contact_owner": "Contactar dueño",
+    "last_seen": "Visto por última vez",
+    "description": "Descripción",
+    "matches": "Coincidencias AI",
+    "match_accept": "Es mi mascota",
+    "match_reject": "Otro animal"
+  },
+  "species": {
+    "dog": "Perro",
+    "cat": "Gato",
+    "bird": "Pájaro",
+    "rabbit": "Conejo",
+    "other": "Animal"
+  },
+  "profile": {
+    "title": "Mi perfil",
+    "total": "Total",
+    "active": "Activos",
+    "resolved": "Resueltos",
+    "add_lost": "+ Perdido",
+    "add_found": "+ Encontrado",
+    "active_reports": "Reportes activos ({n})",
+    "resolved_reports": "Resueltos ({n})",
+    "no_reports": "Sin reportes",
+    "no_reports_hint": "Añade el primer reporte arriba",
+    "contacts": "Contactos",
+    "add_contact": "+ Añadir contacto",
+    "new_contact": "Nuevo contacto",
+    "name_required": "El nombre es obligatorio",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "cancel": "Cancelar",
+    "contact_error": "Error al guardar el contacto"
+  },
+  "contact_types": {
+    "owner": "Dueño",
+    "vet": "Veterinario",
+    "shelter": "Refugio",
+    "emergency": "Contacto de emergencia",
+    "other": "Otro"
+  },
+  "chat": {
+    "title": "Mensajes",
+    "no_messages": "Sin mensajes",
+    "no_messages_hint": "Escribe al dueño desde la página del reporte",
+    "you": "Tú",
+    "placeholder": "Escribe un mensaje…",
+    "send": "Enviar"
+  },
+  "auth": {
+    "login_title": "Iniciar sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "login": "Iniciar sesión",
+    "register": "Crear cuenta",
+    "google": "Continuar con Google",
+    "no_account": "¿No tienes cuenta?",
+    "have_account": "¿Ya tienes cuenta?"
+  },
+  "form": {
+    "lost_title": "Reportar mascota perdida",
+    "found_title": "Reportar mascota encontrada",
+    "name": "Nombre de la mascota",
+    "breed": "Raza",
+    "color": "Color",
+    "description": "Descripción",
+    "location": "Última ubicación conocida",
+    "phone": "Teléfono de contacto",
+    "email": "Email de contacto",
+    "photos": "Fotos",
+    "submit_lost": "Reportar como perdido",
+    "submit_found": "Reportar como encontrado"
+  }
+}

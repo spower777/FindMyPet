@@ -1,0 +1,118 @@
+{
+  "nav": {
+    "lost": "Vermisst",
+    "found": "Gefunden",
+    "login": "Anmelden",
+    "profile": "Mein Profil",
+    "logout": "Abmelden",
+    "chat": "Nachrichten"
+  },
+  "home": {
+    "active": "Aktive Meldungen",
+    "lost_count": "{n} vermisst",
+    "found_count": "{n} gefunden",
+    "all": "Alle",
+    "lost_filter": "Vermisst",
+    "found_filter": "Gefunden",
+    "no_results": "Keine Ergebnisse für diese Filter",
+    "clear_filters": "Filter löschen",
+    "report_lost": "Vermisst melden",
+    "report_found": "Gefunden melden"
+  },
+  "filters": {
+    "all_species": "Alle",
+    "dogs": "Hunde",
+    "cats": "Katzen",
+    "birds": "Vögel",
+    "rabbits": "Kaninchen",
+    "other": "Andere",
+    "all_time": "Jederzeit",
+    "today": "Heute",
+    "week": "Diese Woche",
+    "month": "Diesen Monat"
+  },
+  "pet": {
+    "lost": "Vermisst",
+    "found": "Gefunden",
+    "resolved": "Gelöst",
+    "just_now": "gerade eben",
+    "min_ago": "vor {n} Min.",
+    "hours_ago": "vor {n} Std.",
+    "days_ago": "vor {n} Tagen",
+    "see": "Ansehen",
+    "mark_resolved": "Als gelöst markieren ✓",
+    "delete": "Löschen",
+    "contact_owner": "Besitzer kontaktieren",
+    "last_seen": "Zuletzt gesehen",
+    "description": "Beschreibung",
+    "matches": "KI-Treffer",
+    "match_accept": "Das ist mein Tier",
+    "match_reject": "Anderes Tier"
+  },
+  "species": {
+    "dog": "Hund",
+    "cat": "Katze",
+    "bird": "Vogel",
+    "rabbit": "Kaninchen",
+    "other": "Tier"
+  },
+  "profile": {
+    "title": "Mein Profil",
+    "total": "Gesamt",
+    "active": "Aktiv",
+    "resolved": "Gelöst",
+    "add_lost": "+ Vermisst",
+    "add_found": "+ Gefunden",
+    "active_reports": "Aktive Meldungen ({n})",
+    "resolved_reports": "Gelöste ({n})",
+    "no_reports": "Keine Meldungen",
+    "no_reports_hint": "Füge die erste Meldung oben hinzu",
+    "contacts": "Kontakte",
+    "add_contact": "+ Kontakt hinzufügen",
+    "new_contact": "Neuer Kontakt",
+    "name_required": "Name ist erforderlich",
+    "save": "Speichern",
+    "saving": "Speichern…",
+    "cancel": "Abbrechen",
+    "contact_error": "Fehler beim Speichern des Kontakts"
+  },
+  "contact_types": {
+    "owner": "Besitzer",
+    "vet": "Tierarzt",
+    "shelter": "Tierheim",
+    "emergency": "Notfallkontakt",
+    "other": "Andere"
+  },
+  "chat": {
+    "title": "Nachrichten",
+    "no_messages": "Keine Nachrichten",
+    "no_messages_hint": "Kontaktiere den Besitzer über die Meldeseite",
+    "you": "Du",
+    "placeholder": "Nachricht schreiben…",
+    "send": "Senden"
+  },
+  "auth": {
+    "login_title": "Anmelden",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "login": "Anmelden",
+    "register": "Konto erstellen",
+    "google": "Mit Google anmelden",
+    "no_account": "Noch kein Konto?",
+    "have_account": "Bereits ein Konto?"
+  },
+  "form": {
+    "lost_title": "Vermisstes Tier melden",
+    "found_title": "Gefundenes Tier melden",
+    "name": "Tiername",
+    "breed": "Rasse",
+    "color": "Farbe",
+    "description": "Beschreibung",
+    "location": "Zuletzt gesehener Ort",
+    "phone": "Telefon",
+    "email": "E-Mail",
+    "photos": "Fotos",
+    "submit_lost": "Als vermisst melden",
+    "submit_found": "Als gefunden melden"
+  }
+}
