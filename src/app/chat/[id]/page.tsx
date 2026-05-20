@@ -1,0 +1,59 @@
+import { createClient } from '@/lib/supabase/server'
+import { redirect, notFound } from 'next/navigation'
+import Link from 'next/link'
+import type { Metadata } from 'next'
+import ChatWindow from './ChatWindow'
+
+export const metadata: Metadata = { title: 'Czat' }
+
+export default async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/auth/login')
+
+  const { data: conv } = await supabase
+    .from('conversations')
+    .select(`
+      id,
+      pet:pets(id, name, species, type),
+      pet_owner:profiles!conversations_pet_owner_id_fkey(id, email, full_name),
+      inquirer:profiles!conversations_inquirer_id_fkey(id, email, full_name)
+    `)
+    .eq('id', id)
+    .single()
+
+  if (!conv) notFound()
+
+  const { data: messages } = await supabase
+    .from('messages')
+    .select('*')
+    .eq('conversation_id', id)
+    .order('created_at', { ascending: true })
+
+  const other = (conv.pet_owner as any)?.id === user.id ? conv.inquirer : conv.pet_owner
+  const pet = conv.pet as any
+
+  return (
+    <div className="max-w-2xl mx-auto w-full px-4 py-6 flex flex-col h-[calc(100vh-64px)]">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-4 shrink-0">
+        <Link href="/chat" className="text-sm text-orange-500 hover:text-orange-600">←</Link>
+        <div className="flex-1">
+          <p className="font-semibold text-gray-900 text-sm">
+            {(other as any)?.full_name ?? (other as any)?.email ?? 'Użytkownik'}
+          </p>
+          <Link href={`/pets/${pet?.id}`} className="text-xs text-orange-500 hover:underline">
+            re: {pet?.name ?? pet?.species} ({pet?.type === 'lost' ? 'zaginiony' : 'znaleziony'}) →
+          </Link>
+        </div>
+      </div>
+
+      <ChatWindow
+        conversationId={id}
+        initialMessages={messages ?? []}
+        currentUserId={user.id}
+      />
+    </div>
+  )
+}

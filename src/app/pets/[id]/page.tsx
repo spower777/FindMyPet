@@ -7,6 +7,7 @@ import PetCard from '@/components/PetCard'
 import { resolvePet, updateMatchStatus } from '@/app/actions/pets'
 import type { PetWithPhotos, Match } from '@/lib/types'
 import type { Metadata } from 'next'
+import { startConversation } from '@/app/actions/chat'
 
 const SPECIES_EMOJI: Record<string, string> = {
   dog: '🐕', cat: '🐈', bird: '🐦', rabbit: '🐇', other: '🐾',
@@ -213,6 +214,28 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
                 Oznacz jako rozwiązane (zwierzę wróciło do domu)
               </button>
             </form>
+          )}
+
+          {/* Contact owner (for non-owners) */}
+          {!isOwner && user && pet.status === 'active' && (
+            <form action={startConversation.bind(null, pet.id, pet.user_id)} className="mt-4 pt-4 border-t border-gray-100">
+              <button
+                type="submit"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl text-sm transition active:scale-95"
+              >
+                💬 Napisz do właściciela
+              </button>
+            </form>
+          )}
+          {!isOwner && !user && pet.status === 'active' && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <Link
+                href={`/auth/login?next=/pets/${pet.id}`}
+                className="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl text-sm transition"
+              >
+                💬 Zaloguj się żeby napisać
+              </Link>
+            </div>
           )}
         </div>
       </div>
