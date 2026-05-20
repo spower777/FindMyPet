@@ -303,6 +303,15 @@ begin
 end;
 $$;
 
+-- Add animal_type + lat/lng to user_contacts (if not already present)
+alter table user_contacts add column if not exists animal_type text check (animal_type in ('dog','cat','bird','rabbit','exotic','other'));
+alter table user_contacts add column if not exists lat double precision;
+alter table user_contacts add column if not exists lng double precision;
+-- Add volunteer contact type (alter check constraint)
+-- Note: PostgreSQL doesn't support ALTER CHECK directly — drop and recreate if needed:
+-- alter table user_contacts drop constraint if exists user_contacts_type_check;
+-- alter table user_contacts add constraint user_contacts_type_check check (type in ('owner','vet','shelter','emergency','volunteer','other'));
+
 -- Vet profiles
 create table if not exists vet_profiles (
   id uuid primary key default gen_random_uuid(),
@@ -316,6 +325,8 @@ create table if not exists vet_profiles (
   address text,
   website text,
   verified boolean default false not null,
+  lat double precision,
+  lng double precision,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );

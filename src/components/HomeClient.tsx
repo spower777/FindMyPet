@@ -5,7 +5,9 @@ import MapView from '@/components/MapView'
 import PetCard from '@/components/PetCard'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import type { PetWithPhotos, PetType, PetSpecies } from '@/lib/types'
+import type { PetWithPhotos, PetType, PetSpecies, VetProfile, UserContact } from '@/lib/types'
+
+type MapLayer = 'all' | 'reports' | 'vets' | 'contacts'
 
 interface Filters {
   type: PetType | 'all'
@@ -13,10 +15,17 @@ interface Filters {
   date: 'all' | 'today' | 'week' | 'month'
 }
 
-export default function HomeClient({ pets }: { pets: PetWithPhotos[] }) {
+interface Props {
+  pets: PetWithPhotos[]
+  vets?: VetProfile[]
+  contacts?: UserContact[]
+}
+
+export default function HomeClient({ pets, vets = [], contacts = [] }: Props) {
   const t = useTranslations('home')
   const tf = useTranslations('filters')
   const [filters, setFilters] = useState<Filters>({ type: 'all', species: 'all', date: 'all' })
+  const [layer, setLayer] = useState<MapLayer>('all')
 
   const SPECIES_OPTIONS: { value: PetSpecies | 'all'; label: string }[] = [
     { value: 'all', label: tf('all_species') },
@@ -32,6 +41,13 @@ export default function HomeClient({ pets }: { pets: PetWithPhotos[] }) {
     { value: 'today', label: tf('today') },
     { value: 'week', label: tf('week') },
     { value: 'month', label: tf('month') },
+  ]
+
+  const LAYER_OPTIONS: { value: MapLayer; label: string; emoji: string }[] = [
+    { value: 'all',      label: t('layer_all'),      emoji: '🗺️' },
+    { value: 'reports',  label: t('layer_reports'),  emoji: '🐾' },
+    { value: 'vets',     label: t('layer_vets'),     emoji: '🏥' },
+    { value: 'contacts', label: t('layer_contacts'), emoji: '👥' },
   ]
 
   const filtered = useMemo(() => {
@@ -50,7 +66,11 @@ export default function HomeClient({ pets }: { pets: PetWithPhotos[] }) {
     })
   }, [pets, filters])
 
-  const lostCount = filtered.filter(p => p.type === 'lost').length
+  const mapPets     = layer === 'contacts' || layer === 'vets' ? [] : filtered
+  const mapVets     = layer === 'reports' || layer === 'contacts' ? [] : vets
+  const mapContacts = layer === 'reports' || layer === 'vets' ? [] : contacts
+
+  const lostCount  = filtered.filter(p => p.type === 'lost').length
   const foundCount = filtered.filter(p => p.type === 'found').length
   const isFiltered = filters.type !== 'all' || filters.species !== 'all' || filters.date !== 'all'
 
@@ -62,7 +82,27 @@ export default function HomeClient({ pets }: { pets: PetWithPhotos[] }) {
     <div className="flex-1 flex flex-col lg:flex-row">
       {/* Map */}
       <div className="relative lg:flex-1 h-[50vh] lg:h-auto">
-        <MapView pets={filtered} />
+        <MapView pets={mapPets} vets={mapVets} contacts={mapContacts} />
+
+        {/* Layer toggle */}
+        <div className="absolute top-3 left-3 z-10 flex gap-1 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl p-1 shadow-md border border-gray-100 dark:border-gray-800">
+          {LAYER_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => setLayer(opt.value)}
+              title={opt.label}
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium transition ${
+                layer === opt.value
+                  ? 'bg-orange-500 text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+              }`}
+            >
+              <span>{opt.emoji}</span>
+              <span className="hidden sm:inline">{opt.label}</span>
+            </button>
+          ))}
+        </div>
+
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10 lg:hidden">
           <Link href="/report/lost" className="bg-red-500 hover:bg-red-600 text-white font-semibold text-sm px-4 py-2.5 rounded-full shadow-lg transition">
             🔴 {t('lost_filter')}

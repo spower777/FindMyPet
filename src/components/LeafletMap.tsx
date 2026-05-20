@@ -3,38 +3,61 @@
 import { divIcon } from 'leaflet'
 import Link from 'next/link'
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
-import type { PetWithPhotos } from '@/lib/types'
+import type { PetWithPhotos, VetProfile, UserContact } from '@/lib/types'
 
 const SPECIES_EMOJI: Record<string, string> = {
-  dog: '🐕',
-  cat: '🐈',
-  bird: '🐦',
-  rabbit: '🐇',
-  other: '🐾',
+  dog: '🐕', cat: '🐈', bird: '🐦', rabbit: '🐇', other: '🐾',
+}
+
+const ANIMAL_EMOJI: Record<string, string> = {
+  dog: '🐕', cat: '🐈', bird: '🐦', rabbit: '🐇', exotic: '🦎', other: '🐾',
 }
 
 interface Props {
-  pets: PetWithPhotos[]
+  pets?: PetWithPhotos[]
+  vets?: VetProfile[]
+  contacts?: UserContact[]
   defaultCenter?: [number, number]
   defaultZoom?: number
   interactive?: boolean
 }
 
-function makeIcon(type: 'lost' | 'found') {
+function makeReportIcon(type: 'lost' | 'found') {
   const color = type === 'lost' ? '#ef4444' : '#22c55e'
   const border = type === 'lost' ? '#b91c1c' : '#15803d'
-
   return divIcon({
-    html: `<div style="width:20px;height:20px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${color};border:3px solid ${border};box-shadow:0 2px 6px rgba(0,0,0,0.35)"></div>`,
+    html: `<div style="width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${color};border:3px solid ${border};box-shadow:0 2px 6px rgba(0,0,0,0.35)"></div>`,
     className: '',
-    iconSize: [20, 20],
-    iconAnchor: [10, 20],
-    popupAnchor: [0, -22],
+    iconSize: [22, 22],
+    iconAnchor: [11, 22],
+    popupAnchor: [0, -24],
+  })
+}
+
+function makeVetIcon() {
+  return divIcon({
+    html: `<div style="width:16px;height:16px;border-radius:50%;background:#3b82f6;border:2.5px solid #1d4ed8;box-shadow:0 1px 4px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:8px">🏥</div>`,
+    className: '',
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+    popupAnchor: [0, -10],
+  })
+}
+
+function makeContactIcon() {
+  return divIcon({
+    html: `<div style="width:12px;height:12px;border-radius:50%;background:#6b7280;border:2px solid #374151;box-shadow:0 1px 3px rgba(0,0,0,0.25)"></div>`,
+    className: '',
+    iconSize: [12, 12],
+    iconAnchor: [6, 6],
+    popupAnchor: [0, -8],
   })
 }
 
 export default function LeafletMap({
-  pets,
+  pets = [],
+  vets = [],
+  contacts = [],
   defaultCenter = [52.2297, 21.0122],
   defaultZoom = 12,
   interactive = true,
@@ -54,11 +77,13 @@ export default function LeafletMap({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+
+      {/* Report markers */}
       {pets.map(pet => (
         <Marker
           key={pet.id}
           position={[pet.last_seen_lat, pet.last_seen_lng]}
-          icon={makeIcon(pet.type)}
+          icon={makeReportIcon(pet.type)}
         >
           <Popup maxWidth={220}>
             <div className="min-w-[180px]">
@@ -84,6 +109,52 @@ export default function LeafletMap({
               >
                 Zobacz szczegóły →
               </Link>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+
+      {/* Vet markers */}
+      {vets.filter(v => v.lat && v.lng).map(vet => (
+        <Marker
+          key={vet.id}
+          position={[vet.lat!, vet.lng!]}
+          icon={makeVetIcon()}
+        >
+          <Popup maxWidth={200}>
+            <div className="min-w-[160px]">
+              <div className="text-xs font-bold text-blue-600 mb-1">🏥 Weterynarz</div>
+              <p className="font-semibold text-sm text-gray-900">{vet.clinic_name}</p>
+              <p className="text-xs text-gray-600">{vet.vet_name}</p>
+              {vet.phone && (
+                <a href={`tel:${vet.phone}`} className="text-xs text-orange-500 hover:underline block mt-1">
+                  📞 {vet.phone}
+                </a>
+              )}
+              {vet.address && <p className="text-xs text-gray-500 mt-0.5">📍 {vet.address}</p>}
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+
+      {/* Contact markers */}
+      {contacts.filter(c => c.lat && c.lng).map(contact => (
+        <Marker
+          key={contact.id}
+          position={[contact.lat!, contact.lng!]}
+          icon={makeContactIcon()}
+        >
+          <Popup maxWidth={180}>
+            <div className="min-w-[140px]">
+              <p className="font-semibold text-sm text-gray-900">{contact.name}</p>
+              {contact.animal_type && (
+                <p className="text-xs text-gray-500">{ANIMAL_EMOJI[contact.animal_type]} {contact.animal_type}</p>
+              )}
+              {contact.phone && (
+                <a href={`tel:${contact.phone}`} className="text-xs text-orange-500 hover:underline block mt-1">
+                  📞 {contact.phone}
+                </a>
+              )}
             </div>
           </Popup>
         </Marker>

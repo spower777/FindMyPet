@@ -91,22 +91,27 @@ export interface ConversationDetail {
   inquirer: ProfileSummary | null
 }
 
-export type ContactType = 'owner' | 'vet' | 'shelter' | 'emergency' | 'other'
+export type ContactType = 'owner' | 'vet' | 'shelter' | 'emergency' | 'volunteer' | 'other'
+export type AnimalType = 'dog' | 'cat' | 'bird' | 'rabbit' | 'exotic' | 'other'
 
 export interface UserContact {
   id: string
   user_id: string
   type: ContactType
+  animal_type: AnimalType | null
   name: string
   phone: string | null
   email: string | null
   note: string | null
+  lat: number | null
+  lng: number | null
   created_at: string
   updated_at: string
 }
 
 export interface CreateContactData {
   type: ContactType
+  animal_type: AnimalType | null
   name: string
   phone: string
   email: string
@@ -127,6 +132,8 @@ export interface VetProfile {
   address: string | null
   website: string | null
   verified: boolean
+  lat: number | null
+  lng: number | null
   created_at: string
   updated_at: string
 }
@@ -140,6 +147,8 @@ export interface CreateVetProfileData {
   email: string
   address: string
   website: string
+  lat: number | null
+  lng: number | null
 }
 
 export interface CreatePetData {

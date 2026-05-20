@@ -4,10 +4,22 @@ import { useState } from 'react'
 import { upsertVetProfile } from '@/app/actions/vet'
 import { useTranslations } from 'next-intl'
 import type { VetProfile, VetSpecialization } from '@/lib/types'
+import LocationPicker from '@/components/LocationPicker'
 
 const SPECIALIZATIONS: VetSpecialization[] = [
   'general', 'surgery', 'exotic', 'dentistry', 'dermatology', 'orthopedics', 'oncology', 'other',
 ]
+
+function normalizeUrl(raw: string): string | null {
+  const trimmed = raw.trim()
+  if (!trimmed) return null
+  if (/^https?:\/\//i.test(trimmed)) return trimmed
+  return `https://${trimmed}`
+}
+
+function isValidUrl(url: string): boolean {
+  try { new URL(url); return true } catch { return false }
+}
 
 export default function VetForm({ existing }: { existing: VetProfile | null }) {
   const t = useTranslations('vet')
@@ -18,7 +30,12 @@ export default function VetForm({ existing }: { existing: VetProfile | null }) {
   const [phone, setPhone] = useState(existing?.phone ?? '')
   const [email, setEmail] = useState(existing?.email ?? '')
   const [address, setAddress] = useState(existing?.address ?? '')
-  const [website, setWebsite] = useState(existing?.website ?? '')
+  const [websiteRaw, setWebsiteRaw] = useState(
+    existing?.website ? existing.website.replace(/^https?:\/\//i, '') : ''
+  )
+  const [websiteError, setWebsiteError] = useState<string | null>(null)
+  const [lat, setLat] = useState<number | null>(existing?.lat ?? null)
+  const [lng, setLng] = useState<number | null>(existing?.lng ?? null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -36,6 +53,18 @@ export default function VetForm({ existing }: { existing: VetProfile | null }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setWebsiteError(null)
+
+    let normalizedWebsite = ''
+    if (websiteRaw.trim()) {
+      const normalized = normalizeUrl(websiteRaw)
+      if (!normalized || !isValidUrl(normalized)) {
+        setWebsiteError(t('website_invalid'))
+        return
+      }
+      normalizedWebsite = normalized
+    }
+
     setSaving(true)
     setSaved(false)
     setError(null)
@@ -48,7 +77,9 @@ export default function VetForm({ existing }: { existing: VetProfile | null }) {
         phone,
         email,
         address,
-        website,
+        website: normalizedWebsite,
+        lat,
+        lng,
       })
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
@@ -135,7 +166,29 @@ export default function VetForm({ existing }: { existing: VetProfile | null }) {
 
       <div>
         <label className={labelCls}>{t('website')}</label>
-        <input type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://klinika.pl" className={inputCls} />
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 select-none pointer-events-none">https://</span>
+          <input
+            value={websiteRaw}
+            onChange={e => { setWebsiteRaw(e.target.value); setWebsiteError(null) }}
+            placeholder="klinika.pl"
+            className={`${inputCls} pl-16`}
+          />
+        </div>
+        {websiteError && <p className="text-xs text-red-500 mt-1">{websiteError}</p>}
+      </div>
+
+      <div>
+        <label className={labelCls}>{t('location')}</label>
+        <LocationPicker
+          lat={lat}
+          lng={lng}
+          onChange={(newLat, newLng, newAddress) => {
+            setLat(newLat)
+            setLng(newLng)
+            if (!address && newAddress) setAddress(newAddress)
+          }}
+        />
       </div>
 
       {error && (

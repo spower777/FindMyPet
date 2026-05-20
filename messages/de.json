@@ -5,7 +5,9 @@
     "login": "Anmelden",
     "profile": "Mein Profil",
     "logout": "Abmelden",
-    "chat": "Nachrichten"
+    "chat": "Nachrichten",
+    "trop": "Suchen",
+    "contacts": "Kontakte"
   },
   "home": {
     "active": "Aktive Meldungen",
@@ -17,7 +19,11 @@
     "no_results": "Keine Ergebnisse für diese Filter",
     "clear_filters": "Filter löschen",
     "report_lost": "Vermisst melden",
-    "report_found": "Gefunden melden"
+    "report_found": "Gefunden melden",
+    "layer_all": "Alle",
+    "layer_reports": "Meldungen",
+    "layer_vets": "Tierärzte",
+    "layer_contacts": "Kontakte"
   },
   "filters": {
     "all_species": "Alle",
@@ -87,7 +93,23 @@
     "vet": "Tierarzt",
     "shelter": "Tierheim",
     "emergency": "Notfallkontakt",
+    "volunteer": "Freiwilliger",
     "other": "Andere"
+  },
+  "animal_types": {
+    "dog": "Hund",
+    "cat": "Katze",
+    "bird": "Vogel",
+    "rabbit": "Kaninchen",
+    "exotic": "Exoten",
+    "other": "Andere"
+  },
+  "contacts_page": {
+    "title": "Meine Kontakte",
+    "subtitle": "Tierärzte, Tierheime, Freiwillige",
+    "no_contacts": "Keine Kontakte",
+    "no_contacts_hint": "Ersten Kontakt unten hinzufügen",
+    "animal_type": "Tierart"
   },
   "chat": {
     "title": "Nachrichten",
@@ -140,7 +162,9 @@
     "spec_oncology": "Onkologie",
     "spec_other": "Andere",
     "edit_profile": "Tierarzt-Profil bearbeiten",
-    "pending_verification": "Verifizierung ausstehend"
+    "pending_verification": "Verifizierung ausstehend",
+    "website_invalid": "Gültige Adresse eingeben (z.B. klinik.de oder https://klinik.de)",
+    "location": "Klinikstandort (optional)"
   },
   "form": {
     "lost_title": "Vermisstes Tier melden",

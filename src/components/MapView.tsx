@@ -1,22 +1,35 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import type { PetWithPhotos } from '@/lib/types'
+import type { PetWithPhotos, VetProfile, UserContact } from '@/lib/types'
 
 interface Props {
-  pets: PetWithPhotos[]
+  pets?: PetWithPhotos[]
+  vets?: VetProfile[]
+  contacts?: UserContact[]
   defaultCenter?: [number, number]
   defaultZoom?: number
   interactive?: boolean
 }
 
 export default function MapView({
-  pets,
+  pets = [],
+  vets = [],
+  contacts = [],
   defaultCenter = [52.2297, 21.0122],
   defaultZoom = 12,
   interactive = true,
 }: Props) {
-  return <LeafletMap pets={pets} defaultCenter={defaultCenter} defaultZoom={defaultZoom} interactive={interactive} />
+  return (
+    <LeafletMap
+      pets={pets}
+      vets={vets}
+      contacts={contacts}
+      defaultCenter={defaultCenter}
+      defaultZoom={defaultZoom}
+      interactive={interactive}
+    />
+  )
 }
 
 const LeafletMap = dynamic(() => import('@/components/LeafletMap'), {

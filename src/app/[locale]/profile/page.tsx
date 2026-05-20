@@ -4,10 +4,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { resolvePet, deletePet } from '@/app/actions/pets'
 import type { Metadata } from 'next'
-import type { PetWithPhotos, UserContact, VetProfile } from '@/lib/types'
+import type { PetWithPhotos, VetProfile } from '@/lib/types'
 import DeletePetForm from './DeletePetForm'
-import AddContactForm from './AddContactForm'
-import DeleteContactButton from './DeleteContactButton'
 import { getTranslations } from 'next-intl/server'
 
 export const metadata: Metadata = { title: 'Mój profil' }
@@ -16,13 +14,6 @@ const SPECIES_EMOJI: Record<string, string> = {
   dog: '🐕', cat: '🐈', bird: '🐦', rabbit: '🐇', other: '🐾',
 }
 
-const CONTACT_TYPE_META: Record<string, { emoji: string; color: string }> = {
-  owner:     { emoji: '👤', color: 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300' },
-  vet:       { emoji: '🏥', color: 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300' },
-  shelter:   { emoji: '🏠', color: 'bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300' },
-  emergency: { emoji: '🚨', color: 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300' },
-  other:     { emoji: '📋', color: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400' },
-}
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -30,21 +21,15 @@ export default async function ProfilePage() {
   if (!user) redirect('/auth/login?next=/profile')
 
   const t = await getTranslations('profile')
-  const tc = await getTranslations('contact_types')
   const tv = await getTranslations('vet')
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 
-  const [{ data: pets }, { data: contacts }, { data: vetData }] = await Promise.all([
+  const [{ data: pets }, { data: vetData }] = await Promise.all([
     supabase
       .from('pets')
       .select('*, photos:pet_photos(*)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false }),
-    supabase
-      .from('user_contacts')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: true }),
     supabase
       .from('vet_profiles')
       .select('*')
@@ -66,7 +51,6 @@ export default async function ProfilePage() {
 
   const active = petsWithPhotos.filter(p => p.status === 'active')
   const resolved = petsWithPhotos.filter(p => p.status === 'resolved')
-  const userContacts = (contacts ?? []) as UserContact[]
 
   return (
     <div className="max-w-4xl mx-auto w-full px-4 py-8 space-y-8">
@@ -183,44 +167,20 @@ export default async function ProfilePage() {
         )}
       </section>
 
-      {/* Contacts */}
-      <section>
-        <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">{t('contacts')}</h2>
-        <div className="space-y-2 mb-3">
-          {userContacts.map(contact => {
-            const meta = CONTACT_TYPE_META[contact.type] ?? CONTACT_TYPE_META.other
-            return (
-              <div key={contact.id} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${meta.color}`}>
-                        {meta.emoji} {tc(contact.type as 'owner' | 'vet' | 'shelter' | 'emergency' | 'other')}
-                      </span>
-                    </div>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{contact.name}</p>
-                    {contact.phone && (
-                      <a href={`tel:${contact.phone}`} className="text-xs text-orange-500 hover:underline block mt-0.5">
-                        📞 {contact.phone}
-                      </a>
-                    )}
-                    {contact.email && (
-                      <a href={`mailto:${contact.email}`} className="text-xs text-orange-500 hover:underline block mt-0.5">
-                        ✉️ {contact.email}
-                      </a>
-                    )}
-                    {contact.note && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{contact.note}</p>
-                    )}
-                  </div>
-                  <DeleteContactButton contactId={contact.id} />
-                </div>
-              </div>
-            )
-          })}
+      {/* Contacts link */}
+      <Link
+        href="/contacts"
+        className="flex items-center justify-between bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-4 hover:border-orange-200 dark:hover:border-orange-800 transition group"
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">👥</span>
+          <div>
+            <p className="font-semibold text-gray-900 dark:text-gray-100">{t('contacts')}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">Weterynarze, schroniska, wolontariusze</p>
+          </div>
         </div>
-        <AddContactForm />
-      </section>
+        <span className="text-gray-300 dark:text-gray-600 group-hover:text-orange-400 transition text-lg">→</span>
+      </Link>
     </div>
   )
 }

@@ -12,6 +12,7 @@ export async function createContact(data: CreateContactData) {
   const { error } = await supabase.from('user_contacts').insert({
     user_id: user.id,
     type: data.type,
+    animal_type: data.animal_type,
     name: data.name.trim(),
     phone: data.phone.trim() || null,
     email: data.email.trim() || null,
@@ -20,6 +21,7 @@ export async function createContact(data: CreateContactData) {
 
   if (error) throw new Error(error.message)
   revalidatePath('/profile')
+  revalidatePath('/contacts')
 }
 
 export async function deleteContact(contactId: string) {
@@ -34,4 +36,5 @@ export async function deleteContact(contactId: string) {
     .eq('user_id', user.id)
 
   revalidatePath('/profile')
+  revalidatePath('/contacts')
 }

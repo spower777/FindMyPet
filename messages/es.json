@@ -5,7 +5,9 @@
     "login": "Iniciar sesión",
     "profile": "Mi perfil",
     "logout": "Cerrar sesión",
-    "chat": "Mensajes"
+    "chat": "Mensajes",
+    "trop": "Explorar",
+    "contacts": "Contactos"
   },
   "home": {
     "active": "Reportes activos",
@@ -17,7 +19,11 @@
     "no_results": "Sin resultados para estos filtros",
     "clear_filters": "Limpiar filtros",
     "report_lost": "Reportar perdido",
-    "report_found": "Reportar encontrado"
+    "report_found": "Reportar encontrado",
+    "layer_all": "Todo",
+    "layer_reports": "Reportes",
+    "layer_vets": "Veterinarios",
+    "layer_contacts": "Contactos"
   },
   "filters": {
     "all_species": "Todos",
@@ -87,7 +93,23 @@
     "vet": "Veterinario",
     "shelter": "Refugio",
     "emergency": "Contacto de emergencia",
+    "volunteer": "Voluntario",
     "other": "Otro"
+  },
+  "animal_types": {
+    "dog": "Perro",
+    "cat": "Gato",
+    "bird": "Pájaro",
+    "rabbit": "Conejo",
+    "exotic": "Exótico",
+    "other": "Otro"
+  },
+  "contacts_page": {
+    "title": "Mis contactos",
+    "subtitle": "Veterinarios, refugios, voluntarios",
+    "no_contacts": "Sin contactos",
+    "no_contacts_hint": "Añade tu primer contacto abajo",
+    "animal_type": "Tipo de animal"
   },
   "chat": {
     "title": "Mensajes",
@@ -140,7 +162,9 @@
     "spec_oncology": "Oncología",
     "spec_other": "Otra",
     "edit_profile": "Editar perfil de veterinario",
-    "pending_verification": "Verificación pendiente"
+    "pending_verification": "Verificación pendiente",
+    "website_invalid": "Ingresa una dirección válida (ej. clinica.com o https://clinica.com)",
+    "location": "Ubicación de la clínica (opcional)"
   },
   "form": {
     "lost_title": "Reportar mascota perdida",

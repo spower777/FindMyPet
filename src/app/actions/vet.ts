@@ -21,6 +21,8 @@ export async function upsertVetProfile(data: CreateVetProfileData) {
       email: data.email || null,
       address: data.address || null,
       website: data.website || null,
+      lat: data.lat,
+      lng: data.lng,
     }, { onConflict: 'user_id' })
 
   if (error) throw new Error(error.message)

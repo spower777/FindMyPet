@@ -17,6 +17,22 @@ export default async function Navbar() {
         <span className="hidden sm:block">FindMyPet</span>
       </Link>
 
+      <Link
+        href="/"
+        className="hidden md:flex items-center gap-1 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-orange-500 px-2.5 py-1.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 transition"
+      >
+        🐾 {t('trop')}
+      </Link>
+
+      {user && (
+        <Link
+          href="/contacts"
+          className="hidden md:flex items-center gap-1 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-orange-500 px-2.5 py-1.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 transition"
+        >
+          👥 {t('contacts')}
+        </Link>
+      )}
+
       <div className="flex-1" />
 
       <div className="flex items-center gap-2">

@@ -3,21 +3,30 @@
 import { useState, useTransition } from 'react'
 import { createContact } from '@/app/actions/contacts'
 import { useTranslations } from 'next-intl'
-import type { ContactType } from '@/lib/types'
+import type { ContactType, AnimalType } from '@/lib/types'
 
 const CONTACT_TYPE_EMOJIS: Record<ContactType, string> = {
-  owner: '👤', vet: '🏥', shelter: '🏠', emergency: '🚨', other: '📋',
+  owner: '👤', vet: '🏥', shelter: '🏠', emergency: '🚨', volunteer: '🙋', other: '📋',
+}
+
+const ANIMAL_TYPE_EMOJIS: Record<AnimalType, string> = {
+  dog: '🐕', cat: '🐈', bird: '🐦', rabbit: '🐇', exotic: '🦎', other: '🐾',
 }
 
 export default function AddContactForm() {
   const t = useTranslations('profile')
   const tc = useTranslations('contact_types')
+  const ta = useTranslations('animal_types')
   const tf = useTranslations('form')
+  const tcp = useTranslations('contacts_page')
+  // tf used for input placeholders
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [animalType, setAnimalType] = useState<AnimalType | ''>('')
 
-  const contactTypes: ContactType[] = ['owner', 'vet', 'shelter', 'emergency', 'other']
+  const contactTypes: ContactType[] = ['owner', 'vet', 'shelter', 'emergency', 'volunteer', 'other']
+  const animalTypes: AnimalType[] = ['dog', 'cat', 'bird', 'rabbit', 'exotic', 'other']
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -30,12 +39,14 @@ export default function AddContactForm() {
       try {
         await createContact({
           type: fd.get('type') as ContactType,
+          animal_type: (animalType || null) as AnimalType | null,
           name,
           phone: fd.get('phone') as string,
           email: fd.get('email') as string,
           note: fd.get('note') as string,
         })
         setOpen(false)
+        setAnimalType('')
         ;(e.target as HTMLFormElement).reset()
       } catch {
         setError(t('contact_error'))
@@ -63,10 +74,41 @@ export default function AddContactForm() {
       <select name="type" defaultValue="other" className={inputCls}>
         {contactTypes.map(type => (
           <option key={type} value={type}>
-            {CONTACT_TYPE_EMOJIS[type]} {tc(type)}
+            {CONTACT_TYPE_EMOJIS[type]} {tc(type as 'owner' | 'vet' | 'shelter' | 'emergency' | 'volunteer' | 'other')}
           </option>
         ))}
       </select>
+
+      <div>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5">{tcp('animal_type')}</p>
+        <div className="flex gap-1.5 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setAnimalType('')}
+            className={`px-2.5 py-1.5 rounded-lg border text-xs font-medium transition ${
+              animalType === ''
+                ? 'border-orange-400 bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300'
+                : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300'
+            }`}
+          >
+            🐾 —
+          </button>
+          {animalTypes.map(at => (
+            <button
+              key={at}
+              type="button"
+              onClick={() => setAnimalType(at)}
+              className={`px-2.5 py-1.5 rounded-lg border text-xs font-medium transition ${
+                animalType === at
+                  ? 'border-orange-400 bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300'
+                  : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300'
+              }`}
+            >
+              {ANIMAL_TYPE_EMOJIS[at]} {ta(at)}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <input name="name" placeholder={tf('name_placeholder')} required className={inputCls} />
       <input name="phone" type="tel" placeholder={tf('phone_placeholder')} className={inputCls} />
@@ -79,7 +121,7 @@ export default function AddContactForm() {
         <button type="submit" disabled={isPending} className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold py-2 rounded-xl text-sm transition">
           {isPending ? t('saving') : t('save')}
         </button>
-        <button type="button" onClick={() => { setOpen(false); setError(null) }} className="px-4 py-2 rounded-xl text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+        <button type="button" onClick={() => { setOpen(false); setError(null); setAnimalType('') }} className="px-4 py-2 rounded-xl text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
           {t('cancel')}
         </button>
       </div>

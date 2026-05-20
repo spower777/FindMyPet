@@ -5,7 +5,9 @@
     "login": "Zaloguj się",
     "profile": "Mój profil",
     "logout": "Wyloguj",
-    "chat": "Wiadomości"
+    "chat": "Wiadomości",
+    "trop": "Trop",
+    "contacts": "Kontakty"
   },
   "home": {
     "active": "Aktywne zgłoszenia",
@@ -17,7 +19,11 @@
     "no_results": "Brak wyników dla tych filtrów",
     "clear_filters": "Wyczyść filtry",
     "report_lost": "Zgłoś zagubione",
-    "report_found": "Zgłoś znalezione"
+    "report_found": "Zgłoś znalezione",
+    "layer_all": "Wszystkie",
+    "layer_reports": "Zgłoszenia",
+    "layer_vets": "Weterynarze",
+    "layer_contacts": "Kontakty"
   },
   "filters": {
     "all_species": "Wszystkie",
@@ -87,7 +93,16 @@
     "vet": "Weterynarz",
     "shelter": "Schronisko",
     "emergency": "Kontakt awaryjny",
+    "volunteer": "Wolontariusz",
     "other": "Inny"
+  },
+  "animal_types": {
+    "dog": "Pies",
+    "cat": "Kot",
+    "bird": "Ptak",
+    "rabbit": "Królik",
+    "exotic": "Egzotyczne",
+    "other": "Inne"
   },
   "chat": {
     "title": "Wiadomości",
@@ -110,6 +125,13 @@
     "google": "Zaloguj przez Google",
     "no_account": "Nie masz konta?",
     "have_account": "Masz już konto?"
+  },
+  "contacts_page": {
+    "title": "Moje kontakty",
+    "subtitle": "Weterynarze, schroniska, wolontariusze",
+    "no_contacts": "Brak kontaktów",
+    "no_contacts_hint": "Dodaj pierwszy kontakt poniżej",
+    "animal_type": "Gatunek zwierzaka"
   },
   "vet": {
     "title": "Profil weterynarza",
@@ -140,7 +162,9 @@
     "spec_oncology": "Onkologia",
     "spec_other": "Inna",
     "edit_profile": "Edytuj profil weterynarza",
-    "pending_verification": "Oczekuje na weryfikację"
+    "pending_verification": "Oczekuje na weryfikację",
+    "website_invalid": "Podaj poprawny adres (np. klinika.pl lub https://klinika.pl)",
+    "location": "Lokalizacja kliniki (opcjonalnie)"
   },
   "form": {
     "lost_title": "Zgłoś zaginione zwierzę",
