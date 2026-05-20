@@ -11,8 +11,8 @@ function NavLink({ href, children, exact = false }: { href: string; children: Re
       href={href}
       className={`flex items-center gap-1.5 text-sm font-medium px-2.5 py-1.5 rounded-xl transition ${
         isActive
-          ? 'text-orange-500 bg-orange-50 dark:bg-orange-950'
-          : 'text-gray-600 dark:text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-950'
+          ? 'text-orange-500 bg-orange-50 dark:bg-orange-950/80'
+          : 'text-gray-500 dark:text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-950/60'
       }`}
     >
       {children}

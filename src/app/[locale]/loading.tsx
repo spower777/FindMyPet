@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <div className="flex-1 flex flex-col lg:flex-row">
+    <div className="flex-1 flex flex-col lg:flex-row h-[calc(100vh-3.5rem)] overflow-hidden">
       {/* Map placeholder */}
       <div className="lg:flex-1 h-[50vh] lg:h-auto bg-gray-100 dark:bg-gray-800 animate-pulse" />
 

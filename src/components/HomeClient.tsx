@@ -79,7 +79,7 @@ export default function HomeClient({ pets, vets = [], contacts = [] }: Props) {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="flex flex-col lg:flex-row h-[calc(100vh-3.5rem)] overflow-hidden">
       {/* Map — fixed height on mobile, full height on desktop */}
       <div className="relative flex-none h-[42%] lg:h-auto lg:flex-1">
         <MapView pets={mapPets} vets={mapVets} contacts={mapContacts} />
