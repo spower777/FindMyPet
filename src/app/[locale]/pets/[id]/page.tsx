@@ -6,11 +6,13 @@ import MapView from '@/components/MapView'
 import PetCard from '@/components/PetCard'
 import { resolvePet, updateMatchStatus } from '@/app/actions/pets'
 import { secureAnimal } from '@/app/actions/vet'
-import type { PetWithPhotos, Match, VetProfile } from '@/lib/types'
+import type { PetWithPhotos, Match, VetProfile, PetVaccination, PetMedicalRecord } from '@/lib/types'
 import type { Metadata } from 'next'
 import { startConversation } from '@/app/actions/chat'
 import { getTranslations } from 'next-intl/server'
 import ShareButton from '@/components/ShareButton'
+import VaccinationSection from '@/components/medical/VaccinationSection'
+import MedicalRecordsSection from '@/components/medical/MedicalRecordsSection'
 
 const SPECIES_EMOJI: Record<string, string> = {
   dog: '🐕', cat: '🐈', bird: '🐦', rabbit: '🐇', other: '🐾',
@@ -121,6 +123,17 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
 
   const isOwner = user?.id === pet.user_id
   const isLost = pet.type === 'lost'
+
+  // Fetch medical data — only for the owner, parallel
+  const [{ data: rawVaccinations }, { data: rawRecords }] = isOwner
+    ? await Promise.all([
+        supabase.from('pet_vaccinations').select('*').eq('pet_id', id).order('date_given', { ascending: false }),
+        supabase.from('pet_medical_records').select('*').eq('pet_id', id).order('date', { ascending: false }),
+      ])
+    : [{ data: [] }, { data: [] }]
+
+  const vaccinations = (rawVaccinations ?? []) as PetVaccination[]
+  const medicalRecords = (rawRecords ?? []) as PetMedicalRecord[]
   const petName = pet.name ?? ts(pet.species as 'dog' | 'cat' | 'bird' | 'rabbit' | 'other')
 
   // Age calculation
@@ -479,6 +492,41 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
 
         {isOwner && matches.length === 0 && pet.status === 'active' && (
           <p className="text-center text-sm text-gray-400 py-2">{t('no_ai_matches')}</p>
+        )}
+
+        {/* ── MEDICAL (owner only) ── */}
+        {isOwner && (
+          <>
+            <div className={sectionCls}>
+              <div className={sectionHeaderCls}>
+                <span className="text-base">💉</span>
+                <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm flex-1">
+                  {t('profile_data')} — szczepienia
+                </h2>
+                <span className="text-xs text-gray-400 bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-400 px-2 py-0.5 rounded-full">
+                  {vaccinations.length}
+                </span>
+              </div>
+              <div className="p-5">
+                <VaccinationSection petId={id} vaccinations={vaccinations} />
+              </div>
+            </div>
+
+            <div className={sectionCls}>
+              <div className={sectionHeaderCls}>
+                <span className="text-base">🩺</span>
+                <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm flex-1">
+                  {t('profile_data')} — historia medyczna
+                </h2>
+                <span className="text-xs bg-orange-50 dark:bg-orange-950 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full">
+                  {medicalRecords.length}
+                </span>
+              </div>
+              <div className="p-5">
+                <MedicalRecordsSection petId={id} records={medicalRecords} />
+              </div>
+            </div>
+          </>
         )}
 
       </div>
