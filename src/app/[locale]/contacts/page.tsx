@@ -1,10 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { redirect } from '@/i18n/navigation'
 import type { Metadata } from 'next'
 import type { UserContact } from '@/lib/types'
 import AddContactForm from '@/app/[locale]/profile/AddContactForm'
 import DeleteContactButton from '@/app/[locale]/profile/DeleteContactButton'
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, getLocale } from 'next-intl/server'
 
 export const metadata: Metadata = { title: 'Kontakty — FindMyPet' }
 
@@ -24,7 +24,8 @@ const ANIMAL_TYPE_EMOJIS: Record<string, string> = {
 export default async function ContactsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login?next=/contacts')
+  const locale = await getLocale()
+  if (!user) return redirect({ href: '/auth/login?next=/contacts', locale })
 
   const t = await getTranslations('contacts_page')
   const tc = await getTranslations('contact_types')

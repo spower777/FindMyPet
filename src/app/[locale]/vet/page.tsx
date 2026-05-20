@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { redirect } from '@/i18n/navigation'
 import type { Metadata } from 'next'
 import type { VetProfile } from '@/lib/types'
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, getLocale } from 'next-intl/server'
 import VetForm from './VetForm'
 
 export const metadata: Metadata = { title: 'Vet Profile — FindMyPet' }
@@ -10,7 +10,8 @@ export const metadata: Metadata = { title: 'Vet Profile — FindMyPet' }
 export default async function VetPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login?next=/vet')
+  const locale = await getLocale()
+  if (!user) return redirect({ href: '/auth/login?next=/vet', locale })
 
   const t = await getTranslations('vet')
 

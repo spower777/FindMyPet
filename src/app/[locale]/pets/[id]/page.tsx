@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import MapView from '@/components/MapView'
 import PetCard from '@/components/PetCard'
 import { resolvePet, updateMatchStatus } from '@/app/actions/pets'

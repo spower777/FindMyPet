@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import Link from 'next/link'
+import { redirect } from '@/i18n/navigation'
+import { Link } from '@/i18n/navigation'
 import type { Metadata } from 'next'
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, getLocale } from 'next-intl/server'
 import type {
   ConversationListItem,
   ConversationPetSummary,
@@ -30,7 +30,8 @@ const SPECIES_EMOJI: Record<string, string> = {
 export default async function ChatListPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login?next=/chat')
+  const locale = await getLocale()
+  if (!user) return redirect({ href: '/auth/login?next=/chat', locale })
 
   const t = await getTranslations('chat')
 

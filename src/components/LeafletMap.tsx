@@ -1,8 +1,9 @@
 'use client'
 
 import { divIcon } from 'leaflet'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
+import { useTranslations } from 'next-intl'
 import type { PetWithPhotos, VetProfile, UserContact } from '@/lib/types'
 
 const SPECIES_EMOJI: Record<string, string> = {
@@ -62,6 +63,10 @@ export default function LeafletMap({
   defaultZoom = 12,
   interactive = true,
 }: Props) {
+  const t = useTranslations('pet')
+  const tv = useTranslations('vet')
+  const ta = useTranslations('animal_types')
+
   return (
     <MapContainer
       center={defaultCenter}
@@ -96,7 +101,7 @@ export default function LeafletMap({
                 />
               )}
               <div className={`text-xs font-bold uppercase mb-1 ${pet.type === 'lost' ? 'text-red-600' : 'text-green-600'}`}>
-                {pet.type === 'lost' ? '🔴 Zaginął' : '🟢 Znaleziony'}
+                {pet.type === 'lost' ? `🔴 ${t('lost')}` : `🟢 ${t('found')}`}
               </div>
               <p className="font-semibold text-sm text-gray-900">
                 {SPECIES_EMOJI[pet.species]} {pet.name ?? pet.species}
@@ -107,7 +112,7 @@ export default function LeafletMap({
                 href={`/pets/${pet.id}`}
                 className="mt-2 block text-center text-xs bg-orange-500 text-white py-1.5 px-3 rounded font-medium hover:bg-orange-600 transition"
               >
-                Zobacz szczegóły →
+                {t('see')} →
               </Link>
             </div>
           </Popup>
@@ -123,7 +128,7 @@ export default function LeafletMap({
         >
           <Popup maxWidth={200}>
             <div className="min-w-[160px]">
-              <div className="text-xs font-bold text-blue-600 mb-1">🏥 Weterynarz</div>
+              <div className="text-xs font-bold text-blue-600 mb-1">🏥 {tv('badge')}</div>
               <p className="font-semibold text-sm text-gray-900">{vet.clinic_name}</p>
               <p className="text-xs text-gray-600">{vet.vet_name}</p>
               {vet.phone && (
@@ -148,7 +153,7 @@ export default function LeafletMap({
             <div className="min-w-[140px]">
               <p className="font-semibold text-sm text-gray-900">{contact.name}</p>
               {contact.animal_type && (
-                <p className="text-xs text-gray-500">{ANIMAL_EMOJI[contact.animal_type]} {contact.animal_type}</p>
+                <p className="text-xs text-gray-500">{ANIMAL_EMOJI[contact.animal_type]} {ta(contact.animal_type as 'dog' | 'cat' | 'bird' | 'rabbit' | 'exotic' | 'other')}</p>
               )}
               {contact.phone && (
                 <a href={`tel:${contact.phone}`} className="text-xs text-orange-500 hover:underline block mt-1">

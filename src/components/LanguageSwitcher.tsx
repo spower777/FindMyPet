@@ -1,16 +1,12 @@
 'use client'
 
 import { useLocale } from 'next-intl'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter, usePathname } from '@/i18n/navigation'
 import { useState, useRef, useEffect } from 'react'
 import { routing } from '@/i18n/routing'
 
 const LOCALE_LABELS: Record<string, string> = {
-  pl: '🇵🇱',
-  en: '🇬🇧',
-  de: '🇩🇪',
-  es: '🇪🇸',
-  zh: '🇨🇳',
+  pl: '🇵🇱', en: '🇬🇧', de: '🇩🇪', es: '🇪🇸', zh: '🇨🇳',
 }
 
 export default function LanguageSwitcher() {
@@ -30,17 +26,8 @@ export default function LanguageSwitcher() {
 
   function switchLocale(next: string) {
     setOpen(false)
-    // Strip current locale prefix from pathname if present
-    let path = pathname
-    for (const loc of routing.locales) {
-      if (loc === routing.defaultLocale) continue
-      if (path.startsWith(`/${loc}/`)) { path = path.slice(loc.length + 1); break }
-      if (path === `/${loc}`) { path = '/'; break }
-    }
-    // Add new locale prefix (if not default)
-    const newPath = next === routing.defaultLocale ? path : `/${next}${path}`
-    router.push(newPath)
-    router.refresh()
+    // next-intl router keeps current pathname, only swaps locale
+    router.replace(pathname, { locale: next })
   }
 
   return (

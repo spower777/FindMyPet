@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect, notFound } from 'next/navigation'
-import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { redirect, Link } from '@/i18n/navigation'
 import type { Metadata } from 'next'
 import ChatWindow from './ChatWindow'
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, getLocale } from 'next-intl/server'
 import type {
   ChatMessage,
   ConversationDetail,
@@ -29,7 +29,8 @@ export default async function ChatPage({ params }: { params: Promise<{ id: strin
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  const locale = await getLocale()
+  if (!user) return redirect({ href: '/auth/login', locale })
 
   const { data } = await supabase
     .from('conversations')

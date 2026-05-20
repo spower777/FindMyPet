@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import MapView from '@/components/MapView'
 import PetCard from '@/components/PetCard'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { useTranslations } from 'next-intl'
 import type { PetWithPhotos, PetType, PetSpecies, VetProfile, UserContact } from '@/lib/types'
 

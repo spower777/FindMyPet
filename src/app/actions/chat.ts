@@ -1,13 +1,15 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { redirect } from '@/i18n/navigation'
+import { getLocale } from 'next-intl/server'
 import { revalidatePath } from 'next/cache'
 
 export async function startConversation(petId: string, petOwnerId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect(`/auth/login?next=/pets/${petId}`)
+  const locale = await getLocale()
+  if (!user) return redirect({ href: `/auth/login?next=/pets/${petId}`, locale })
   if (user.id === petOwnerId) return
 
   const { data: existing } = await supabase
@@ -17,7 +19,7 @@ export async function startConversation(petId: string, petOwnerId: string) {
     .eq('inquirer_id', user.id)
     .maybeSingle()
 
-  if (existing) redirect(`/chat/${existing.id}`)
+  if (existing) redirect({ href: `/chat/${existing.id}`, locale })
 
   const { data, error } = await supabase
     .from('conversations')
@@ -26,7 +28,7 @@ export async function startConversation(petId: string, petOwnerId: string) {
     .single()
 
   if (error || !data) throw new Error(error?.message)
-  redirect(`/chat/${data.id}`)
+  redirect({ href: `/chat/${data.id}`, locale })
 }
 
 export async function sendMessage(conversationId: string, content: string) {

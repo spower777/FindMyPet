@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/server'
 import NavbarAuth from './NavbarAuth'
 import LanguageSwitcher from './LanguageSwitcher'

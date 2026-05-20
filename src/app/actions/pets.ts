@@ -3,7 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { runMatching } from '@/lib/matching'
 import { sendPetAlert } from '@/lib/push'
-import { redirect } from 'next/navigation'
+import { redirect } from '@/i18n/navigation'
+import { getLocale } from 'next-intl/server'
 import { revalidatePath } from 'next/cache'
 import type { CreatePetData } from '@/lib/types'
 
@@ -19,7 +20,8 @@ function firstRelation<T>(value: T | T[] | null): T | null {
 export async function createPet(data: CreatePetData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  const locale = await getLocale()
+  if (!user) return redirect({ href: '/auth/login', locale })
 
   const { data: pet, error } = await supabase
     .from('pets')
@@ -67,7 +69,7 @@ export async function createPet(data: CreatePetData) {
   }
 
   revalidatePath('/')
-  redirect(`/pets/${pet.id}`)
+  redirect({ href: `/pets/${pet.id}`, locale })
 }
 
 export async function resolvePet(petId: string) {
@@ -88,12 +90,13 @@ export async function resolvePet(petId: string) {
 export async function deletePet(petId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const locale = await getLocale()
   if (!user) throw new Error('Unauthorized')
 
   await supabase.from('pets').delete().eq('id', petId).eq('user_id', user.id)
 
   revalidatePath('/')
-  redirect('/profile')
+  redirect({ href: '/profile', locale })
 }
 
 export async function updateMatchStatus(matchId: string, status: 'accepted' | 'rejected') {
