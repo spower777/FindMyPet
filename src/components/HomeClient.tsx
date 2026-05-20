@@ -79,9 +79,9 @@ export default function HomeClient({ pets, vets = [], contacts = [] }: Props) {
   }
 
   return (
-    <div className="flex-1 flex flex-col lg:flex-row">
-      {/* Map */}
-      <div className="relative lg:flex-1 h-[50vh] lg:h-auto">
+    <div className="flex flex-col lg:flex-row h-[calc(100vh-4rem)] overflow-hidden">
+      {/* Map — fixed height on mobile, full height on desktop */}
+      <div className="relative flex-none h-[42%] lg:h-auto lg:flex-1">
         <MapView pets={mapPets} vets={mapVets} contacts={mapContacts} />
 
         {/* Layer toggle */}
@@ -104,17 +104,17 @@ export default function HomeClient({ pets, vets = [], contacts = [] }: Props) {
         </div>
 
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10 lg:hidden">
-          <Link href="/report/lost" className="bg-red-500 hover:bg-red-600 text-white font-semibold text-sm px-4 py-2.5 rounded-full shadow-lg transition">
-            🔴 {t('lost_filter')}
+          <Link href="/report/lost" className="bg-red-500 hover:bg-red-600 text-white font-semibold text-sm px-4 py-2.5 rounded-full shadow-lg transition active:scale-95">
+            🔴 {t('report_lost')}
           </Link>
-          <Link href="/report/found" className="bg-green-500 hover:bg-green-600 text-white font-semibold text-sm px-4 py-2.5 rounded-full shadow-lg transition">
-            🟢 {t('found_filter')}
+          <Link href="/report/found" className="bg-green-500 hover:bg-green-600 text-white font-semibold text-sm px-4 py-2.5 rounded-full shadow-lg transition active:scale-95">
+            🟢 {t('report_found')}
           </Link>
         </div>
       </div>
 
-      {/* Sidebar */}
-      <div className="w-full lg:w-96 flex flex-col bg-white dark:bg-gray-900 border-l border-gray-100 dark:border-gray-800 lg:overflow-hidden">
+      {/* Sidebar — flex-1 on mobile takes remaining space, fixed width on desktop */}
+      <div className="flex-1 lg:flex-none lg:w-96 flex flex-col bg-white dark:bg-gray-900 border-t lg:border-t-0 border-l-0 lg:border-l border-gray-100 dark:border-gray-800 overflow-hidden">
         {/* Header */}
         <div className="p-4 border-b border-gray-100 dark:border-gray-800 shrink-0 space-y-3">
           <div className="flex items-center justify-between">
