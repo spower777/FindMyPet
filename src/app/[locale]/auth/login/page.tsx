@@ -3,6 +3,7 @@
 import { useState, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 function GoogleIcon() {
   return (
@@ -16,6 +17,7 @@ function GoogleIcon() {
 }
 
 function LoginForm() {
+  const t = useTranslations('auth')
   const router = useRouter()
   const searchParams = useSearchParams()
   const next = searchParams.get('next') ?? '/'
@@ -24,7 +26,7 @@ function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'info' } | null>(() =>
-    errorParam ? { text: `Błąd: ${decodeURIComponent(errorParam)}`, type: 'error' } : null
+    errorParam ? { text: decodeURIComponent(errorParam), type: 'error' } : null
   )
   const [loading, setLoading] = useState(false)
 
@@ -68,35 +70,35 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8 w-full max-w-sm">
-        <div className="text-center mb-6">
-          <p className="text-3xl mb-2">🐾</p>
-          <h1 className="text-2xl font-bold text-gray-900">Witaj w FindMyPet</h1>
-          <p className="text-sm text-gray-500 mt-1">Zaloguj się aby zgłosić lub szukać pupila</p>
+    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-8">
+      <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-lg dark:shadow-none border border-gray-100 dark:border-gray-800 p-8 w-full max-w-sm">
+        <div className="text-center mb-8">
+          <p className="text-4xl mb-3">🐾</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">FindMyPet</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('login_title')}</p>
         </div>
 
         <button
           onClick={signInWithGoogle}
-          className="w-full flex items-center justify-center gap-2 border border-gray-200 rounded-xl py-3 text-sm font-medium hover:bg-gray-50 transition mb-5"
+          className="w-full flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-2xl py-3.5 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition mb-5 min-h-[48px]"
         >
           <GoogleIcon />
-          Kontynuuj z Google
+          {t('google')}
         </button>
 
         <div className="relative mb-5">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-100" />
+            <div className="w-full border-t border-gray-100 dark:border-gray-800" />
           </div>
           <div className="relative text-center">
-            <span className="bg-white px-3 text-xs text-gray-400">lub email</span>
+            <span className="bg-white dark:bg-gray-900 px-3 text-xs text-gray-400">lub email</span>
           </div>
         </div>
 
         <form onSubmit={signIn} className="space-y-3">
           <input
             type="email"
-            placeholder="Email"
+            placeholder={t('email')}
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
@@ -104,7 +106,7 @@ function LoginForm() {
           />
           <input
             type="password"
-            placeholder="Hasło (min. 6 znaków)"
+            placeholder={`${t('password')} (min. 6)`}
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
@@ -113,13 +115,11 @@ function LoginForm() {
           />
 
           {message && (
-            <div
-              className={`text-sm rounded-xl px-4 py-3 ${
-                message.type === 'error'
-                  ? 'bg-red-50 text-red-700 border border-red-200'
-                  : 'bg-blue-50 text-blue-700 border border-blue-200'
-              }`}
-            >
+            <div className={`text-sm rounded-2xl px-4 py-3 ${
+              message.type === 'error'
+                ? 'bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800'
+                : 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+            }`}>
               {message.text}
             </div>
           )}
@@ -127,17 +127,17 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-3 rounded-xl text-sm transition"
+            className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-3.5 rounded-2xl text-sm transition min-h-[48px]"
           >
-            {loading ? 'Ładowanie...' : 'Zaloguj się'}
+            {loading ? '⏳' : t('login')}
           </button>
           <button
             type="button"
             onClick={signUp}
             disabled={loading}
-            className="w-full border border-orange-200 text-orange-600 font-semibold py-3 rounded-xl text-sm hover:bg-orange-50 transition"
+            className="w-full border border-orange-200 dark:border-orange-800 text-orange-600 dark:text-orange-400 font-semibold py-3.5 rounded-2xl text-sm hover:bg-orange-50 dark:hover:bg-orange-950 transition min-h-[48px]"
           >
-            Zarejestruj się
+            {t('register')}
           </button>
         </form>
       </div>

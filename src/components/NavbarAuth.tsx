@@ -39,7 +39,8 @@ export default function NavbarAuth({ user }: { user: User | null }) {
         href="/profile"
         className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 transition"
       >
-        {t('profile')}
+        <span className="sm:hidden">👤</span>
+        <span className="hidden sm:inline">{t('profile')}</span>
       </Link>
       <button
         onClick={signOut}
