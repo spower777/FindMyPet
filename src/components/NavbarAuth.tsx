@@ -29,20 +29,15 @@ export default function NavbarAuth({ user }: { user: User | null }) {
 
   return (
     <div className="flex items-center gap-1.5">
-      {/* Chat visible only on mobile — desktop uses NavLinks */}
-      <Link
-        href="/chat"
-        className="md:hidden text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-orange-500 border border-gray-200 dark:border-gray-700 px-2.5 py-1.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 transition"
-        aria-label="Chat"
-      >
-        💬
+      {/* Mobile-only shortcuts — desktop uses NavLinks */}
+      <Link href="/profile" className="md:hidden text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-orange-500 border border-gray-200 dark:border-gray-700 px-2.5 py-1.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 transition" aria-label="PetBook">
+        📖
       </Link>
-      <Link
-        href="/profile"
-        className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-orange-500 border border-gray-200 dark:border-gray-700 px-2.5 py-1.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 transition"
-      >
-        <span className="md:hidden">👤</span>
-        <span className="hidden md:inline">{t('profile')}</span>
+      <Link href="/radar" className="md:hidden text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-orange-500 border border-gray-200 dark:border-gray-700 px-2.5 py-1.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 transition" aria-label="PetRadar">
+        📡
+      </Link>
+      <Link href="/chat" className="md:hidden text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-orange-500 border border-gray-200 dark:border-gray-700 px-2.5 py-1.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 transition" aria-label="Chat">
+        💬
       </Link>
       <button
         onClick={signOut}

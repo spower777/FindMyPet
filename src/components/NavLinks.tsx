@@ -25,6 +25,8 @@ export default function NavLinks({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
     <div className="hidden md:flex items-center gap-0.5">
       <NavLink href="/" exact>🐾 {t('trop')}</NavLink>
+      {isLoggedIn && <NavLink href="/profile">📖 {t('petbook')}</NavLink>}
+      {isLoggedIn && <NavLink href="/radar">📡 {t('radar')}</NavLink>}
       {isLoggedIn && <NavLink href="/chat">💬 {t('chat')}</NavLink>}
       {isLoggedIn && <NavLink href="/contacts">👥 {t('contacts')}</NavLink>}
     </div>

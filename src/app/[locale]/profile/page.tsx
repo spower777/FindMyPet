@@ -2,20 +2,19 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from '@/i18n/navigation'
 import { Link } from '@/i18n/navigation'
 import Image from 'next/image'
-import { resolvePet, deletePet } from '@/app/actions/pets'
+import { deletePet } from '@/app/actions/pets'
 import type { Metadata } from 'next'
 import type { PetWithPhotos, VetProfile } from '@/lib/types'
 import DeletePetForm from './DeletePetForm'
 import { getTranslations, getLocale } from 'next-intl/server'
 
-export const metadata: Metadata = { title: 'Mój profil' }
+export const metadata: Metadata = { title: 'PetBook' }
 
 const SPECIES_EMOJI: Record<string, string> = {
   dog: '🐕', cat: '🐈', bird: '🐦', rabbit: '🐇', other: '🐾',
 }
 
-
-export default async function ProfilePage() {
+export default async function PetBookPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const locale = await getLocale()
@@ -34,6 +33,7 @@ export default async function ProfilePage() {
       .from('pets')
       .select('*, photos:pet_photos(*)')
       .eq('user_id', user.id)
+      .eq('type', 'profile')
       .order('created_at', { ascending: false }),
     supabase
       .from('vet_profiles')
@@ -48,25 +48,14 @@ export default async function ProfilePage() {
     return `${supabaseUrl}/storage/v1/object/public/pet-photos/${path}`
   }
 
-  const petsWithPhotos: PetWithPhotos[] = (pets ?? []).map(pet => {
+  const myPets: PetWithPhotos[] = (pets ?? []).map(pet => {
     const photos = pet.photos ?? []
     const primary = photos.find((p: { is_primary: boolean }) => p.is_primary) ?? photos[0]
     return { ...pet, photos, primary_photo_url: primary ? getPhotoUrl(primary.storage_path) : null }
   })
 
-  const active = petsWithPhotos.filter(p => p.status === 'active')
-  const resolved = petsWithPhotos.filter(p => p.status === 'resolved')
-
-  const petRowT: PetRowT = {
-    lost: tPet('lost'),
-    found: tPet('found'),
-    resolved: tPet('resolved'),
-    see: tPet('see'),
-    mark_resolved: tPet('mark_resolved'),
-  }
-
   return (
-    <div className="max-w-4xl mx-auto w-full px-4 py-8 space-y-8">
+    <div className="max-w-2xl mx-auto w-full px-4 py-8 space-y-8">
       {/* Header */}
       <div className="flex items-center gap-5">
         <div className="w-20 h-20 rounded-2xl bg-orange-100 dark:bg-orange-950 flex items-center justify-center text-4xl shrink-0 shadow-md overflow-hidden">
@@ -91,57 +80,34 @@ export default async function ProfilePage() {
             )}
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{user.email}</p>
-          {petsWithPhotos.length > 0 && (
-            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-              <span className="text-xs text-gray-400 dark:text-gray-500">🐾 {petsWithPhotos.length} {t('total').toLowerCase()}</span>
-              {active.length > 0 && <>
-                <span className="text-gray-200 dark:text-gray-700">·</span>
-                <span className="text-xs text-orange-500">{active.length} {t('active').toLowerCase()}</span>
-              </>}
-              {resolved.length > 0 && <>
-                <span className="text-gray-200 dark:text-gray-700">·</span>
-                <span className="text-xs text-green-500">{resolved.length} {t('resolved').toLowerCase()}</span>
-              </>}
-            </div>
+          {myPets.length > 0 && (
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
+              🐾 {myPets.length} {myPets.length === 1 ? 'pupil' : 'pupili'}
+            </p>
           )}
         </div>
       </div>
 
       {/* CTA */}
-      <div className="space-y-2">
-        <Link href="/pets/new" className="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3.5 rounded-2xl text-sm transition shadow-sm shadow-orange-100 dark:shadow-orange-900">
-          {t('add_pet')}
-        </Link>
-        <div className="flex gap-2">
-          <Link href="/report/lost" className="flex-1 text-center bg-white dark:bg-gray-900 border border-red-200 dark:border-red-900 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 font-medium py-2.5 rounded-2xl text-sm transition">
-            {t('add_lost')}
-          </Link>
-          <Link href="/report/found" className="flex-1 text-center bg-white dark:bg-gray-900 border border-green-200 dark:border-green-900 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950 font-medium py-2.5 rounded-2xl text-sm transition">
-            {t('add_found')}
-          </Link>
-        </div>
-      </div>
+      <Link
+        href="/pets/new"
+        className="flex items-center justify-center gap-2 w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3.5 rounded-2xl text-sm transition shadow-sm shadow-orange-100 dark:shadow-orange-900"
+      >
+        + {t('add_pet')}
+      </Link>
 
-      {/* Pets */}
-      {petsWithPhotos.length > 0 && (
-        <section>
-          <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">🐾 {t('my_pets')}</h2>
-          <div className="space-y-3">
-            {active.map(pet => <PetRow key={pet.id} pet={pet} tPet={petRowT} locale={locale} />)}
-          </div>
-          {resolved.length > 0 && (
-            <div className="space-y-3 mt-3 opacity-60">
-              {resolved.map(pet => <PetRow key={pet.id} pet={pet} tPet={petRowT} locale={locale} />)}
-            </div>
-          )}
+      {/* Pet list */}
+      {myPets.length > 0 ? (
+        <section className="space-y-3">
+          {myPets.map(pet => (
+            <PetBookRow key={pet.id} pet={pet} tSee={tPet('see')} tDelete={tPet('delete')} tConfirm={tPet('delete_confirm')} locale={locale} />
+          ))}
         </section>
-      )}
-
-      {petsWithPhotos.length === 0 && (
-        <div className="text-center py-10 text-gray-400">
-          <p className="text-4xl mb-3">🐾</p>
-          <p className="font-medium">{t('no_reports')}</p>
-          <p className="text-sm mt-1">{t('no_reports_hint')}</p>
+      ) : (
+        <div className="text-center py-12 text-gray-400">
+          <p className="text-5xl mb-3">📖</p>
+          <p className="font-medium text-gray-600 dark:text-gray-300">Brak pupili w PetBook</p>
+          <p className="text-sm mt-1">Dodaj pierwszego pupila powyżej</p>
         </div>
       )}
 
@@ -195,55 +161,39 @@ export default async function ProfilePage() {
   )
 }
 
-interface PetRowT {
-  lost: string
-  found: string
-  resolved: string
-  see: string
-  mark_resolved: string
-}
-
-function PetRow({ pet, tPet, locale }: { pet: PetWithPhotos; tPet: PetRowT; locale: string }) {
+function PetBookRow({
+  pet, tSee, tDelete, tConfirm, locale,
+}: {
+  pet: PetWithPhotos; tSee: string; tDelete: string; tConfirm: string; locale: string
+}) {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
       <div className="flex gap-3 p-3">
         <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 shrink-0 flex items-center justify-center text-2xl text-gray-300">
-          {pet.primary_photo_url ? (
-            <Image src={pet.primary_photo_url} alt={pet.name ?? pet.species} width={64} height={64} className="object-cover w-full h-full" />
-          ) : SPECIES_EMOJI[pet.species]}
+          {pet.primary_photo_url
+            ? <Image src={pet.primary_photo_url} alt={pet.name ?? pet.species} width={64} height={64} className="object-cover w-full h-full" />
+            : SPECIES_EMOJI[pet.species]}
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">
             {SPECIES_EMOJI[pet.species]} {pet.name ?? pet.species}
             {pet.breed ? <span className="font-normal text-gray-400 dark:text-gray-500"> · {pet.breed}</span> : null}
           </p>
-          <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-            {pet.type !== 'profile' && (
-              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full text-white ${pet.type === 'lost' ? 'bg-red-400' : 'bg-green-400'}`}>
-                {pet.type === 'lost' ? tPet.lost : tPet.found}
-              </span>
-            )}
-            {pet.status === 'resolved' && (
-              <span className="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 px-1.5 py-0.5 rounded-full">{tPet.resolved}</span>
-            )}
-            <span className="text-[10px] text-gray-400 dark:text-gray-500">
-              {new Date(pet.created_at).toLocaleDateString(locale, { day: 'numeric', month: 'short' })}
-              {pet.last_seen_address && ` · ${pet.last_seen_address.split(',')[0]}`}
-            </span>
-          </div>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            {pet.birth_date
+              ? (() => {
+                  const months = Math.floor((Date.now() - new Date(pet.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.5))
+                  return months >= 12 ? `${Math.floor(months / 12)} lat` : `${months} mies.`
+                })()
+              : new Date(pet.created_at).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })}
+            {pet.chip_id ? ` · 🔖 ${pet.chip_id}` : ''}
+          </p>
         </div>
       </div>
       <div className="flex border-t border-gray-100 dark:border-gray-800">
         <Link href={`/pets/${pet.id}`} className="flex-1 text-center text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 py-2.5 transition font-medium">
-          {tPet.see}
+          {tSee}
         </Link>
-        {pet.status === 'active' && (
-          <form action={resolvePet.bind(null, pet.id)} className="flex-1 border-l border-gray-100 dark:border-gray-800">
-            <button type="submit" className="w-full text-xs text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950 py-2.5 transition font-medium">
-              {tPet.mark_resolved}
-            </button>
-          </form>
-        )}
         <DeletePetForm petId={pet.id} deletePetAction={deletePet} />
       </div>
     </div>

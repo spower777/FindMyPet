@@ -7,7 +7,9 @@
     "logout": "Cerrar sesión",
     "chat": "Mensajes",
     "trop": "Trop",
-    "contacts": "Contactos"
+    "contacts": "Contactos",
+    "petbook": "PetBook",
+    "radar": "PetRadar"
   },
   "home": {
     "active": "Reportes activos",

@@ -7,7 +7,9 @@
     "logout": "退出",
     "chat": "消息",
     "trop": "Trop",
-    "contacts": "联系人"
+    "contacts": "联系人",
+    "petbook": "PetBook",
+    "radar": "PetRadar"
   },
   "home": {
     "active": "活跃公告",
