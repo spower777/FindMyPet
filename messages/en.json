@@ -6,10 +6,11 @@
     "profile": "My pet",
     "logout": "Sign out",
     "chat": "Messages",
-    "trop": "Trop",
+    "trop": "Map",
     "contacts": "Contacts",
     "petbook": "PetBook",
-    "radar": "PetRadar"
+    "radar": "PetRadar",
+    "mypet": "My Pet"
   },
   "home": {
     "active": "Active reports",

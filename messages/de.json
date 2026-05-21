@@ -6,10 +6,11 @@
     "profile": "Mein Tier",
     "logout": "Abmelden",
     "chat": "Nachrichten",
-    "trop": "Trop",
+    "trop": "Karte",
     "contacts": "Kontakte",
     "petbook": "PetBook",
-    "radar": "PetRadar"
+    "radar": "PetRadar",
+    "mypet": "Mein Tier"
   },
   "home": {
     "active": "Aktive Meldungen",

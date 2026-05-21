@@ -30,11 +30,8 @@ export default function NavbarAuth({ user }: { user: User | null }) {
   return (
     <div className="flex items-center gap-1.5">
       {/* Mobile-only shortcuts — desktop uses NavLinks */}
-      <Link href="/profile" className="md:hidden text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-orange-500 border border-gray-200 dark:border-gray-700 px-2.5 py-1.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 transition" aria-label="PetBook">
-        📖
-      </Link>
-      <Link href="/radar" className="md:hidden text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-orange-500 border border-gray-200 dark:border-gray-700 px-2.5 py-1.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 transition" aria-label="PetRadar">
-        📡
+      <Link href="/profile" className="md:hidden text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-orange-500 border border-gray-200 dark:border-gray-700 px-2.5 py-1.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 transition" aria-label="Mój pupil">
+        🐾
       </Link>
       <Link href="/chat" className="md:hidden text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-orange-500 border border-gray-200 dark:border-gray-700 px-2.5 py-1.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 transition" aria-label="Chat">
         💬

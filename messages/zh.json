@@ -6,10 +6,11 @@
     "profile": "我的宠物",
     "logout": "退出",
     "chat": "消息",
-    "trop": "Trop",
+    "trop": "地图",
     "contacts": "联系人",
     "petbook": "PetBook",
-    "radar": "PetRadar"
+    "radar": "PetRadar",
+    "mypet": "我的宠物"
   },
   "home": {
     "active": "活跃公告",
