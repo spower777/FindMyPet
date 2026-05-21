@@ -15,15 +15,30 @@ export default async function ContactsPage() {
   if (!user) return redirect({ href: '/auth/login?next=/contacts', locale })
 
   const t = await getTranslations('contacts_page')
-  const tp = await getTranslations('profile')
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 
   const [{ data: contactsData }, { data: petsData }] = await Promise.all([
     supabase.from('user_contacts').select('*').eq('user_id', user.id).order('created_at', { ascending: true }),
-    supabase.from('pets').select('id, name, species, breed').eq('user_id', user.id).eq('status', 'active').order('created_at', { ascending: false }),
+    supabase.from('pets')
+      .select('id, name, species, breed, photos:pet_photos(*)')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false }),
   ])
 
   const contacts = (contactsData ?? []) as UserContact[]
-  const pets = (petsData ?? []) as PetSummary[]
+
+  const pets: PetSummary[] = ((petsData ?? []) as (typeof petsData extends (infer T)[] | null ? T : never)[]).map((pet: Record<string, unknown>) => {
+    const photos = (pet.photos as { is_primary: boolean; storage_path: string }[]) ?? []
+    const primary = photos.find(p => p.is_primary) ?? photos[0]
+    return {
+      id: pet.id as string,
+      name: pet.name as string | null,
+      species: pet.species as PetSummary['species'],
+      breed: pet.breed as string | null,
+      primary_photo_url: primary ? `${supabaseUrl}/storage/v1/object/public/pet-photos/${primary.storage_path}` : null,
+    }
+  })
 
   return (
     <div className="max-w-2xl mx-auto w-full px-4 py-8">
@@ -48,10 +63,6 @@ export default async function ContactsPage() {
       )}
 
       <AddContactForm pets={pets} />
-
-      <p className="text-xs text-center text-gray-400 dark:text-gray-600 mt-8">
-        {tp('contacts')} · {contacts.length}
-      </p>
     </div>
   )
 }

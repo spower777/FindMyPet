@@ -31,6 +31,31 @@ export async function startConversation(petId: string, petOwnerId: string) {
   redirect({ href: `/chat/${data.id}`, locale })
 }
 
+export async function getOrCreateConversation(petId: string, petOwnerId: string): Promise<string> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user || user.id === petOwnerId) throw new Error('Unauthorized')
+
+  const { data: existing } = await supabase
+    .from('conversations')
+    .select('id')
+    .eq('pet_id', petId)
+    .eq('inquirer_id', user.id)
+    .maybeSingle()
+
+  if (existing) return existing.id
+
+  const { data, error } = await supabase
+    .from('conversations')
+    .insert({ pet_id: petId, pet_owner_id: petOwnerId, inquirer_id: user.id })
+    .select('id')
+    .single()
+
+  if (error || !data) throw new Error(error?.message)
+  revalidatePath('/chat')
+  return data.id
+}
+
 export async function sendMessage(conversationId: string, content: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
