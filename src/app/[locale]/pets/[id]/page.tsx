@@ -123,6 +123,7 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
   })
 
   const isOwner = user?.id === pet.user_id
+  const isProfile = pet.type === 'profile'
   const isLost = pet.type === 'lost'
   const profileUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://findmypet.app'}/pets/${id}`
 
@@ -206,8 +207,8 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
           <ShareButton petName={petName} />
         </div>
 
-        {/* Status ribbon */}
-        <div className={`absolute bottom-0 left-0 right-0 px-4 py-2 flex items-center gap-2 ${
+        {/* Status ribbon — hidden for profile type */}
+        {!isProfile && <div className={`absolute bottom-0 left-0 right-0 px-4 py-2 flex items-center gap-2 ${
           isLost
             ? 'bg-red-500/90 backdrop-blur-sm'
             : 'bg-green-500/90 backdrop-blur-sm'
@@ -222,7 +223,7 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
           <span className="text-white/70 text-xs ml-auto">
             {new Date(pet.created_at).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })}
           </span>
-        </div>
+        </div>}
       </div>
 
       <div className="px-4 space-y-4 mt-4">
@@ -395,24 +396,26 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
           </div>
         )}
 
-        {/* ── MAP ── */}
-        <div className={sectionCls}>
-          <div className={sectionHeaderCls}>
-            <span className="text-base">🗺️</span>
-            <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{t('location_label')}</h2>
+        {/* ── MAP — hidden for profile type (no location) ── */}
+        {!isProfile && pet.last_seen_lat != null && pet.last_seen_lng != null && (
+          <div className={sectionCls}>
+            <div className={sectionHeaderCls}>
+              <span className="text-base">🗺️</span>
+              <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{t('location_label')}</h2>
+            </div>
+            <div className="h-56">
+              <MapView
+                pets={[petWithPhoto]}
+                defaultCenter={[pet.last_seen_lat, pet.last_seen_lng]}
+                defaultZoom={15}
+                interactive={false}
+              />
+            </div>
           </div>
-          <div className="h-56">
-            <MapView
-              pets={[petWithPhoto]}
-              defaultCenter={[pet.last_seen_lat, pet.last_seen_lng]}
-              defaultZoom={15}
-              interactive={false}
-            />
-          </div>
-        </div>
+        )}
 
         {/* ── OWNER ACTIONS ── */}
-        {isOwner && pet.status === 'active' && (
+        {isOwner && pet.status === 'active' && !isProfile && (
           <div className={sectionCls}>
             <div className="p-5 space-y-3">
               {/* Vet secure (vet who is not owner, found pets) */}
