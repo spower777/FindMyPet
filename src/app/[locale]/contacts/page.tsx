@@ -19,7 +19,7 @@ export default async function ContactsPage() {
 
   const [{ data: contactsData }, { data: petsData }] = await Promise.all([
     supabase.from('user_contacts').select('*').eq('user_id', user.id).order('created_at', { ascending: true }),
-    supabase.from('pets').select('id, name, species').eq('user_id', user.id).eq('status', 'active').order('created_at', { ascending: false }),
+    supabase.from('pets').select('id, name, species, breed').eq('user_id', user.id).eq('status', 'active').order('created_at', { ascending: false }),
   ])
 
   const contacts = (contactsData ?? []) as UserContact[]

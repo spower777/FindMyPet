@@ -131,6 +131,7 @@ export interface PetSummary {
   id: string
   name: string | null
   species: PetSpecies
+  breed: string | null
 }
 
 export type VetSpecialization = 'general' | 'surgery' | 'exotic' | 'dentistry' | 'dermatology' | 'orthopedics' | 'oncology' | 'other'

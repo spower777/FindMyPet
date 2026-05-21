@@ -128,6 +128,9 @@ export default async function PetBookPage() {
               <div>
                 <p className="font-semibold text-gray-900 dark:text-gray-100">{vetProfile.clinic_name}</p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">{vetProfile.vet_name}</p>
+                <p className="text-xs text-teal-600 dark:text-teal-400 mt-1 font-medium">
+                  ⚕️ {tv(`spec_${vetProfile.specialization}` as `spec_${typeof vetProfile.specialization}`)}
+                </p>
                 {vetProfile.phone && <p className="text-xs text-orange-500 mt-1">📞 {vetProfile.phone}</p>}
                 {vetProfile.address && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">📍 {vetProfile.address}</p>}
               </div>

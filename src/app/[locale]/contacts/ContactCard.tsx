@@ -53,9 +53,16 @@ export default function ContactCard({ contact, pets, linkedPet }: Props) {
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
       {/* Main row */}
       <div className="flex items-start gap-3.5 p-4">
-        {/* Avatar */}
-        <div className={`w-12 h-12 rounded-2xl ${avatarColor(contact.name)} flex items-center justify-center shrink-0 text-white font-bold text-base shadow-sm`}>
-          {initials(contact.name)}
+        {/* Avatar with animal type badge */}
+        <div className="relative shrink-0">
+          <div className={`w-12 h-12 rounded-2xl ${avatarColor(contact.name)} flex items-center justify-center text-white font-bold text-base shadow-sm`}>
+            {initials(contact.name)}
+          </div>
+          {contact.animal_type && (
+            <span className="absolute -bottom-1 -right-1 text-base leading-none bg-white dark:bg-gray-900 rounded-full p-0.5 shadow-sm">
+              {ANIMAL_TYPE_EMOJIS[contact.animal_type]}
+            </span>
+          )}
         </div>
 
         {/* Info */}
@@ -67,11 +74,6 @@ export default function ContactCard({ contact, pets, linkedPet }: Props) {
                 <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${meta.bg} ${meta.color}`}>
                   {meta.emoji} {tc(contact.type as ContactType)}
                 </span>
-                {contact.animal_type && (
-                  <span className="text-[11px] bg-orange-50 dark:bg-orange-950 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-900 px-2 py-0.5 rounded-full">
-                    {ANIMAL_TYPE_EMOJIS[contact.animal_type]} {ta(contact.animal_type as AnimalType)}
-                  </span>
-                )}
               </div>
             </div>
             <button
@@ -92,9 +94,10 @@ export default function ContactCard({ contact, pets, linkedPet }: Props) {
 
           {/* Linked pet */}
           {linkedPet && (
-            <div className="mt-2 flex items-center gap-1.5">
+            <div className="mt-2 flex items-center gap-1.5 flex-wrap">
               <span className="text-[11px] bg-orange-50 dark:bg-orange-950 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-900 px-2 py-0.5 rounded-full flex items-center gap-1">
                 {SPECIES_EMOJI[linkedPet.species]} {linkedPet.name ?? linkedPet.species}
+                {linkedPet.breed && <span className="text-orange-400 dark:text-orange-500">· {linkedPet.breed}</span>}
               </span>
             </div>
           )}
