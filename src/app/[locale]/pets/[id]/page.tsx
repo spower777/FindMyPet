@@ -11,8 +11,7 @@ import type { Metadata } from 'next'
 import { startConversation } from '@/app/actions/chat'
 import { getTranslations } from 'next-intl/server'
 import ShareButton from '@/components/ShareButton'
-import VaccinationSection from '@/components/medical/VaccinationSection'
-import MedicalRecordsSection from '@/components/medical/MedicalRecordsSection'
+import PetTimeline from '@/components/medical/PetTimeline'
 import QrChipCode from '@/components/QrChipCode'
 
 const SPECIES_EMOJI: Record<string, string> = {
@@ -453,64 +452,25 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
             </div>
           )}
 
-          {/* Medical (owner only) */}
+          {/* Medical timeline (owner only) */}
           {isOwner && (
-            <>
-              <div className={sectionCls}>
-                <div className={sectionHeaderCls}>
-                  <span className="text-base">💉</span>
-                  <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm flex-1">Szczepienia</h2>
-                  <span className="text-xs bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-400 px-2 py-0.5 rounded-full">{vaccinations.length}</span>
-                </div>
-                <div className="p-5">
-                  <VaccinationSection petId={id} vaccinations={vaccinations} />
-                </div>
+            <div className={sectionCls}>
+              <div className={sectionHeaderCls}>
+                <span className="text-base">🏥</span>
+                <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm flex-1">Historia zdrowia</h2>
+                <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full">
+                  {vaccinations.length + medicalRecords.length + vetDocsWithUrls.length}
+                </span>
               </div>
-
-              <div className={sectionCls}>
-                <div className={sectionHeaderCls}>
-                  <span className="text-base">🩺</span>
-                  <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm flex-1">Historia medyczna</h2>
-                  <span className="text-xs bg-orange-50 dark:bg-orange-950 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full">{medicalRecords.length}</span>
-                </div>
-                <div className="p-5">
-                  <MedicalRecordsSection petId={id} records={medicalRecords} />
-                </div>
+              <div className="p-5">
+                <PetTimeline
+                  petId={id}
+                  vaccinations={vaccinations}
+                  medicalRecords={medicalRecords}
+                  vetDocs={vetDocsWithUrls}
+                />
               </div>
-
-              {vetDocsWithUrls.length > 0 && (
-                <div className={sectionCls}>
-                  <div className={sectionHeaderCls}>
-                    <span className="text-base">📎</span>
-                    <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm flex-1">{tv('vet_documents')}</h2>
-                    <span className="text-xs bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full">{vetDocsWithUrls.length}</span>
-                  </div>
-                  <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                    {vetDocsWithUrls.map(doc => (
-                      <div key={doc.id} className="px-5 py-4 flex items-start gap-3">
-                        <span className="text-xl shrink-0 mt-0.5">📋</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">{doc.title}</p>
-                          {doc.vet_profile && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{doc.vet_profile.vet_name} · {doc.vet_profile.clinic_name}</p>
-                          )}
-                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                            {new Date(doc.created_at).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })}
-                          </p>
-                          {doc.notes && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">{doc.notes}</p>}
-                        </div>
-                        {doc.signedUrl && (
-                          <a href={doc.signedUrl} target="_blank" rel="noopener noreferrer"
-                            className="shrink-0 text-xs bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900 px-3 py-1.5 rounded-xl hover:bg-blue-100 transition">
-                            ⬇ PDF
-                          </a>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
+            </div>
           )}
         </div>
       </div>
