@@ -199,70 +199,72 @@ export default async function PetDetailPage({
       {isProfile && (
         <div className="min-h-screen bg-[#0e0e0e]">
 
-          {/* ── HERO — tall, cinematic ── */}
-          <div className="relative w-full h-72 sm:h-96 overflow-hidden bg-[#0e0e0e]">
+          {/* ── HERO — full identity overlay ── */}
+          <div className="relative w-full overflow-hidden bg-[#0e0e0e]" style={{ height: 'min(75vh, 640px)', minHeight: '420px' }}>
             {primaryPhoto ? (
               <Image
                 src={getPhotoUrl(primaryPhoto.storage_path)}
                 alt={petName}
                 fill
-                className="object-cover object-center"
+                className="object-cover object-top"
                 priority
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-[10rem] opacity-20">
+              <div className="w-full h-full flex items-center justify-center text-[12rem] opacity-10">
                 {SPECIES_EMOJI[pet.species]}
               </div>
             )}
-            {/* Strong bottom fade into page background */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/10 to-[#0e0e0e]" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0e0e0e]/60 via-transparent to-transparent" />
+            {/* Cinematic gradient — bottom heavy, side vignette */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0e0e0e] via-[#0e0e0e]/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0e0e0e]/50 via-transparent to-transparent" />
 
-            <Link href="/" className="absolute top-5 left-5 bg-black/50 backdrop-blur-md text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/70 transition z-10 text-lg">←</Link>
+            {/* Top controls */}
+            <Link href="/" className="absolute top-5 left-5 bg-black/40 backdrop-blur-md text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/60 transition z-10">←</Link>
             <div className="absolute top-5 right-5 z-10">
               <ShareButton petName={petName} petType="profile" />
             </div>
+
+            {/* ── Identity overlaid at bottom ── */}
+            <div className="absolute bottom-0 left-0 right-0 px-5 sm:px-8 pb-7 z-10">
+              <div className="max-w-3xl mx-auto">
+                <div className="flex items-end gap-4 mb-4">
+                  {/* Avatar */}
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 ring-2 ring-white/20 shadow-2xl bg-[#1a1a1a]">
+                    {primaryPhoto
+                      ? <Image src={getPhotoUrl(primaryPhoto.storage_path)} alt={petName} width={96} height={96} className="w-full h-full object-cover object-top" />
+                      : <div className="w-full h-full flex items-center justify-center text-4xl opacity-30">{SPECIES_EMOJI[pet.species]}</div>
+                    }
+                  </div>
+                  {/* Name + badges */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                      <h1 className="text-3xl sm:text-5xl font-black text-white leading-none tracking-tight drop-shadow-2xl">{petName}</h1>
+                      <span className="text-2xl sm:text-3xl">{SPECIES_EMOJI[pet.species]}</span>
+                    </div>
+                    {pet.breed && <p className="text-gray-400 text-sm mb-2.5">{pet.breed}</p>}
+                    <div className="flex flex-wrap gap-1.5">
+                      {ageLabel && <span className="text-xs bg-black/50 backdrop-blur-sm text-gray-200 px-2.5 py-1 rounded-full border border-white/15 font-medium">{ageLabel}</span>}
+                      {genderLabel && <span className="text-xs bg-black/50 backdrop-blur-sm text-gray-200 px-2.5 py-1 rounded-full border border-white/15 font-medium">{genderLabel}</span>}
+                      {pet.is_neutered && <span className="text-xs bg-teal-900/70 backdrop-blur-sm text-teal-300 px-2.5 py-1 rounded-full border border-teal-500/30 font-medium">✂️ {t('neutered')}</span>}
+                      {pet.chip_id && <span className="text-xs bg-black/50 backdrop-blur-sm text-gray-400 px-2.5 py-1 rounded-full border border-white/10 font-mono hidden sm:inline-flex">🔖 {pet.chip_id}</span>}
+                    </div>
+                  </div>
+                  {isOwner && (
+                    <Link href={`/pets/${id}/edit`} className="shrink-0 mb-0.5 text-xs bg-black/50 backdrop-blur-md hover:bg-white/15 text-white border border-white/20 px-3.5 py-2 rounded-xl font-medium transition">
+                      ✏️ Edytuj
+                    </Link>
+                  )}
+                </div>
+                {pet.description && (
+                  <p className="text-gray-300/70 italic text-sm leading-relaxed max-w-xl drop-shadow">„{pet.description}"</p>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* ── Identity — flows from hero ── */}
-          <div className="max-w-3xl mx-auto px-5 sm:px-8 -mt-20 relative z-10">
-            <div className="flex items-end gap-5 mb-5">
-              {/* Avatar */}
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shrink-0 ring-2 ring-orange-500/40 shadow-xl shadow-black/60 bg-[#1a1a1a]">
-                {primaryPhoto
-                  ? <Image src={getPhotoUrl(primaryPhoto.storage_path)} alt={petName} width={112} height={112} className="w-full h-full object-cover" />
-                  : <div className="w-full h-full flex items-center justify-center text-5xl opacity-40">{SPECIES_EMOJI[pet.species]}</div>
-                }
-              </div>
-
-              {/* Name + meta */}
-              <div className="flex-1 min-w-0 pb-1">
-                <div className="flex items-center gap-2.5 mb-1 flex-wrap">
-                  <h1 className="text-3xl sm:text-4xl font-black text-white leading-none tracking-tight">{petName}</h1>
-                  <span className="text-2xl">{SPECIES_EMOJI[pet.species]}</span>
-                </div>
-                {pet.breed && <p className="text-sm text-gray-500 mb-2.5">{pet.breed}</p>}
-                <div className="flex flex-wrap gap-2">
-                  {ageLabel && <span className="text-xs bg-white/8 text-gray-300 px-3 py-1 rounded-full border border-white/10 font-medium">{ageLabel}</span>}
-                  {genderLabel && <span className="text-xs bg-white/8 text-gray-300 px-3 py-1 rounded-full border border-white/10 font-medium">{genderLabel}</span>}
-                  {pet.is_neutered && <span className="text-xs bg-teal-500/15 text-teal-400 px-3 py-1 rounded-full border border-teal-500/20 font-medium">✂️ {t('neutered')}</span>}
-                  {pet.chip_id && <span className="text-xs bg-white/8 text-gray-400 px-3 py-1 rounded-full border border-white/10 font-mono">🔖 {pet.chip_id}</span>}
-                </div>
-              </div>
-
-              {isOwner && (
-                <Link href={`/pets/${id}/edit`} className="shrink-0 mb-1 text-xs bg-white/8 hover:bg-white/15 text-gray-300 border border-white/10 px-3 py-2 rounded-xl font-medium transition">
-                  ✏️ Edytuj
-                </Link>
-              )}
-            </div>
-
-            {pet.description && (
-              <p className="text-gray-400 italic text-sm leading-relaxed mb-7 pl-1">„{pet.description}"</p>
-            )}
-
-            {/* ── Tabs ── */}
-            <div className="flex gap-0 border-b border-white/8 mb-6 overflow-x-auto scrollbar-none">
+          {/* ── Tabs ── */}
+          <div className="max-w-3xl mx-auto px-5 sm:px-8 mt-1">
+            <div className="flex gap-0 border-b border-white/8 overflow-x-auto scrollbar-none">
               {[
                 { key: 'overview',  label: 'Przegląd',  icon: '🐾' },
                 { key: 'history',   label: 'Historia',  icon: '📅', count: vaccinations.length + medicalRecords.length },
@@ -296,15 +298,15 @@ export default async function PetDetailPage({
           </div>
 
           {/* ── Tab content ── */}
-          <div className="max-w-3xl mx-auto px-5 sm:px-8 pb-16">
+          <div className="max-w-3xl mx-auto px-5 sm:px-8 pb-16 mt-6">
 
             {/* ── PRZEGLĄD — 3-column ── */}
             {tab === 'overview' && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
                 {/* Col 1 — O pupilu */}
-                <div className={`${sectionCls} p-5 space-y-4`}>
-                  <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm tracking-tight">O {petName}</h3>
+                <div className="bg-[#161616] border border-[#262626] rounded-2xl p-5 space-y-4">
+                  <h3 className="font-bold text-white text-sm tracking-tight">O {petName}</h3>
 
                   {characterChips.length > 0 && (
                     <div>
@@ -354,98 +356,66 @@ export default async function PetDetailPage({
                 </div>
 
                 {/* Col 2 — Timeline życia */}
-                <div className={`${sectionCls} p-5`}>
-                  <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm tracking-tight mb-4">Timeline życia</h3>
-
+                <div className="bg-[#161616] border border-[#262626] rounded-2xl p-5">
+                  <h3 className="font-bold text-white text-sm tracking-tight mb-4">Timeline życia</h3>
                   {timelinePreview.length > 0 ? (
                     <div className="space-y-3">
                       {timelinePreview.map((event, i) => (
                         <div key={i} className="flex items-start gap-3">
                           <div className="flex flex-col items-center shrink-0">
-                            <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950 flex items-center justify-center text-base">
-                              {event.icon}
-                            </div>
-                            {i < timelinePreview.length - 1 && (
-                              <div className="w-px h-3 bg-gray-200 dark:bg-gray-700 mt-1" />
-                            )}
+                            <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-base">{event.icon}</div>
+                            {i < timelinePreview.length - 1 && <div className="w-px h-3 bg-[#303030] mt-1" />}
                           </div>
                           <div className="flex-1 min-w-0 pt-1">
-                            <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">{event.label}</p>
-                            <p className="text-[10px] text-gray-400 mt-0.5">{fmtDate(event.date)}{event.sub ? ` · ${event.sub}` : ''}</p>
+                            <p className="text-xs font-semibold text-gray-200 truncate">{event.label}</p>
+                            <p className="text-[10px] text-gray-500 mt-0.5">{fmtDate(event.date)}{event.sub ? ` · ${event.sub}` : ''}</p>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-gray-400 dark:text-gray-500">Brak wpisów w historii</p>
+                    <p className="text-xs text-gray-600">Brak wpisów w historii</p>
                   )}
-
                   {isOwner && (
-                    <Link
-                      href={`/pets/${id}?tab=history`}
-                      className="mt-4 text-xs text-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition block"
-                    >
+                    <Link href={`/pets/${id}?tab=history`} className="mt-4 text-xs text-orange-500 hover:text-orange-400 transition block">
                       Zobacz pełną historię →
                     </Link>
                   )}
                 </div>
 
                 {/* Col 3 — Szybki dostęp */}
-                <div className={`${sectionCls} p-5`}>
-                  <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm tracking-tight mb-4">Szybki dostęp</h3>
-
+                <div className="bg-[#161616] border border-[#262626] rounded-2xl p-5">
+                  <h3 className="font-bold text-white text-sm tracking-tight mb-4">Szybki dostęp</h3>
                   {isOwner ? (
                     <div className="space-y-2">
-                      <Link href={`/pets/${id}?tab=history`} className="flex items-center gap-3 rounded-xl px-3 py-2.5 bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/50 transition text-sm">
-                        <span className="text-base shrink-0">📝</span>
-                        <div>
-                          <p className="font-medium text-xs">Dodaj wpis</p>
-                          <p className="text-[10px] text-orange-500/70">Dodaj wydarzenie do osi czasu</p>
-                        </div>
-                      </Link>
-                      <Link href={`/pets/${id}?tab=health`} className="flex items-center gap-3 rounded-xl px-3 py-2.5 bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/50 transition text-sm">
-                        <span className="text-base shrink-0">💉</span>
-                        <div>
-                          <p className="font-medium text-xs">Dodaj szczepienie</p>
-                          <p className="text-[10px] text-teal-500/70">Zarejestruj nowe szczepienie</p>
-                        </div>
-                      </Link>
-                      <Link href={`/pets/${id}?tab=documents`} className="flex items-center gap-3 rounded-xl px-3 py-2.5 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition text-sm">
-                        <span className="text-base shrink-0">📄</span>
-                        <div>
-                          <p className="font-medium text-xs">Dodaj dokument</p>
-                          <p className="text-[10px] text-blue-500/70">Dodaj plik lub zdjęcie</p>
-                        </div>
-                      </Link>
-                      <Link href="/report/lost" className="flex items-center gap-3 rounded-xl px-3 py-2.5 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition text-sm">
-                        <span className="text-base shrink-0">📡</span>
-                        <div>
-                          <p className="font-medium text-xs">Zgłoś zaginięcie</p>
-                          <p className="text-[10px] text-red-400/70">Utwórz nowe zgłoszenie</p>
-                        </div>
-                      </Link>
+                      {[
+                        { href: `?tab=history`, icon: '📝', label: 'Dodaj wpis', sub: 'Wydarzenie na osi czasu', color: 'orange' },
+                        { href: `?tab=health`, icon: '💉', label: 'Dodaj szczepienie', sub: 'Nowe szczepienie', color: 'teal' },
+                        { href: `?tab=documents`, icon: '📄', label: 'Dodaj dokument', sub: 'Plik lub zdjęcie', color: 'blue' },
+                        { href: '/report/lost', icon: '📡', label: 'Zgłoś zaginięcie', sub: 'Nowe zgłoszenie', color: 'red' },
+                      ].map(item => (
+                        <Link key={item.href} href={item.href} className="flex items-center gap-3 rounded-xl px-3 py-2.5 bg-white/4 hover:bg-white/8 border border-white/6 transition">
+                          <span className="text-base shrink-0">{item.icon}</span>
+                          <div>
+                            <p className="font-medium text-xs text-gray-200">{item.label}</p>
+                            <p className="text-[10px] text-gray-600">{item.sub}</p>
+                          </div>
+                        </Link>
+                      ))}
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {(pet.contact_phone || pet.contact_email) && (
-                        <>
-                          {pet.contact_phone && (
-                            <a href={`tel:${pet.contact_phone}`} className="flex items-center gap-3 rounded-xl px-3 py-2.5 bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300 hover:bg-green-100 transition text-sm">
-                              <span className="text-base">📞</span>
-                              <span className="text-xs font-medium">Zadzwoń</span>
-                            </a>
-                          )}
-                          {pet.contact_email && (
-                            <a href={`mailto:${pet.contact_email}`} className="flex items-center gap-3 rounded-xl px-3 py-2.5 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 transition text-sm">
-                              <span className="text-base">✉️</span>
-                              <span className="text-xs font-medium">Napisz email</span>
-                            </a>
-                          )}
-                        </>
+                      {pet.contact_phone && (
+                        <a href={`tel:${pet.contact_phone}`} className="flex items-center gap-3 rounded-xl px-3 py-2.5 bg-white/4 hover:bg-white/8 border border-white/6 transition">
+                          <span>📞</span><span className="text-xs text-gray-300 font-medium">Zadzwoń</span>
+                        </a>
                       )}
-                      <div className="pt-2">
-                        <QrChipCode chipId={pet.chip_id} petName={petName} profileUrl={profileUrl} />
-                      </div>
+                      {pet.contact_email && (
+                        <a href={`mailto:${pet.contact_email}`} className="flex items-center gap-3 rounded-xl px-3 py-2.5 bg-white/4 hover:bg-white/8 border border-white/6 transition">
+                          <span>✉️</span><span className="text-xs text-gray-300 font-medium">Napisz</span>
+                        </a>
+                      )}
+                      <div className="pt-2"><QrChipCode chipId={pet.chip_id} petName={petName} profileUrl={profileUrl} /></div>
                     </div>
                   )}
                 </div>
@@ -454,29 +424,29 @@ export default async function PetDetailPage({
 
             {/* ── HISTORIA ── */}
             {tab === 'history' && (
-              <div className={`${sectionCls} p-5`}>
+              <div className="bg-[#161616] border border-[#262626] rounded-2xl p-5">
                 {isOwner ? (
                   <PetTimeline petId={id} vaccinations={vaccinations} medicalRecords={medicalRecords} vetDocs={vetDocsWithUrls} />
                 ) : (
-                  <p className="text-sm text-gray-400 text-center py-8">Historia dostępna tylko dla właściciela</p>
+                  <p className="text-sm text-gray-500 text-center py-8">Historia dostępna tylko dla właściciela</p>
                 )}
               </div>
             )}
 
             {/* ── ZDROWIE ── */}
             {tab === 'health' && (
-              <div className={sectionCls}>
+              <div className="bg-[#161616] border border-[#262626] rounded-2xl overflow-hidden">
                 {isOwner ? (
                   <>
-                    <div className={sectionHeaderCls}>
+                    <div className="px-5 py-3.5 border-b border-[#262626] flex items-center gap-2">
                       <span>💊</span>
-                      <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm flex-1">Szczepienia</h2>
-                      <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 px-2 py-0.5 rounded-full">{vaccinations.length}</span>
+                      <h2 className="font-semibold text-white text-sm flex-1">Szczepienia</h2>
+                      <span className="text-xs bg-white/8 text-gray-400 px-2 py-0.5 rounded-full">{vaccinations.length}</span>
                     </div>
                     {vaccinations.length === 0 ? (
-                      <p className="text-sm text-gray-400 text-center py-8">Brak zarejestrowanych szczepień</p>
+                      <p className="text-sm text-gray-500 text-center py-8">Brak zarejestrowanych szczepień</p>
                     ) : (
-                      <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                      <div className="divide-y divide-[#222]">
                         {vaccinations.map(vax => {
                           const isDue = vax.next_due && new Date(vax.next_due) < now
                           const isDueSoon = vax.next_due && !isDue && new Date(vax.next_due).getTime() - now.getTime() < 30 * 24 * 60 * 60 * 1000
@@ -484,15 +454,11 @@ export default async function PetDetailPage({
                             <div key={vax.id} className="flex items-center gap-4 px-5 py-3.5">
                               <span className="text-xl shrink-0">💉</span>
                               <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-sm text-gray-900 dark:text-gray-100">{vax.name}</p>
-                                <p className="text-xs text-gray-400 mt-0.5">Podano: {fmtDate(vax.date_given)}{vax.vet_name ? ` · ${vax.vet_name}` : ''}</p>
+                                <p className="font-semibold text-sm text-gray-200">{vax.name}</p>
+                                <p className="text-xs text-gray-500 mt-0.5">Podano: {fmtDate(vax.date_given)}{vax.vet_name ? ` · ${vax.vet_name}` : ''}</p>
                               </div>
                               {vax.next_due && (
-                                <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                                  isDue ? 'bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400'
-                                  : isDueSoon ? 'bg-yellow-100 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300'
-                                  : 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300'
-                                }`}>
+                                <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${isDue ? 'bg-red-500/15 text-red-400' : isDueSoon ? 'bg-yellow-500/15 text-yellow-400' : 'bg-green-500/15 text-green-400'}`}>
                                   {isDue ? '⚠️ Przeterminowane' : isDueSoon ? '⏰ Wkrótce' : `✓ do ${fmtDate(vax.next_due)}`}
                                 </span>
                               )}
@@ -501,49 +467,48 @@ export default async function PetDetailPage({
                         })}
                       </div>
                     )}
-                    <div className="p-4 border-t border-gray-100 dark:border-gray-800">
-                      <Link href={`/pets/${id}?tab=history`} className="btn-primary text-sm inline-block text-center w-full py-2.5">
+                    <div className="p-4 border-t border-[#262626]">
+                      <Link href={`/pets/${id}?tab=history`} className="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 rounded-xl text-sm transition">
                         + Dodaj szczepienie
                       </Link>
                     </div>
                   </>
                 ) : (
-                  <p className="text-sm text-gray-400 text-center py-8">Dane zdrowotne dostępne tylko dla właściciela</p>
+                  <p className="text-sm text-gray-500 text-center py-8">Dane zdrowotne dostępne tylko dla właściciela</p>
                 )}
               </div>
             )}
 
             {/* ── DOKUMENTY ── */}
             {tab === 'documents' && (
-              <div className={sectionCls}>
+              <div className="bg-[#161616] border border-[#262626] rounded-2xl overflow-hidden">
                 {isOwner ? (
                   <>
-                    <div className={sectionHeaderCls}>
+                    <div className="px-5 py-3.5 border-b border-[#262626] flex items-center gap-2">
                       <span>📄</span>
-                      <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm flex-1">Dokumenty weterynaryjne</h2>
-                      <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 px-2 py-0.5 rounded-full">{vetDocsWithUrls.length}</span>
+                      <h2 className="font-semibold text-white text-sm flex-1">Dokumenty weterynaryjne</h2>
+                      <span className="text-xs bg-white/8 text-gray-400 px-2 py-0.5 rounded-full">{vetDocsWithUrls.length}</span>
                     </div>
                     {vetDocsWithUrls.length === 0 ? (
                       <div className="text-center py-10 px-4">
                         <p className="text-3xl mb-2">📄</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Brak dokumentów</p>
-                        <p className="text-xs text-gray-400 mt-1">Dokumenty dodaje weterynarz podczas wizyty</p>
+                        <p className="text-sm text-gray-400 font-medium">Brak dokumentów</p>
+                        <p className="text-xs text-gray-600 mt-1">Dokumenty dodaje weterynarz podczas wizyty</p>
                       </div>
                     ) : (
-                      <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                      <div className="divide-y divide-[#222]">
                         {vetDocsWithUrls.map(doc => (
                           <div key={doc.id} className="flex items-center gap-4 px-5 py-3.5">
                             <span className="text-xl shrink-0">📋</span>
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-sm text-gray-900 dark:text-gray-100">{doc.title}</p>
-                              <p className="text-xs text-gray-400 mt-0.5">
+                              <p className="font-semibold text-sm text-gray-200">{doc.title}</p>
+                              <p className="text-xs text-gray-500 mt-0.5">
                                 {(doc.vet_profile as { clinic_name?: string } | undefined)?.clinic_name ?? ''}
                                 {doc.notes ? ` · ${doc.notes}` : ''}
                               </p>
                             </div>
                             {doc.signedUrl && (
-                              <a href={doc.signedUrl} target="_blank" rel="noopener noreferrer"
-                                className="shrink-0 text-xs bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900 px-3 py-1.5 rounded-xl hover:bg-blue-100 transition">
+                              <a href={doc.signedUrl} target="_blank" rel="noopener noreferrer" className="shrink-0 text-xs bg-white/8 text-gray-300 border border-white/10 px-3 py-1.5 rounded-xl hover:bg-white/15 transition">
                                 Pobierz
                               </a>
                             )}
@@ -553,17 +518,17 @@ export default async function PetDetailPage({
                     )}
                   </>
                 ) : (
-                  <p className="text-sm text-gray-400 text-center py-8">Dokumenty dostępne tylko dla właściciela</p>
+                  <p className="text-sm text-gray-500 text-center py-8">Dokumenty dostępne tylko dla właściciela</p>
                 )}
               </div>
             )}
 
             {/* ── INCYDENTY ── */}
             {tab === 'incidents' && (
-              <div className={`${sectionCls} p-8 text-center`}>
+              <div className="bg-[#161616] border border-[#262626] rounded-2xl p-8 text-center">
                 <p className="text-4xl mb-3">📡</p>
-                <p className="font-semibold text-gray-700 dark:text-gray-300 text-sm">Incydenty — Trop</p>
-                <p className="text-xs text-gray-400 mt-1 mb-5">Historyczne zgłoszenia zaginięcia i znalezienia powiązane z {petName}</p>
+                <p className="font-semibold text-gray-300 text-sm">Incydenty — Trop</p>
+                <p className="text-xs text-gray-600 mt-1 mb-5">Historyczne zgłoszenia zaginięcia powiązane z {petName}</p>
                 <Link href="/report/lost" className="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition">
                   📡 Zgłoś zaginięcie
                 </Link>
@@ -572,34 +537,34 @@ export default async function PetDetailPage({
 
             {/* ── KONTAKTY ── */}
             {tab === 'contacts' && (
-              <div className={sectionCls}>
+              <div className="bg-[#161616] border border-[#262626] rounded-2xl overflow-hidden">
                 {linkedContacts.length === 0 ? (
-                  <div className="p-8 text-center text-gray-400">
+                  <div className="p-8 text-center">
                     <p className="text-3xl mb-2">👥</p>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Brak kontaktów przypisanych do {petName}</p>
-                    <Link href="/contacts" className="mt-3 inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-600 transition">
+                    <p className="text-sm font-medium text-gray-400">Brak kontaktów przypisanych do {petName}</p>
+                    <Link href="/contacts" className="mt-3 inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-400 transition">
                       Zarządzaj kontaktami →
                     </Link>
                   </div>
                 ) : (
                   <>
-                    <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                    <div className="divide-y divide-[#222]">
                       {linkedContacts.map((contact: UserContact) => (
-                        <div key={contact.id} className="flex items-center gap-3 px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
-                          <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950 flex items-center justify-center text-xl shrink-0">
+                        <div key={contact.id} className="flex items-center gap-3 px-5 py-4 hover:bg-white/3 transition">
+                          <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-xl shrink-0">
                             {CONTACT_TYPE_META[contact.type]?.emoji ?? '📋'}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{contact.name}</p>
+                            <p className="font-semibold text-gray-200 text-sm">{contact.name}</p>
                             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                              {contact.animal_type && <span className="text-xs text-gray-400">{ANIMAL_EMOJI[contact.animal_type] ?? '🐾'}</span>}
-                              {contact.phone && <span className="text-xs text-gray-400">{contact.phone}</span>}
-                              {contact.email && <span className="text-xs text-gray-400 truncate">{contact.email}</span>}
+                              {contact.animal_type && <span className="text-xs text-gray-500">{ANIMAL_EMOJI[contact.animal_type] ?? '🐾'}</span>}
+                              {contact.phone && <span className="text-xs text-gray-500">{contact.phone}</span>}
+                              {contact.email && <span className="text-xs text-gray-500 truncate">{contact.email}</span>}
                             </div>
                           </div>
                           <div className="flex gap-1.5 shrink-0">
-                            {contact.phone && <a href={`tel:${contact.phone}`} className="w-8 h-8 rounded-lg bg-green-50 dark:bg-green-950 flex items-center justify-center text-green-600 dark:text-green-400 hover:bg-green-100 transition text-sm">📞</a>}
-                            {contact.email && <a href={`mailto:${contact.email}`} className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950 flex items-center justify-center text-blue-600 dark:text-blue-400 hover:bg-blue-100 transition text-sm">✉️</a>}
+                            {contact.phone && <a href={`tel:${contact.phone}`} className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 hover:bg-green-500/20 transition text-sm">📞</a>}
+                            {contact.email && <a href={`mailto:${contact.email}`} className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 hover:bg-blue-500/20 transition text-sm">✉️</a>}
                           </div>
                         </div>
                       ))}
