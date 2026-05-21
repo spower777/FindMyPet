@@ -108,13 +108,18 @@ export default async function ProfilePage() {
       </div>
 
       {/* CTA */}
-      <div className="flex gap-3">
-        <Link href="/report/lost" className="flex-1 text-center bg-red-500 hover:bg-red-600 text-white font-semibold py-3.5 rounded-2xl text-sm transition shadow-sm shadow-red-100">
-          {t('add_lost')}
+      <div className="space-y-2">
+        <Link href="/pets/new" className="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3.5 rounded-2xl text-sm transition shadow-sm shadow-orange-100 dark:shadow-orange-900">
+          {t('add_pet')}
         </Link>
-        <Link href="/report/found" className="flex-1 text-center bg-green-500 hover:bg-green-600 text-white font-semibold py-3.5 rounded-2xl text-sm transition shadow-sm shadow-green-100">
-          {t('add_found')}
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/report/lost" className="flex-1 text-center bg-white dark:bg-gray-900 border border-red-200 dark:border-red-900 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 font-medium py-2.5 rounded-2xl text-sm transition">
+            {t('add_lost')}
+          </Link>
+          <Link href="/report/found" className="flex-1 text-center bg-white dark:bg-gray-900 border border-green-200 dark:border-green-900 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950 font-medium py-2.5 rounded-2xl text-sm transition">
+            {t('add_found')}
+          </Link>
+        </div>
       </div>
 
       {/* Pets */}
@@ -213,9 +218,11 @@ function PetRow({ pet, tPet, locale }: { pet: PetWithPhotos; tPet: PetRowT; loca
             {pet.breed ? <span className="font-normal text-gray-400 dark:text-gray-500"> · {pet.breed}</span> : null}
           </p>
           <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full text-white ${pet.type === 'lost' ? 'bg-red-400' : 'bg-green-400'}`}>
-              {pet.type === 'lost' ? tPet.lost : tPet.found}
-            </span>
+            {pet.type !== 'profile' && (
+              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full text-white ${pet.type === 'lost' ? 'bg-red-400' : 'bg-green-400'}`}>
+                {pet.type === 'lost' ? tPet.lost : tPet.found}
+              </span>
+            )}
             {pet.status === 'resolved' && (
               <span className="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 px-1.5 py-0.5 rounded-full">{tPet.resolved}</span>
             )}
