@@ -172,15 +172,15 @@ export default async function PetDetailPage({
   const characterChips = parseChips(pet.character)
   const allergyChips = parseChips(pet.allergies)
 
-  // Timeline preview — top 3 events by date
+  // Timeline preview — top 5 events by date
   const timelinePreview = [
-    ...vaccinations.map(v => ({ date: v.date_given, label: v.name, icon: '💉', sub: v.vet_name ?? '' })),
-    ...medicalRecords.map(r => ({ date: r.date, label: r.title, icon: '🩺', sub: RECORD_TYPE_LABEL[r.type] ?? r.type })),
-    ...vetDocsWithUrls.map(d => ({ date: d.created_at.split('T')[0], label: d.title, icon: '📄', sub: (d.vet_profile as { vet_name?: string } | undefined)?.vet_name ?? '' })),
+    ...vaccinations.map(v => ({ date: v.date_given, label: v.name, icon: '💉', sub: v.vet_name ?? '', color: 'teal' })),
+    ...medicalRecords.map(r => ({ date: r.date, label: r.title, icon: '🩺', sub: RECORD_TYPE_LABEL[r.type] ?? r.type, color: 'blue' })),
+    ...vetDocsWithUrls.map(d => ({ date: d.created_at.split('T')[0], label: d.title, icon: '📄', sub: (d.vet_profile as { vet_name?: string } | undefined)?.vet_name ?? '', color: 'purple' })),
   ]
     .filter(e => !!e.date)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 3)
+    .slice(0, 5)
 
   const now = new Date()
   const sectionCls = 'bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden'
@@ -300,176 +300,260 @@ export default async function PetDetailPage({
           {/* ── Tab content ── */}
           <div className="max-w-5xl mx-auto px-5 sm:px-8 pb-16 mt-6">
 
-            {/* ── PRZEGLĄD — 3-column ── */}
+            {/* ── PRZEGLĄD — 2-column main + sidebar ── */}
             {tab === 'overview' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5 items-start">
 
-                {/* Col 1 — O pupilu */}
-                <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl overflow-hidden shadow-xl shadow-black/30">
-                  <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-[#242424]">
-                    <div className="w-1 h-5 bg-orange-500 rounded-full shrink-0" />
-                    <h3 className="font-bold text-white text-base tracking-tight">O {petName}</h3>
-                  </div>
-                  <div className="p-5 space-y-5">
-                    {pet.description ? (
-                      <p className="text-sm text-gray-300 leading-relaxed">{pet.description}</p>
-                    ) : (
-                      <p className="text-sm text-gray-500 italic">Brak opisu</p>
-                    )}
+                {/* ── LEWA KOLUMNA — profil + historia ── */}
+                <div className="space-y-5">
 
-                    {characterChips.length > 0 && (
-                      <div>
-                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2.5">Temperament</p>
-                        <div className="flex flex-wrap gap-2">
-                          {characterChips.map((chip, i) => (
-                            <span key={i} className={`text-xs px-3 py-1.5 rounded-full font-semibold ${CHIP_COLORS[i % CHIP_COLORS.length]}`}>
-                              {chip}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {allergyChips.length > 0 && (
-                      <div>
-                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2.5">Alergie</p>
-                        <div className="flex flex-wrap gap-2">
-                          {allergyChips.map((chip, i) => (
-                            <span key={i} className="text-xs bg-red-500/15 text-red-300 border border-red-500/25 px-3 py-1.5 rounded-full font-semibold">
-                              ⚠ {chip}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {!characterChips.length && !allergyChips.length && (
-                      <p className="text-xs text-gray-500">Brak danych o charakterze</p>
-                    )}
-
-                    {(pet.contact_phone || pet.contact_email) && (
-                      <div className="pt-4 border-t border-[#242424] space-y-2">
-                        {pet.contact_phone && (
-                          <a href={`tel:${pet.contact_phone}`} className="flex items-center gap-2.5 text-sm text-gray-400 hover:text-orange-400 transition font-medium">
-                            <span className="w-7 h-7 rounded-lg bg-orange-500/10 flex items-center justify-center text-sm shrink-0">📞</span>
-                            {pet.contact_phone}
-                          </a>
-                        )}
-                        {pet.contact_email && (
-                          <a href={`mailto:${pet.contact_email}`} className="flex items-center gap-2.5 text-sm text-gray-400 hover:text-orange-400 transition truncate font-medium">
-                            <span className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center text-sm shrink-0">✉️</span>
-                            {pet.contact_email}
-                          </a>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Col 2 — Timeline życia */}
-                <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl overflow-hidden shadow-xl shadow-black/30">
-                  <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-[#242424]">
-                    <div className="w-1 h-5 bg-orange-500 rounded-full shrink-0" />
-                    <h3 className="font-bold text-white text-base tracking-tight">Timeline życia</h3>
-                  </div>
-                  <div className="p-5">
-                    {timelinePreview.length > 0 ? (
-                      <div className="space-y-0">
-                        {timelinePreview.map((event, i) => (
-                          <div key={i} className="flex gap-4">
-                            {/* Timeline spine */}
-                            <div className="flex flex-col items-center shrink-0">
-                              <div className="w-9 h-9 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-base shrink-0">
-                                {event.icon}
+                  {/* O pupilu */}
+                  <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl overflow-hidden shadow-xl shadow-black/30">
+                    <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-[#242424]">
+                      <div className="w-1 h-5 bg-orange-500 rounded-full shrink-0" />
+                      <h3 className="font-bold text-white text-base">O {petName}</h3>
+                    </div>
+                    <div className="p-5 space-y-5">
+                      {pet.description ? (
+                        <p className="text-sm text-gray-300 leading-relaxed">{pet.description}</p>
+                      ) : (
+                        <p className="text-sm text-gray-500 italic">Brak opisu</p>
+                      )}
+                      {(characterChips.length > 0 || allergyChips.length > 0) && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                          {characterChips.length > 0 && (
+                            <div>
+                              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2.5">Temperament</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {characterChips.map((chip, i) => (
+                                  <span key={i} className={`text-xs px-3 py-1.5 rounded-full font-semibold ${CHIP_COLORS[i % CHIP_COLORS.length]}`}>{chip}</span>
+                                ))}
                               </div>
-                              {i < timelinePreview.length - 1 && (
-                                <div className="w-px flex-1 bg-gradient-to-b from-orange-500/20 to-transparent my-1 min-h-[20px]" />
+                            </div>
+                          )}
+                          {allergyChips.length > 0 && (
+                            <div>
+                              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2.5">Alergie</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {allergyChips.map((chip, i) => (
+                                  <span key={i} className="text-xs bg-red-500/15 text-red-300 border border-red-500/25 px-3 py-1.5 rounded-full font-semibold">⚠ {chip}</span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {(pet.contact_phone || pet.contact_email) && (
+                        <div className="pt-4 border-t border-[#242424] flex flex-wrap gap-3">
+                          {pet.contact_phone && (
+                            <a href={`tel:${pet.contact_phone}`} className="flex items-center gap-2 text-sm text-gray-300 hover:text-orange-400 transition font-medium bg-[#222] border border-[#2e2e2e] px-3 py-2 rounded-xl">
+                              📞 {pet.contact_phone}
+                            </a>
+                          )}
+                          {pet.contact_email && (
+                            <a href={`mailto:${pet.contact_email}`} className="flex items-center gap-2 text-sm text-gray-300 hover:text-orange-400 transition font-medium bg-[#222] border border-[#2e2e2e] px-3 py-2 rounded-xl truncate max-w-xs">
+                              ✉️ {pet.contact_email}
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Timeline życia */}
+                  <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl overflow-hidden shadow-xl shadow-black/30">
+                    <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-[#242424]">
+                      <div className="w-1 h-5 bg-orange-500 rounded-full shrink-0" />
+                      <h3 className="font-bold text-white text-base flex-1">Timeline życia</h3>
+                      {isOwner && (
+                        <Link href={`/pets/${id}?tab=history`} className="text-xs text-orange-500 hover:text-orange-400 transition font-medium">
+                          Pełna historia →
+                        </Link>
+                      )}
+                    </div>
+                    <div className="p-5">
+                      {timelinePreview.length > 0 ? (
+                        <div>
+                          {timelinePreview.map((event, i) => {
+                            const iconCls = event.color === 'teal'
+                              ? 'bg-teal-500/15 border-teal-500/30'
+                              : event.color === 'blue'
+                              ? 'bg-blue-500/15 border-blue-500/30'
+                              : 'bg-purple-500/15 border-purple-500/30'
+                            return (
+                              <div key={i} className="flex gap-4">
+                                <div className="flex flex-col items-center shrink-0">
+                                  <div className={`w-10 h-10 rounded-xl border flex items-center justify-center text-lg shrink-0 ${iconCls}`}>
+                                    {event.icon}
+                                  </div>
+                                  {i < timelinePreview.length - 1 && (
+                                    <div className="w-px flex-1 bg-gradient-to-b from-white/10 to-transparent my-1.5 min-h-[16px]" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0 pb-5">
+                                  <p className="text-sm font-semibold text-gray-100">{event.label}</p>
+                                  <p className="text-xs text-gray-500 mt-0.5">{fmtDate(event.date)}{event.sub ? ` · ${event.sub}` : ''}</p>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <div className="py-8 text-center">
+                          <p className="text-3xl mb-3">📅</p>
+                          <p className="text-sm text-gray-400 font-medium">Brak wpisów w historii</p>
+                          <p className="text-xs text-gray-600 mt-1.5">Dodaj pierwsze szczepienie lub wizytę weterynaryjną</p>
+                          {isOwner && (
+                            <Link href={`/pets/${id}?tab=health`} className="mt-4 inline-flex items-center gap-1.5 text-xs text-orange-500 hover:text-orange-400 transition font-medium bg-orange-500/10 border border-orange-500/20 px-3 py-1.5 rounded-xl">
+                              + Dodaj szczepienie
+                            </Link>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Szczepienia preview (owner only, if any) */}
+                  {isOwner && vaccinations.length > 0 && (
+                    <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl overflow-hidden shadow-xl shadow-black/30">
+                      <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-[#242424]">
+                        <div className="w-1 h-5 bg-teal-500 rounded-full shrink-0" />
+                        <h3 className="font-bold text-white text-base flex-1">Szczepienia</h3>
+                        <span className="text-xs bg-teal-500/15 text-teal-400 border border-teal-500/20 px-2.5 py-1 rounded-full font-semibold">{vaccinations.length}</span>
+                      </div>
+                      <div className="divide-y divide-[#222]">
+                        {vaccinations.slice(0, 3).map(vax => {
+                          const isDue = vax.next_due && new Date(vax.next_due) < now
+                          const isDueSoon = vax.next_due && !isDue && new Date(vax.next_due).getTime() - now.getTime() < 30 * 24 * 60 * 60 * 1000
+                          return (
+                            <div key={vax.id} className="flex items-center gap-3.5 px-5 py-3.5">
+                              <span className="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-base shrink-0">💉</span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-gray-200">{vax.name}</p>
+                                <p className="text-xs text-gray-500 mt-0.5">Podano: {fmtDate(vax.date_given)}{vax.vet_name ? ` · ${vax.vet_name}` : ''}</p>
+                              </div>
+                              {vax.next_due && (
+                                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${isDue ? 'bg-red-500/15 text-red-400 border border-red-500/20' : isDueSoon ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/20' : 'bg-green-500/15 text-green-400 border border-green-500/20'}`}>
+                                  {isDue ? '⚠ Przet.' : isDueSoon ? '⏰ Wkrótce' : `✓ ${fmtDate(vax.next_due)}`}
+                                </span>
                               )}
                             </div>
-                            {/* Content */}
-                            <div className="flex-1 min-w-0 pb-5">
-                              <p className="text-sm font-semibold text-gray-100">{event.label}</p>
-                              <p className="text-xs text-gray-500 mt-0.5">{fmtDate(event.date)}{event.sub ? ` · ${event.sub}` : ''}</p>
-                            </div>
-                          </div>
-                        ))}
+                          )
+                        })}
                       </div>
-                    ) : (
-                      <div className="py-6 text-center">
-                        <p className="text-2xl mb-2">📅</p>
-                        <p className="text-sm text-gray-400 font-medium">Brak wpisów</p>
-                        <p className="text-xs text-gray-600 mt-1">Dodaj pierwsze szczepienie lub wizytę</p>
-                      </div>
-                    )}
-                    {isOwner && (
-                      <Link
-                        href={`/pets/${id}?tab=history`}
-                        className="mt-2 flex items-center gap-1.5 text-sm text-orange-500 hover:text-orange-400 transition font-medium"
-                      >
-                        Zobacz pełną historię
-                        <span className="text-xs">→</span>
-                      </Link>
-                    )}
-                  </div>
+                      {vaccinations.length > 3 && (
+                        <div className="px-5 py-3 border-t border-[#222]">
+                          <Link href={`/pets/${id}?tab=health`} className="text-xs text-orange-500 hover:text-orange-400 transition font-medium">
+                            Zobacz wszystkie {vaccinations.length} szczepień →
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                {/* Col 3 — Szybki dostęp */}
-                <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl overflow-hidden shadow-xl shadow-black/30 sm:col-span-2 lg:col-span-1">
-                  <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-[#242424]">
-                    <div className="w-1 h-5 bg-orange-500 rounded-full shrink-0" />
-                    <h3 className="font-bold text-white text-base tracking-tight">Szybki dostęp</h3>
-                  </div>
-                  <div className="p-5">
-                    {isOwner ? (
-                      <div className="space-y-2.5">
-                        {[
-                          { href: `?tab=history`, iconBg: 'bg-orange-500/15 border-orange-500/20', icon: '📝', iconColor: 'text-orange-400', label: 'Dodaj wpis', sub: 'Wydarzenie na osi czasu' },
-                          { href: `?tab=health`, iconBg: 'bg-teal-500/15 border-teal-500/20', icon: '💉', iconColor: 'text-teal-400', label: 'Dodaj szczepienie', sub: 'Zarejestruj nowe szczepienie' },
-                          { href: `?tab=documents`, iconBg: 'bg-blue-500/15 border-blue-500/20', icon: '📄', iconColor: 'text-blue-400', label: 'Dodaj dokument', sub: 'Dodaj plik lub zdjęcie' },
-                        ].map(item => (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            className="flex items-center gap-3.5 rounded-xl px-3.5 py-3 bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] hover:border-white/10 transition group"
+                {/* ── PRAWA KOLUMNA — akcje + mapa + kontakty ── */}
+                <div className="space-y-5 lg:sticky lg:top-20">
+
+                  {/* Szybki dostęp */}
+                  <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl overflow-hidden shadow-xl shadow-black/30">
+                    <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-[#242424]">
+                      <div className="w-1 h-5 bg-orange-500 rounded-full shrink-0" />
+                      <h3 className="font-bold text-white text-base">Szybki dostęp</h3>
+                    </div>
+                    <div className="p-4 space-y-2">
+                      {isOwner ? (
+                        <>
+                          {[
+                            { href: `?tab=history`, iconBg: 'bg-orange-500/15 border-orange-500/25', icon: '📝', label: 'Dodaj wpis', sub: 'Wydarzenie na osi czasu' },
+                            { href: `?tab=health`, iconBg: 'bg-teal-500/15 border-teal-500/25', icon: '💉', label: 'Dodaj szczepienie', sub: 'Zarejestruj nowe szczepienie' },
+                            { href: `?tab=documents`, iconBg: 'bg-blue-500/15 border-blue-500/25', icon: '📄', label: 'Dodaj dokument', sub: 'Plik lub zdjęcie' },
+                          ].map(item => (
+                            <Link key={item.href} href={item.href}
+                              className="flex items-center gap-3 rounded-xl px-3.5 py-3 bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] hover:border-white/10 transition group"
+                            >
+                              <span className={`w-9 h-9 rounded-xl border flex items-center justify-center text-base shrink-0 ${item.iconBg}`}>{item.icon}</span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-gray-200 group-hover:text-white transition">{item.label}</p>
+                                <p className="text-xs text-gray-500 mt-0.5">{item.sub}</p>
+                              </div>
+                              <span className="text-gray-700 group-hover:text-gray-400 transition shrink-0">›</span>
+                            </Link>
+                          ))}
+                          <Link href="/report/lost"
+                            className="flex items-center gap-3 rounded-xl px-3.5 py-3 bg-red-500/8 hover:bg-red-500/15 border border-red-500/20 hover:border-red-500/35 transition group"
                           >
-                            <span className={`w-9 h-9 rounded-xl border flex items-center justify-center text-base shrink-0 ${item.iconBg}`}>{item.icon}</span>
+                            <span className="w-9 h-9 rounded-xl border border-red-500/30 bg-red-500/15 flex items-center justify-center text-base shrink-0">🚨</span>
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-sm text-gray-200 group-hover:text-white transition">{item.label}</p>
-                              <p className="text-xs text-gray-500 mt-0.5">{item.sub}</p>
+                              <p className="text-sm font-semibold text-red-400 group-hover:text-red-300 transition">Zgłoś zaginięcie</p>
+                              <p className="text-xs text-red-500/60 mt-0.5">Utwórz nowe zgłoszenie</p>
                             </div>
-                            <span className="text-gray-700 group-hover:text-gray-500 transition text-sm shrink-0">›</span>
+                            <span className="text-red-700 group-hover:text-red-500 transition shrink-0">›</span>
                           </Link>
-                        ))}
-                        <Link
-                          href="/report/lost"
-                          className="mt-1 flex items-center gap-3.5 rounded-xl px-3.5 py-3 bg-red-500/8 hover:bg-red-500/15 border border-red-500/20 hover:border-red-500/35 transition group"
-                        >
-                          <span className="w-9 h-9 rounded-xl border border-red-500/30 bg-red-500/15 flex items-center justify-center text-base shrink-0">🚨</span>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-sm text-red-400 group-hover:text-red-300 transition">Zgłoś zaginięcie</p>
-                            <p className="text-xs text-red-500/60 mt-0.5">Utwórz nowe zgłoszenie</p>
-                          </div>
-                          <span className="text-red-600 group-hover:text-red-500 transition text-sm shrink-0">›</span>
-                        </Link>
-                      </div>
-                    ) : (
-                      <div className="space-y-2.5">
-                        {pet.contact_phone && (
-                          <a href={`tel:${pet.contact_phone}`} className="flex items-center gap-3.5 rounded-xl px-3.5 py-3 bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] transition">
-                            <span className="w-9 h-9 rounded-xl border border-green-500/20 bg-green-500/10 flex items-center justify-center text-base shrink-0">📞</span>
-                            <span className="text-sm text-gray-200 font-semibold">Zadzwoń</span>
-                          </a>
-                        )}
-                        {pet.contact_email && (
-                          <a href={`mailto:${pet.contact_email}`} className="flex items-center gap-3.5 rounded-xl px-3.5 py-3 bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] transition">
-                            <span className="w-9 h-9 rounded-xl border border-blue-500/20 bg-blue-500/10 flex items-center justify-center text-base shrink-0">✉️</span>
-                            <span className="text-sm text-gray-200 font-semibold">Napisz</span>
-                          </a>
-                        )}
-                        <div className="pt-2"><QrChipCode chipId={pet.chip_id} petName={petName} profileUrl={profileUrl} /></div>
-                      </div>
-                    )}
+                        </>
+                      ) : (
+                        <>
+                          {pet.contact_phone && (
+                            <a href={`tel:${pet.contact_phone}`} className="flex items-center gap-3 rounded-xl px-3.5 py-3 bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] transition">
+                              <span className="w-9 h-9 rounded-xl border border-green-500/25 bg-green-500/10 flex items-center justify-center text-base shrink-0">📞</span>
+                              <span className="text-sm text-gray-200 font-semibold">Zadzwoń do właściciela</span>
+                            </a>
+                          )}
+                          {pet.contact_email && (
+                            <a href={`mailto:${pet.contact_email}`} className="flex items-center gap-3 rounded-xl px-3.5 py-3 bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] transition">
+                              <span className="w-9 h-9 rounded-xl border border-blue-500/25 bg-blue-500/10 flex items-center justify-center text-base shrink-0">✉️</span>
+                              <span className="text-sm text-gray-200 font-semibold">Napisz wiadomość</span>
+                            </a>
+                          )}
+                          <div className="pt-1"><QrChipCode chipId={pet.chip_id} petName={petName} profileUrl={profileUrl} /></div>
+                        </>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Mapa PetRadar */}
+                  <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl overflow-hidden shadow-xl shadow-black/30">
+                    <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-[#242424]">
+                      <div className="w-1 h-4 bg-orange-500 rounded-full shrink-0" />
+                      <span className="font-bold text-white text-sm flex-1">PetRadar — mapa</span>
+                      <Link href="/radar" className="text-xs text-orange-500 hover:text-orange-400 transition font-medium">
+                        Otwórz →
+                      </Link>
+                    </div>
+                    <div className="h-48 overflow-hidden">
+                      <MapView defaultCenter={[52.2297, 21.0122]} defaultZoom={11} interactive={false} />
+                    </div>
+                    <div className="px-4 py-3 bg-[#161616]">
+                      <p className="text-xs text-gray-500">Zgłoszenia zaginięć w Polsce</p>
+                    </div>
+                  </div>
+
+                  {/* Kontakty (jeśli są przypisane) */}
+                  {isOwner && linkedContacts.length > 0 && (
+                    <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl overflow-hidden shadow-xl shadow-black/30">
+                      <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-[#242424]">
+                        <div className="w-1 h-5 bg-blue-500 rounded-full shrink-0" />
+                        <h3 className="font-bold text-white text-base flex-1">Kontakty</h3>
+                        <Link href="/contacts" className="text-xs text-orange-500 hover:text-orange-400 transition font-medium">Zarządzaj →</Link>
+                      </div>
+                      <div className="divide-y divide-[#222]">
+                        {linkedContacts.slice(0, 4).map((contact: UserContact) => (
+                          <div key={contact.id} className="flex items-center gap-3 px-4 py-3">
+                            <div className="w-9 h-9 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-base shrink-0">
+                              {CONTACT_TYPE_META[contact.type]?.emoji ?? '📋'}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-gray-200 truncate">{contact.name}</p>
+                              <p className="text-xs text-gray-500 mt-0.5">{contact.phone ?? contact.email ?? ''}</p>
+                            </div>
+                            <div className="flex gap-1.5 shrink-0">
+                              {contact.phone && <a href={`tel:${contact.phone}`} className="w-7 h-7 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 hover:bg-green-500/20 transition text-xs">📞</a>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
