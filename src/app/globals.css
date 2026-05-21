@@ -23,6 +23,58 @@ html {
   scroll-behavior: smooth;
 }
 
+/* ── Themes ───────────────────────────────────────────────────────────────
+   Override the orange Tailwind palette per theme.
+   Default (no attribute) = Natural / Friendly (orange, unchanged).
+   Each [data-theme] block remaps --color-orange-* to the theme's hue.
+   All existing bg-orange-*, text-orange-*, ring-orange-* etc. pick it up.
+──────────────────────────────────────────────────────────────────────────── */
+
+/* Modern / Tech — indigo */
+[data-theme="modern"] {
+  --color-orange-50:  oklch(0.962 0.018 272.314);
+  --color-orange-100: oklch(0.930 0.034 272.788);
+  --color-orange-200: oklch(0.876 0.063 274.039);
+  --color-orange-300: oklch(0.787 0.127 276.463);
+  --color-orange-400: oklch(0.673 0.182 276.935);
+  --color-orange-500: oklch(0.585 0.233 277.117);
+  --color-orange-600: oklch(0.511 0.262 276.966);
+  --color-orange-700: oklch(0.437 0.224 277.023);
+  --color-orange-800: oklch(0.373 0.181 278.180);
+  --color-orange-900: oklch(0.359 0.144 278.697);
+  --color-orange-950: oklch(0.257 0.090 281.288);
+}
+
+/* Emergency / Alert — red */
+[data-theme="emergency"] {
+  --color-orange-50:  oklch(0.971 0.013 17.380);
+  --color-orange-100: oklch(0.936 0.032 17.717);
+  --color-orange-200: oklch(0.885 0.062 18.334);
+  --color-orange-300: oklch(0.808 0.114 19.571);
+  --color-orange-400: oklch(0.704 0.191 22.216);
+  --color-orange-500: oklch(0.637 0.237 25.331);
+  --color-orange-600: oklch(0.577 0.245 27.325);
+  --color-orange-700: oklch(0.505 0.213 27.518);
+  --color-orange-800: oklch(0.444 0.177 26.899);
+  --color-orange-900: oklch(0.396 0.141 25.723);
+  --color-orange-950: oklch(0.258 0.092 26.042);
+}
+
+/* Cyber Pet — cyan / teal */
+[data-theme="cyber"] {
+  --color-orange-50:  oklch(0.984 0.019 200.873);
+  --color-orange-100: oklch(0.956 0.045 203.388);
+  --color-orange-200: oklch(0.917 0.080 205.041);
+  --color-orange-300: oklch(0.865 0.127 207.078);
+  --color-orange-400: oklch(0.789 0.154 211.530);
+  --color-orange-500: oklch(0.715 0.143 215.220);
+  --color-orange-600: oklch(0.609 0.126 221.723);
+  --color-orange-700: oklch(0.520 0.105 223.128);
+  --color-orange-800: oklch(0.450 0.085 224.283);
+  --color-orange-900: oklch(0.398 0.070 227.392);
+  --color-orange-950: oklch(0.302 0.056 229.695);
+}
+
 @layer components {
   .label {
     @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1;

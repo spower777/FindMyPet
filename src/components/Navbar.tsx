@@ -4,6 +4,7 @@ import NavbarAuth from './NavbarAuth'
 import NavLinks from './NavLinks'
 import LanguageSwitcher from './LanguageSwitcher'
 import ThemeToggle from './ThemeToggle'
+import ThemeSwitcher from './ThemeSwitcher'
 
 export default async function Navbar() {
   const supabase = await createClient()
@@ -21,6 +22,7 @@ export default async function Navbar() {
       <div className="flex-1" />
 
       <div className="flex items-center gap-2">
+        <ThemeSwitcher />
         <ThemeToggle />
         <LanguageSwitcher />
         <NavbarAuth user={user} />

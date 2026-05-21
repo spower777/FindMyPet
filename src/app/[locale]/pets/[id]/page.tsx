@@ -188,7 +188,7 @@ export default async function PetDetailPage({
 
         <Link href="/" className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/60 transition z-10">←</Link>
         <div className="absolute top-4 right-4 z-10">
-          <ShareButton petName={petName} />
+          <ShareButton petName={petName} petType={pet.type as 'lost' | 'found' | 'profile'} />
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 pt-16 z-10">
