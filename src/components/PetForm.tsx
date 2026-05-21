@@ -100,11 +100,9 @@ export default function PetForm({ type }: { type: PetType }) {
         is_neutered: isNeutered,
       })
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Nieznany błąd'
-      if (!msg.includes('NEXT_REDIRECT')) {
-        setError(msg)
-        setSubmitting(false)
-      }
+      if ((err as { digest?: string })?.digest?.startsWith('NEXT_REDIRECT')) throw err
+      setError(err instanceof Error ? err.message : 'Nieznany błąd')
+      setSubmitting(false)
     }
   }
 
