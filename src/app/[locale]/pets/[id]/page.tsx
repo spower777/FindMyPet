@@ -6,17 +6,27 @@ import MapView from '@/components/MapView'
 import PetCard from '@/components/PetCard'
 import { resolvePet, updateMatchStatus } from '@/app/actions/pets'
 import { secureAnimal } from '@/app/actions/vet'
-import type { PetWithPhotos, Match, VetProfile, PetVaccination, PetMedicalRecord, VetDocument } from '@/lib/types'
+import type { PetWithPhotos, Match, VetProfile, PetVaccination, PetMedicalRecord, VetDocument, UserContact } from '@/lib/types'
 import type { Metadata } from 'next'
 import { startConversation } from '@/app/actions/chat'
 import { getTranslations } from 'next-intl/server'
 import ShareButton from '@/components/ShareButton'
 import PetTimeline from '@/components/medical/PetTimeline'
 import QrChipCode from '@/components/QrChipCode'
+import PetTabNav from '@/components/PetTabNav'
 
 const SPECIES_EMOJI: Record<string, string> = {
   dog: '🐕', cat: '🐈', bird: '🐦', rabbit: '🐇', other: '🐾',
 }
+
+const CHIP_COLORS = [
+  'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300',
+  'bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300',
+  'bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300',
+  'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300',
+  'bg-orange-100 dark:bg-orange-950 text-orange-700 dark:text-orange-300',
+  'bg-pink-100 dark:bg-pink-950 text-pink-700 dark:text-pink-300',
+]
 
 function calcAge(birthDate: string): { years: number; months: number } {
   const birth = new Date(birthDate)
@@ -26,44 +36,43 @@ function calcAge(birthDate: string): { years: number; months: number } {
   return { years: Math.floor(totalMonths / 12), months: totalMonths % 12 }
 }
 
+function parseChips(text: string | null): string[] {
+  if (!text) return []
+  return text.split(/[,;]/).map(s => s.trim()).filter(Boolean)
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string; locale: string }> }): Promise<Metadata> {
   const { id } = await params
   const supabase = await createClient()
-  const { data: pet } = await supabase
-    .from('pets')
-    .select('*, photos:pet_photos(*)')
-    .eq('id', id)
-    .single()
-
+  const { data: pet } = await supabase.from('pets').select('*, photos:pet_photos(*)').eq('id', id).single()
   if (!pet) return {}
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const photos = pet.photos ?? []
   const primary = photos.find((p: { is_primary: boolean }) => p.is_primary) ?? photos[0]
-  const imageUrl = primary
-    ? `${supabaseUrl}/storage/v1/object/public/pet-photos/${primary.storage_path}`
-    : undefined
-
-  const status = pet.type === 'lost' ? 'Lost' : 'Found'
+  const imageUrl = primary ? `${supabaseUrl}/storage/v1/object/public/pet-photos/${primary.storage_path}` : undefined
   const name = pet.name ?? pet.species
-  const title = `${status}: ${name}`
-  const description = pet.last_seen_address
-    ? `${pet.description} • ${pet.last_seen_address}`
-    : pet.description
+  const title = pet.type === 'profile' ? name : `${pet.type === 'lost' ? 'Lost' : 'Found'}: ${name}`
+  const description = pet.last_seen_address ? `${pet.description} • ${pet.last_seen_address}` : pet.description
 
   return {
     title,
     description,
-    openGraph: {
-      title, description,
-      images: imageUrl ? [{ url: imageUrl, width: 800, height: 600, alt: name }] : [],
-    },
+    openGraph: { title, description, images: imageUrl ? [{ url: imageUrl, width: 800, height: 600, alt: name }] : [] },
     twitter: { card: 'summary_large_image', title, description, images: imageUrl ? [imageUrl] : [] },
   }
 }
 
-export default async function PetDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PetDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ tab?: string }>
+}) {
   const { id } = await params
+  const { tab = 'overview' } = await searchParams
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -71,12 +80,7 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
   const ts = await getTranslations('species')
   const tv = await getTranslations('vet')
 
-  const { data: pet } = await supabase
-    .from('pets')
-    .select('*, photos:pet_photos(*)')
-    .eq('id', id)
-    .single()
-
+  const { data: pet } = await supabase.from('pets').select('*, photos:pet_photos(*)').eq('id', id).single()
   if (!pet) notFound()
 
   const [{ data: ownerVetData }, { data: currentUserVetData }] = await Promise.all([
@@ -99,34 +103,31 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
     primary_photo_url: primaryPhoto ? getPhotoUrl(primaryPhoto.storage_path) : null,
   }
 
-  const matchField = pet.type === 'lost' ? 'lost_pet_id' : 'found_pet_id'
-  const { data: rawMatches } = await supabase
-    .from('matches')
-    .select(`
-      *,
-      lost_pet:pets!matches_lost_pet_id_fkey(*, photos:pet_photos(*)),
-      found_pet:pets!matches_found_pet_id_fkey(*, photos:pet_photos(*))
-    `)
-    .eq(matchField, id)
-    .eq('status', 'pending')
-    .order('similarity_score', { ascending: false })
-    .limit(5)
-
-  const matches: Match[] = (rawMatches ?? []).map((m: Match) => {
-    const addUrl = (p: PetWithPhotos | undefined): PetWithPhotos | undefined => {
-      if (!p) return undefined
-      const ph = p.photos?.find(x => x.is_primary) ?? p.photos?.[0]
-      return { ...p, primary_photo_url: ph ? getPhotoUrl(ph.storage_path) : null }
-    }
-    return { ...m, lost_pet: addUrl(m.lost_pet as PetWithPhotos), found_pet: addUrl(m.found_pet as PetWithPhotos) }
-  })
-
   const isOwner = user?.id === pet.user_id
   const isProfile = pet.type === 'profile'
   const isLost = pet.type === 'lost'
   const profileUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://findmypet.app'}/pets/${id}`
 
-  // Fetch medical data + vet documents — only for the owner, parallel
+  // Fetch AI matches only for lost/found
+  let matches: Match[] = []
+  if (!isProfile) {
+    const matchField = pet.type === 'lost' ? 'lost_pet_id' : 'found_pet_id'
+    const { data: rawMatches } = await supabase
+      .from('matches')
+      .select(`*, lost_pet:pets!matches_lost_pet_id_fkey(*, photos:pet_photos(*)), found_pet:pets!matches_found_pet_id_fkey(*, photos:pet_photos(*))`)
+      .eq(matchField, id).eq('status', 'pending').order('similarity_score', { ascending: false }).limit(5)
+
+    matches = (rawMatches ?? []).map((m: Match) => {
+      const addUrl = (p: PetWithPhotos | undefined): PetWithPhotos | undefined => {
+        if (!p) return undefined
+        const ph = p.photos?.find(x => x.is_primary) ?? p.photos?.[0]
+        return { ...p, primary_photo_url: ph ? getPhotoUrl(ph.storage_path) : null }
+      }
+      return { ...m, lost_pet: addUrl(m.lost_pet as PetWithPhotos), found_pet: addUrl(m.found_pet as PetWithPhotos) }
+    })
+  }
+
+  // Medical data — owner only
   const [{ data: rawVaccinations }, { data: rawRecords }, { data: rawVetDocs }] = isOwner
     ? await Promise.all([
         supabase.from('pet_vaccinations').select('*').eq('pet_id', id).order('date_given', { ascending: false }),
@@ -139,129 +140,281 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
   const medicalRecords = (rawRecords ?? []) as PetMedicalRecord[]
   const vetDocuments = (rawVetDocs ?? []) as VetDocument[]
 
-  // Pre-generate signed download URLs for vet documents (1h expiry)
   const vetDocsWithUrls = isOwner
     ? await Promise.all(vetDocuments.map(async doc => {
         const { data } = await supabase.storage.from('pet-documents').createSignedUrl(doc.document_path, 3600)
         return { ...doc, signedUrl: data?.signedUrl ?? null }
       }))
     : []
-  const petName = pet.name ?? ts(pet.species as 'dog' | 'cat' | 'bird' | 'rabbit' | 'other')
 
-  // Age calculation
+  // Linked contacts — profile + owner only
+  const { data: linkedContactsData } = isProfile && isOwner
+    ? await supabase.from('user_contacts').select('*').eq('pet_id', id).eq('user_id', user!.id)
+    : { data: [] }
+  const linkedContacts = (linkedContactsData ?? []) as UserContact[]
+
+  const petName = pet.name ?? ts(pet.species as 'dog' | 'cat' | 'bird' | 'rabbit' | 'other')
   const ageInfo = pet.birth_date ? calcAge(pet.birth_date) : null
   const ageLabel = ageInfo
-    ? ageInfo.years >= 1
-      ? t('age_years', { n: ageInfo.years })
-      : t('age_months', { n: ageInfo.months })
+    ? ageInfo.years >= 1 ? t('age_years', { n: ageInfo.years }) : t('age_months', { n: ageInfo.months })
     : null
-
-  // Gender label
   const genderLabel = pet.gender === 'male' ? `♂ ${t('male')}` : pet.gender === 'female' ? `♀ ${t('female')}` : null
+
+  const characterChips = parseChips(pet.character)
+  const allergyChips = parseChips(pet.allergies)
 
   const sectionCls = 'bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden'
   const sectionHeaderCls = 'px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2'
 
+  const CONTACT_TYPE_META: Record<string, { emoji: string }> = {
+    owner: { emoji: '👤' }, vet: { emoji: '🏥' }, shelter: { emoji: '🏠' },
+    emergency: { emoji: '🚨' }, volunteer: { emoji: '🙋' }, other: { emoji: '📋' },
+  }
+  const ANIMAL_EMOJI: Record<string, string> = { dog: '🐕', cat: '🐈', bird: '🐦', rabbit: '🐇', exotic: '🦎', other: '🐾' }
+
   return (
     <div className="w-full pb-12">
 
-      {/* ── HERO — full width immersive ── */}
-      <div className="relative w-full h-[56vw] max-h-[520px] min-h-[280px] bg-gray-100 dark:bg-gray-800 overflow-hidden">
+      {/* ── HERO ── */}
+      <div className={`relative w-full overflow-hidden bg-gray-100 dark:bg-gray-800 ${isProfile ? 'h-[45vw] max-h-[400px] min-h-[220px]' : 'h-[56vw] max-h-[520px] min-h-[280px]'}`}>
         {primaryPhoto ? (
-          <Image
-            src={getPhotoUrl(primaryPhoto.storage_path)}
-            alt={petName}
-            fill
-            className="object-cover"
-            priority
-          />
+          <Image src={getPhotoUrl(primaryPhoto.storage_path)} alt={petName} fill className="object-cover" priority />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-[10rem] text-gray-200 dark:text-gray-700">
+          <div className="w-full h-full flex items-center justify-center text-[8rem] text-gray-200 dark:text-gray-700">
             {SPECIES_EMOJI[pet.species]}
           </div>
         )}
-
-        {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
 
-        {/* Back */}
-        <Link
-          href="/"
-          className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/60 transition text-lg z-10"
-          aria-label="Wróć"
-        >
-          ←
-        </Link>
-
-        {/* Share */}
+        <Link href="/" className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/60 transition z-10">←</Link>
         <div className="absolute top-4 right-4 z-10">
           <ShareButton petName={petName} />
         </div>
 
-        {/* Name / breed / status — overlaid on gradient */}
-        <div className="absolute bottom-0 left-0 right-0 px-5 pb-6 pt-20 z-10">
+        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 pt-16 z-10">
           <div className="max-w-6xl mx-auto flex items-end justify-between gap-4">
             <div>
               {!isProfile && (
-                <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full mb-2 ${
-                  isLost ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
-                }`}>
+                <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full mb-2 ${isLost ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
                   {isLost ? <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> : '✓'}
                   {isLost ? t('lost').toUpperCase() : t('found').toUpperCase()}
                 </span>
               )}
-              <h1 className="text-3xl sm:text-4xl font-bold text-white leading-tight drop-shadow-lg">
-                {petName}
-              </h1>
-              {(pet.breed || pet.species) && (
-                <p className="text-white/75 text-sm mt-1">
-                  {SPECIES_EMOJI[pet.species]}{pet.breed ? ` ${pet.breed}` : ` ${pet.species}`}
-                  {ageLabel && <span className="ml-2 opacity-90">· {ageLabel}</span>}
-                </p>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white leading-tight drop-shadow-lg">{petName}</h1>
+              <p className="text-white/75 text-sm mt-1">
+                {SPECIES_EMOJI[pet.species]}{pet.breed ? ` ${pet.breed}` : ` ${pet.species}`}
+                {ageLabel && <span className="ml-2 opacity-90">· {ageLabel}</span>}
+              </p>
+            </div>
+            <div className="flex flex-col items-end gap-2 shrink-0">
+              {pet.status === 'resolved' && (
+                <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full">✓ {t('resolved')}</span>
+              )}
+              {isProfile && isOwner && (
+                <Link href={`/pets/${id}/edit`} className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition">
+                  ✏️ Edytuj profil
+                </Link>
               )}
             </div>
-            {pet.status === 'resolved' && (
-              <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full shrink-0">
-                ✓ {t('resolved')}
-              </span>
-            )}
           </div>
         </div>
       </div>
 
-      {/* ── TWO-COLUMN LAYOUT ── */}
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_340px] gap-5 px-4 lg:px-6 mt-5">
+      {/* ── PROFILE PET — Tabbed layout ── */}
+      {isProfile && (
+        <div className="max-w-3xl mx-auto px-4 lg:px-6 mt-0">
+          {/* Tab nav */}
+          <div className={`${sectionCls} mt-5 rounded-b-none border-b-0`}>
+            <PetTabNav tabs={[
+              { key: 'overview', label: 'Przegląd', icon: '🐾' },
+              { key: 'history', label: 'Historia', icon: '🏥', count: vaccinations.length + medicalRecords.length + vetDocsWithUrls.length },
+              { key: 'contacts', label: 'Kontakty', icon: '👥', count: linkedContacts.length },
+            ]} />
+          </div>
 
-        {/* ── SIDEBAR — DOM first = mobile top, desktop right via col-start ── */}
-        <div className="lg:col-start-2 lg:row-start-1 space-y-4 lg:sticky lg:top-20 lg:self-start">
+          {/* Tab content */}
+          <div className={`${sectionCls} rounded-t-none border-t-0`}>
 
-          {/* Contact card */}
-          <div className={sectionCls}>
-            <div className="p-4 space-y-3">
-              {(pet.contact_phone || pet.contact_email) && (
-                <div className="space-y-2">
-                  {pet.contact_phone && (
-                    <a
-                      href={`tel:${pet.contact_phone}`}
-                      className="flex items-center gap-2 text-sm bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 px-3 py-2.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 hover:border-orange-200 hover:text-orange-700 dark:hover:text-orange-300 transition"
-                    >
-                      📞 <span className="font-medium">{pet.contact_phone}</span>
-                    </a>
-                  )}
-                  {pet.contact_email && (
-                    <a
-                      href={`mailto:${pet.contact_email}`}
-                      className="flex items-center gap-2 text-sm bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 px-3 py-2.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 hover:border-orange-200 hover:text-orange-700 dark:hover:text-orange-300 transition truncate"
-                    >
-                      ✉️ <span className="font-medium truncate">{pet.contact_email}</span>
-                    </a>
-                  )}
-                </div>
-              )}
+            {/* ── Przegląd ── */}
+            {tab === 'overview' && (
+              <div className="p-5 space-y-5">
 
-              {!isOwner && pet.status === 'active' && (
-                <>
-                  {user ? (
+                {/* Identity chips */}
+                {(genderLabel || pet.is_neutered || pet.chip_id || ageLabel) && (
+                  <div className="flex flex-wrap gap-2">
+                    {genderLabel && <span className="text-xs bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900 px-3 py-1.5 rounded-full font-medium">{genderLabel}</span>}
+                    {ageLabel && <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-3 py-1.5 rounded-full font-medium">🎂 {ageLabel}</span>}
+                    {pet.is_neutered && <span className="text-xs bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-100 dark:border-teal-900 px-3 py-1.5 rounded-full font-medium">✂️ {t('neutered')}</span>}
+                    {pet.color && <span className="text-xs bg-orange-50 dark:bg-orange-950 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-900 px-3 py-1.5 rounded-full font-medium">🎨 {pet.color}</span>}
+                    {pet.chip_id && <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-3 py-1.5 rounded-full font-mono font-medium">🔖 {pet.chip_id}</span>}
+                  </div>
+                )}
+
+                {/* Bio */}
+                {pet.description && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">O {petName}</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{pet.description}</p>
+                  </div>
+                )}
+
+                {/* Character chips */}
+                {characterChips.length > 0 && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">{t('character_label')}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {characterChips.map((chip, i) => (
+                        <span key={i} className={`text-xs px-3 py-1.5 rounded-full font-medium ${CHIP_COLORS[i % CHIP_COLORS.length]}`}>
+                          {chip}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Allergy chips */}
+                {allergyChips.length > 0 && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">{t('allergies_label')}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {allergyChips.map((chip, i) => (
+                        <span key={i} className="text-xs bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900 px-3 py-1.5 rounded-full font-medium">
+                          ⚠️ {chip}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* QR / Chip section */}
+                {(pet.chip_id || isOwner) && (
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800">
+                    <div>
+                      <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Chip / QR</p>
+                      {pet.chip_id && <p className="text-xs font-mono text-gray-600 dark:text-gray-300 mt-0.5">{pet.chip_id}</p>}
+                    </div>
+                    <QrChipCode chipId={pet.chip_id} petName={petName} profileUrl={profileUrl} />
+                  </div>
+                )}
+
+                {/* Contact info */}
+                {(pet.contact_phone || pet.contact_email) && (
+                  <div className="space-y-2 pt-3 border-t border-gray-100 dark:border-gray-800">
+                    {pet.contact_phone && (
+                      <a href={`tel:${pet.contact_phone}`} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-orange-500 transition">
+                        📞 <span className="font-medium">{pet.contact_phone}</span>
+                      </a>
+                    )}
+                    {pet.contact_email && (
+                      <a href={`mailto:${pet.contact_email}`} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-orange-500 transition truncate">
+                        ✉️ <span className="font-medium truncate">{pet.contact_email}</span>
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {/* Quick actions — owner only */}
+                {isOwner && (
+                  <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-100 dark:border-gray-800">
+                    <Link href={`/pets/${id}?tab=history`} className="flex items-center gap-2 bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-100 dark:border-teal-900 px-3 py-2.5 rounded-xl text-xs font-medium hover:bg-teal-100 dark:hover:bg-teal-900 transition">
+                      💉 Dodaj szczepienie
+                    </Link>
+                    <Link href={`/pets/${id}?tab=history`} className="flex items-center gap-2 bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300 border border-orange-100 dark:border-orange-900 px-3 py-2.5 rounded-xl text-xs font-medium hover:bg-orange-100 dark:hover:bg-orange-900 transition">
+                      🩺 Dodaj wizytę
+                    </Link>
+                    <Link href="/report/lost" className="flex items-center gap-2 bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900 px-3 py-2.5 rounded-xl text-xs font-medium hover:bg-red-100 dark:hover:bg-red-900 transition">
+                      📡 Zgłoś zaginięcie
+                    </Link>
+                    <Link href="/contacts" className="flex items-center gap-2 bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900 px-3 py-2.5 rounded-xl text-xs font-medium hover:bg-blue-100 dark:hover:bg-blue-900 transition">
+                      👥 Kontakty
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Historia (Timeline) ── */}
+            {tab === 'history' && (
+              <div className="p-5">
+                {isOwner ? (
+                  <PetTimeline petId={id} vaccinations={vaccinations} medicalRecords={medicalRecords} vetDocs={vetDocsWithUrls} />
+                ) : (
+                  <p className="text-sm text-gray-400 text-center py-8">Historia dostępna tylko dla właściciela</p>
+                )}
+              </div>
+            )}
+
+            {/* ── Kontakty ── */}
+            {tab === 'contacts' && (
+              <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                {linkedContacts.length === 0 ? (
+                  <div className="p-8 text-center text-gray-400">
+                    <p className="text-3xl mb-2">👥</p>
+                    <p className="text-sm font-medium">Brak kontaktów przypisanych do {petName}</p>
+                    <Link href="/contacts" className="mt-3 inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-600 transition">
+                      Zarządzaj kontaktami →
+                    </Link>
+                  </div>
+                ) : (
+                  <>
+                    {linkedContacts.map((contact: UserContact) => (
+                      <div key={contact.id} className="flex items-center gap-3 px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+                        <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950 flex items-center justify-center text-xl shrink-0">
+                          {CONTACT_TYPE_META[contact.type]?.emoji ?? '📋'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{contact.name}</p>
+                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                            {contact.animal_type && <span className="text-xs text-gray-400">{ANIMAL_EMOJI[contact.animal_type] ?? '🐾'}</span>}
+                            {contact.phone && <span className="text-xs text-gray-400">{contact.phone}</span>}
+                            {contact.email && <span className="text-xs text-gray-400 truncate">{contact.email}</span>}
+                          </div>
+                        </div>
+                        <div className="flex gap-1.5 shrink-0">
+                          {contact.phone && <a href={`tel:${contact.phone}`} className="w-8 h-8 rounded-lg bg-green-50 dark:bg-green-950 flex items-center justify-center text-green-600 dark:text-green-400 hover:bg-green-100 transition text-sm">📞</a>}
+                          {contact.email && <a href={`mailto:${contact.email}`} className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950 flex items-center justify-center text-blue-600 dark:text-blue-400 hover:bg-blue-100 transition text-sm">✉️</a>}
+                        </div>
+                      </div>
+                    ))}
+                    <div className="px-5 py-3">
+                      <Link href="/contacts" className="text-xs text-orange-500 hover:text-orange-600 transition">
+                        Zarządzaj wszystkimi kontaktami →
+                      </Link>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── LOST/FOUND PET — original two-column layout ── */}
+      {!isProfile && (
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_340px] gap-5 px-4 lg:px-6 mt-5">
+
+          {/* SIDEBAR */}
+          <div className="lg:col-start-2 lg:row-start-1 space-y-4 lg:sticky lg:top-20 lg:self-start">
+
+            <div className={sectionCls}>
+              <div className="p-4 space-y-3">
+                {(pet.contact_phone || pet.contact_email) && (
+                  <div className="space-y-2">
+                    {pet.contact_phone && (
+                      <a href={`tel:${pet.contact_phone}`} className="flex items-center gap-2 text-sm bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 px-3 py-2.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 hover:border-orange-200 hover:text-orange-700 dark:hover:text-orange-300 transition">
+                        📞 <span className="font-medium">{pet.contact_phone}</span>
+                      </a>
+                    )}
+                    {pet.contact_email && (
+                      <a href={`mailto:${pet.contact_email}`} className="flex items-center gap-2 text-sm bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 px-3 py-2.5 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 hover:border-orange-200 hover:text-orange-700 dark:hover:text-orange-300 transition truncate">
+                        ✉️ <span className="font-medium truncate">{pet.contact_email}</span>
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {!isOwner && pet.status === 'active' && (
+                  user ? (
                     <form action={startConversation.bind(null, pet.id, pet.user_id)}>
                       <button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl text-sm transition active:scale-[0.98] shadow-md shadow-orange-200 dark:shadow-orange-950">
                         💬 {t('contact_owner')}
@@ -271,209 +424,164 @@ export default async function PetDetailPage({ params }: { params: Promise<{ id: 
                     <Link href={`/auth/login?next=/pets/${pet.id}`} className="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl text-sm transition shadow-md shadow-orange-200 dark:shadow-orange-950">
                       💬 {t('contact_owner')}
                     </Link>
-                  )}
-                </>
-              )}
+                  )
+                )}
 
-              {pet.last_seen_address && !isProfile && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 flex items-start gap-1.5 pt-1 border-t border-gray-100 dark:border-gray-800">
-                  <span className="shrink-0 mt-0.5">📍</span>
-                  <span className="leading-relaxed">{pet.last_seen_address}</span>
-                </p>
-              )}
+                {pet.last_seen_address && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-start gap-1.5 pt-1 border-t border-gray-100 dark:border-gray-800">
+                    <span className="shrink-0 mt-0.5">📍</span>
+                    <span className="leading-relaxed">{pet.last_seen_address}</span>
+                  </p>
+                )}
+              </div>
             </div>
+
+            {(pet.chip_id || isOwner) && (
+              <div className={`${sectionCls} p-4 flex items-center justify-between gap-3`}>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-0.5">Chip / QR</p>
+                  {pet.chip_id && <p className="text-xs font-mono text-gray-600 dark:text-gray-300 truncate">🏷️ {pet.chip_id}</p>}
+                </div>
+                <QrChipCode chipId={pet.chip_id} petName={petName} profileUrl={profileUrl} />
+              </div>
+            )}
+
+            {(ownerVetProfile || pet.secured_by_vet_id) && (
+              <div className={`${sectionCls} p-4 space-y-2`}>
+                {ownerVetProfile && (
+                  <span className={`text-xs font-medium px-2.5 py-1.5 rounded-full border inline-flex items-center gap-1.5 ${ownerVetProfile.verified ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800' : 'bg-yellow-50 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800'}`}>
+                    🏥 {tv('badge')}{ownerVetProfile.verified ? ` — ${ownerVetProfile.clinic_name}` : ''}
+                  </span>
+                )}
+                {pet.secured_by_vet_id && (
+                  <span className="text-xs font-medium bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-2.5 py-1.5 rounded-full inline-flex items-center gap-1">
+                    🏥 {tv('secured_label')}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {isOwner && pet.status === 'active' && (
+              <div className={`${sectionCls} p-4 space-y-2`}>
+                {isVet && pet.type === 'found' && !pet.secured_by_vet_id && (
+                  <form action={secureAnimal.bind(null, pet.id)}>
+                    <button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl text-sm transition">{tv('secure_animal')}</button>
+                  </form>
+                )}
+                <form action={resolvePet.bind(null, pet.id)}>
+                  <button type="submit" className="w-full text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 px-4 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition">{t('mark_resolved')}</button>
+                </form>
+              </div>
+            )}
+
+            {isVet && !isOwner && pet.type === 'found' && pet.status === 'active' && !pet.secured_by_vet_id && (
+              <div className={`${sectionCls} p-4`}>
+                <form action={secureAnimal.bind(null, pet.id)}>
+                  <button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl text-sm transition">{tv('secure_animal')}</button>
+                </form>
+              </div>
+            )}
+
+            {matches.length > 0 && (
+              <div className={sectionCls}>
+                <div className={sectionHeaderCls}>
+                  <span className="text-base">🤖</span>
+                  <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{t('ai_matches', { n: matches.length })}</h2>
+                </div>
+                <div className="p-3 space-y-3">
+                  {matches.map(match => {
+                    const matchedPet = pet.type === 'lost' ? match.found_pet! : match.lost_pet!
+                    const score = Math.round(match.similarity_score * 100)
+                    return (
+                      <div key={match.id} className="border border-gray-100 dark:border-gray-800 rounded-xl p-2.5 space-y-2">
+                        <PetCard pet={matchedPet} />
+                        <div className="flex items-center justify-between gap-2 flex-wrap px-0.5">
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${score >= 80 ? 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300' : score >= 60 ? 'bg-yellow-100 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'}`}>{score}%</span>
+                          {isOwner && (
+                            <div className="flex gap-1.5">
+                              <form action={updateMatchStatus.bind(null, match.id, 'accepted')}><button type="submit" className="text-xs bg-green-500 text-white px-2.5 py-1 rounded-lg hover:bg-green-600 transition">{t('match_accept')}</button></form>
+                              <form action={updateMatchStatus.bind(null, match.id, 'rejected')}><button type="submit" className="text-xs border border-gray-200 dark:border-gray-700 text-gray-500 px-2.5 py-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition">{t('match_reject')}</button></form>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+            {isOwner && matches.length === 0 && pet.status === 'active' && (
+              <p className="text-center text-xs text-gray-400 py-1">{t('no_ai_matches')}</p>
+            )}
           </div>
 
-          {/* QR / chip */}
-          {(pet.chip_id || isOwner) && (
-            <div className={`${sectionCls} p-4 flex items-center justify-between gap-3`}>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-0.5">Chip / QR</p>
-                {pet.chip_id && <p className="text-xs font-mono text-gray-600 dark:text-gray-300 truncate">🏷️ {pet.chip_id}</p>}
+          {/* MAIN */}
+          <div className="lg:col-start-1 lg:row-start-1 space-y-4 min-w-0">
+            {(genderLabel || pet.is_neutered) && (
+              <div className="flex flex-wrap gap-2">
+                {genderLabel && <span className="text-xs bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900 px-3 py-1.5 rounded-full font-medium">{genderLabel}</span>}
+                {pet.is_neutered && <span className="text-xs bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-100 dark:border-teal-900 px-3 py-1.5 rounded-full font-medium">✂️ {t('neutered')}</span>}
               </div>
-              <QrChipCode chipId={pet.chip_id} petName={petName} profileUrl={profileUrl} />
-            </div>
-          )}
+            )}
 
-          {/* Vet badges */}
-          {(ownerVetProfile || pet.secured_by_vet_id) && (
-            <div className={`${sectionCls} p-4 space-y-2`}>
-              {ownerVetProfile && (
-                <span className={`text-xs font-medium px-2.5 py-1.5 rounded-full border inline-flex items-center gap-1.5 ${
-                  ownerVetProfile.verified
-                    ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800'
-                    : 'bg-yellow-50 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800'
-                }`}>
-                  🏥 {tv('badge')}{ownerVetProfile.verified ? ` — ${ownerVetProfile.clinic_name}` : ''}
-                </span>
-              )}
-              {pet.secured_by_vet_id && (
-                <span className="text-xs font-medium bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-2.5 py-1.5 rounded-full inline-flex items-center gap-1">
-                  🏥 {tv('secured_label')}
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Owner actions */}
-          {isOwner && pet.status === 'active' && !isProfile && (
-            <div className={`${sectionCls} p-4 space-y-2`}>
-              {isVet && !isOwner && pet.type === 'found' && !pet.secured_by_vet_id && (
-                <form action={secureAnimal.bind(null, pet.id)}>
-                  <button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl text-sm transition">
-                    {tv('secure_animal')}
-                  </button>
-                </form>
-              )}
-              <form action={resolvePet.bind(null, pet.id)}>
-                <button type="submit" className="w-full text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 px-4 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                  {t('mark_resolved')}
-                </button>
-              </form>
-            </div>
-          )}
-
-          {isVet && !isOwner && pet.type === 'found' && pet.status === 'active' && !pet.secured_by_vet_id && (
-            <div className={`${sectionCls} p-4`}>
-              <form action={secureAnimal.bind(null, pet.id)}>
-                <button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl text-sm transition">
-                  {tv('secure_animal')}
-                </button>
-              </form>
-            </div>
-          )}
-
-          {/* AI matches */}
-          {matches.length > 0 && (
-            <div className={sectionCls}>
-              <div className={sectionHeaderCls}>
-                <span className="text-base">🤖</span>
-                <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{t('ai_matches', { n: matches.length })}</h2>
-              </div>
-              <div className="p-3 space-y-3">
-                {matches.map(match => {
-                  const matchedPet = pet.type === 'lost' ? match.found_pet! : match.lost_pet!
-                  const score = Math.round(match.similarity_score * 100)
-                  return (
-                    <div key={match.id} className="border border-gray-100 dark:border-gray-800 rounded-xl p-2.5 space-y-2">
-                      <PetCard pet={matchedPet} />
-                      <div className="flex items-center justify-between gap-2 flex-wrap px-0.5">
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                          score >= 80 ? 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300'
-                          : score >= 60 ? 'bg-yellow-100 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
-                        }`}>{score}%</span>
-                        {isOwner && (
-                          <div className="flex gap-1.5">
-                            <form action={updateMatchStatus.bind(null, match.id, 'accepted')}>
-                              <button type="submit" className="text-xs bg-green-500 text-white px-2.5 py-1 rounded-lg hover:bg-green-600 transition">{t('match_accept')}</button>
-                            </form>
-                            <form action={updateMatchStatus.bind(null, match.id, 'rejected')}>
-                              <button type="submit" className="text-xs border border-gray-200 dark:border-gray-700 text-gray-500 px-2.5 py-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition">{t('match_reject')}</button>
-                            </form>
-                          </div>
-                        )}
+            {(pet.description || pet.character || pet.color || pet.allergies) && (
+              <div className={sectionCls}>
+                <div className={sectionHeaderCls}>
+                  <span className="text-base">📝</span>
+                  <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{t('description')}</h2>
+                </div>
+                <div className="p-5 space-y-4">
+                  {pet.color && <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{pet.color}</p>}
+                  {pet.description && <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{pet.description}</p>}
+                  {characterChips.length > 0 && (
+                    <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                      <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">{t('character_label')}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {characterChips.map((chip, i) => <span key={i} className={`text-xs px-3 py-1 rounded-full font-medium ${CHIP_COLORS[i % CHIP_COLORS.length]}`}>{chip}</span>)}
                       </div>
                     </div>
-                  )
-                })}
+                  )}
+                  {allergyChips.length > 0 && (
+                    <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                      <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">{t('allergies_label')}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {allergyChips.map((chip, i) => <span key={i} className="text-xs bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900 px-3 py-1 rounded-full font-medium">⚠️ {chip}</span>)}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-          {isOwner && matches.length === 0 && pet.status === 'active' && !isProfile && (
-            <p className="text-center text-xs text-gray-400 py-1">{t('no_ai_matches')}</p>
-          )}
+            )}
+
+            {pet.last_seen_lat != null && pet.last_seen_lng != null && (
+              <div className={sectionCls}>
+                <div className={sectionHeaderCls}>
+                  <span className="text-base">🗺️</span>
+                  <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{t('location_label')}</h2>
+                </div>
+                <div className="h-64">
+                  <MapView pets={[petWithPhoto]} defaultCenter={[pet.last_seen_lat, pet.last_seen_lng]} defaultZoom={15} interactive={false} />
+                </div>
+              </div>
+            )}
+
+            {isOwner && (
+              <div className={sectionCls}>
+                <div className={sectionHeaderCls}>
+                  <span className="text-base">🏥</span>
+                  <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm flex-1">Historia zdrowia</h2>
+                  <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full">
+                    {vaccinations.length + medicalRecords.length + vetDocsWithUrls.length}
+                  </span>
+                </div>
+                <div className="p-5">
+                  <PetTimeline petId={id} vaccinations={vaccinations} medicalRecords={medicalRecords} vetDocs={vetDocsWithUrls} />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-
-        {/* ── MAIN CONTENT — left column ── */}
-        <div className="lg:col-start-1 lg:row-start-1 space-y-4 min-w-0">
-
-          {/* Identity chips */}
-          {(genderLabel || pet.is_neutered) && (
-            <div className="flex flex-wrap gap-2">
-              {genderLabel && (
-                <span className="text-xs bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900 px-3 py-1.5 rounded-full font-medium">
-                  {genderLabel}
-                </span>
-              )}
-              {pet.is_neutered && (
-                <span className="text-xs bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-100 dark:border-teal-900 px-3 py-1.5 rounded-full font-medium">
-                  ✂️ {t('neutered')}
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Description / bio / character / allergies */}
-          {(pet.description || pet.character || pet.color || pet.allergies) && (
-            <div className={sectionCls}>
-              <div className={sectionHeaderCls}>
-                <span className="text-base">📝</span>
-                <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{t('description')}</h2>
-              </div>
-              <div className="p-5 space-y-3">
-                {pet.color && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{pet.color}</p>
-                )}
-                {pet.description && (
-                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{pet.description}</p>
-                )}
-                {pet.character && (
-                  <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-                    <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">{t('character_label')}</p>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{pet.character}</p>
-                  </div>
-                )}
-                {pet.allergies && (
-                  <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-                    <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">{t('allergies_label')}</p>
-                    <p className="text-sm text-red-600 dark:text-red-400 leading-relaxed">⚠️ {pet.allergies}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Map */}
-          {!isProfile && pet.last_seen_lat != null && pet.last_seen_lng != null && (
-            <div className={sectionCls}>
-              <div className={sectionHeaderCls}>
-                <span className="text-base">🗺️</span>
-                <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{t('location_label')}</h2>
-              </div>
-              <div className="h-64">
-                <MapView
-                  pets={[petWithPhoto]}
-                  defaultCenter={[pet.last_seen_lat, pet.last_seen_lng]}
-                  defaultZoom={15}
-                  interactive={false}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Medical timeline (owner only) */}
-          {isOwner && (
-            <div className={sectionCls}>
-              <div className={sectionHeaderCls}>
-                <span className="text-base">🏥</span>
-                <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm flex-1">Historia zdrowia</h2>
-                <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full">
-                  {vaccinations.length + medicalRecords.length + vetDocsWithUrls.length}
-                </span>
-              </div>
-              <div className="p-5">
-                <PetTimeline
-                  petId={id}
-                  vaccinations={vaccinations}
-                  medicalRecords={medicalRecords}
-                  vetDocs={vetDocsWithUrls}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      )}
     </div>
   )
 }
