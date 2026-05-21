@@ -105,6 +105,68 @@ export async function deletePet(petId: string) {
   redirect({ href: '/profile', locale })
 }
 
+export async function createPetProfile(data: {
+  species: string
+  name: string
+  breed: string
+  color: string
+  bio: string
+  gender: string
+  birth_date: string
+  chip_id: string
+  character: string
+  allergies: string
+  is_neutered: boolean | null
+  contact_phone: string
+  contact_email: string
+  photo_paths: string[]
+}) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const locale = await getLocale()
+  if (!user) return redirect({ href: '/auth/login', locale })
+
+  const { data: pet, error } = await supabase
+    .from('pets')
+    .insert({
+      user_id: user.id,
+      type: 'profile',
+      species: data.species,
+      name: data.name.trim() || null,
+      breed: data.breed.trim() || null,
+      color: data.color.trim() || null,
+      gender: data.gender || 'unknown',
+      birth_date: data.birth_date || null,
+      chip_id: data.chip_id.trim() || null,
+      character: data.character.trim() || null,
+      allergies: data.allergies.trim() || null,
+      is_neutered: data.is_neutered,
+      description: data.bio.trim() || null,
+      last_seen_lat: null,
+      last_seen_lng: null,
+      last_seen_address: null,
+      contact_phone: data.contact_phone.trim() || null,
+      contact_email: data.contact_email.trim() || user.email,
+    })
+    .select()
+    .single()
+
+  if (error || !pet) throw new Error(error?.message ?? 'Błąd podczas zapisu')
+
+  if (data.photo_paths.length > 0) {
+    await supabase.from('pet_photos').insert(
+      data.photo_paths.map((path, i) => ({
+        pet_id: pet.id,
+        storage_path: path,
+        is_primary: i === 0,
+      }))
+    )
+  }
+
+  revalidatePath('/profile')
+  redirect({ href: `/pets/${pet.id}`, locale })
+}
+
 export async function updateMatchStatus(matchId: string, status: 'accepted' | 'rejected') {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
