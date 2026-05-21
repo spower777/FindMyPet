@@ -20,12 +20,12 @@ const SPECIES_EMOJI: Record<string, string> = {
 }
 
 const CHIP_COLORS = [
-  'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300',
-  'bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300',
-  'bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300',
-  'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300',
-  'bg-orange-100 dark:bg-orange-950 text-orange-700 dark:text-orange-300',
-  'bg-pink-100 dark:bg-pink-950 text-pink-700 dark:text-pink-300',
+  'bg-blue-500/15 text-blue-400',
+  'bg-purple-500/15 text-purple-400',
+  'bg-teal-500/15 text-teal-400',
+  'bg-green-500/15 text-green-400',
+  'bg-orange-500/15 text-orange-400',
+  'bg-pink-500/15 text-pink-400',
 ]
 
 const RECORD_TYPE_LABEL: Record<string, string> = {
@@ -326,7 +326,7 @@ export default async function PetDetailPage({
                       <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Alergie</p>
                       <div className="flex flex-wrap gap-1.5">
                         {allergyChips.map((chip, i) => (
-                          <span key={i} className="text-xs bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900 px-2.5 py-1 rounded-full font-medium">
+                          <span key={i} className="text-xs bg-red-500/15 text-red-400 border border-red-500/20 px-2.5 py-1 rounded-full font-medium">
                             ⚠️ {chip}
                           </span>
                         ))}
@@ -340,7 +340,7 @@ export default async function PetDetailPage({
 
                   {/* Contact links */}
                   {(pet.contact_phone || pet.contact_email) && (
-                    <div className="pt-3 border-t border-gray-100 dark:border-gray-800 space-y-1.5">
+                    <div className="pt-3 border-t border-[#262626] space-y-1.5">
                       {pet.contact_phone && (
                         <a href={`tel:${pet.contact_phone}`} className="flex items-center gap-2 text-xs text-gray-500 hover:text-orange-500 transition">
                           📞 {pet.contact_phone}
