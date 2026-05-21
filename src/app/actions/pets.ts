@@ -120,7 +120,7 @@ export async function createPetProfile(data: {
   contact_phone: string
   contact_email: string
   photo_paths: string[]
-}) {
+}): Promise<{ error: string } | void> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const locale = await getLocale()
@@ -151,7 +151,7 @@ export async function createPetProfile(data: {
     .select()
     .single()
 
-  if (error || !pet) throw new Error(error?.message ?? 'Błąd podczas zapisu')
+  if (error || !pet) return { error: error?.message ?? 'Błąd podczas zapisu' }
 
   if (data.photo_paths.length > 0) {
     await supabase.from('pet_photos').insert(

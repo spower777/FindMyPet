@@ -70,12 +70,16 @@ export default function PetProfileForm() {
         if (!upErr) photoPaths.push(path)
       }
 
-      await createPetProfile({
+      const result = await createPetProfile({
         species, name, breed, color, bio, gender, birth_date: birthDate,
         chip_id: chipId, character, allergies, is_neutered: isNeutered,
         contact_phone: contactPhone, contact_email: contactEmail,
         photo_paths: photoPaths,
       })
+      if (result?.error) {
+        setError(result.error)
+        setSubmitting(false)
+      }
     } catch (err: unknown) {
       if ((err as { digest?: string })?.digest?.startsWith('NEXT_REDIRECT')) throw err
       setError(err instanceof Error ? err.message : 'Nieznany błąd')
