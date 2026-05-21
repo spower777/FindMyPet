@@ -195,120 +195,108 @@ export default async function PetDetailPage({
   return (
     <div className="w-full pb-16">
 
-      {/* ── HERO ── */}
-      <div className={`relative w-full overflow-hidden bg-gray-900 dark:bg-gray-950 ${isProfile ? 'h-40 sm:h-52' : 'h-[56vw] max-h-[520px] min-h-[280px]'}`}>
-        {primaryPhoto ? (
-          <Image
-            src={getPhotoUrl(primaryPhoto.storage_path)}
-            alt={petName}
-            fill
-            className={`object-cover ${isProfile ? 'opacity-60' : ''}`}
-            priority
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-[8rem] text-gray-700 dark:text-gray-600">
-            {SPECIES_EMOJI[pet.species]}
-          </div>
-        )}
-        <div className={`absolute inset-0 ${isProfile ? 'bg-gradient-to-b from-black/30 via-transparent to-black/70' : 'bg-gradient-to-t from-black/80 via-black/15 to-transparent'}`} />
+      {/* ══ PROFILE PET — dark cinema ══ */}
+      {isProfile && (
+        <div className="min-h-screen bg-[#0e0e0e]">
 
-        <Link href="/" className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/60 transition z-10">←</Link>
-        <div className="absolute top-4 right-4 z-10">
-          <ShareButton petName={petName} petType={pet.type as 'lost' | 'found' | 'profile'} />
-        </div>
+          {/* ── HERO — tall, cinematic ── */}
+          <div className="relative w-full h-72 sm:h-96 overflow-hidden bg-[#0e0e0e]">
+            {primaryPhoto ? (
+              <Image
+                src={getPhotoUrl(primaryPhoto.storage_path)}
+                alt={petName}
+                fill
+                className="object-cover object-center"
+                priority
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-[10rem] opacity-20">
+                {SPECIES_EMOJI[pet.species]}
+              </div>
+            )}
+            {/* Strong bottom fade into page background */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/10 to-[#0e0e0e]" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0e0e0e]/60 via-transparent to-transparent" />
 
-        {/* Lost/found name overlay */}
-        {!isProfile && (
-          <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 pt-16 z-10">
-            <div className="max-w-6xl mx-auto flex items-end justify-between gap-4">
-              <div>
-                <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full mb-2 ${isLost ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
-                  {isLost ? <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> : '✓'}
-                  {isLost ? t('lost').toUpperCase() : t('found').toUpperCase()}
-                </span>
-                <h1 className="text-3xl sm:text-4xl font-bold text-white leading-tight drop-shadow-lg">{petName}</h1>
-                <p className="text-white/75 text-sm mt-1">
-                  {SPECIES_EMOJI[pet.species]}{pet.breed ? ` ${pet.breed}` : ` ${pet.species}`}
-                  {ageLabel && <span className="ml-2 opacity-90">· {ageLabel}</span>}
-                </p>
-              </div>
-              <div className="flex flex-col items-end gap-2 shrink-0">
-                {pet.status === 'resolved' && (
-                  <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full">✓ {t('resolved')}</span>
-                )}
-              </div>
+            <Link href="/" className="absolute top-5 left-5 bg-black/50 backdrop-blur-md text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/70 transition z-10 text-lg">←</Link>
+            <div className="absolute top-5 right-5 z-10">
+              <ShareButton petName={petName} petType="profile" />
             </div>
           </div>
-        )}
-      </div>
 
-      {/* ══ PROFILE PET ══ */}
-      {isProfile && (
-        <>
-          {/* ── Identity card — overlaps hero ── */}
-          <div className="max-w-3xl mx-auto px-4 lg:px-6">
-            <div className="relative -mt-8 z-10 bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 p-5">
-              <div className="flex items-start gap-4">
-                {/* Avatar */}
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-white dark:border-gray-700 shadow-md shrink-0 bg-gray-100 dark:bg-gray-800">
-                  {primaryPhoto
-                    ? <Image src={getPhotoUrl(primaryPhoto.storage_path)} alt={petName} width={96} height={96} className="w-full h-full object-cover" />
-                    : <div className="w-full h-full flex items-center justify-center text-4xl">{SPECIES_EMOJI[pet.species]}</div>
-                  }
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 leading-tight">{petName}</h1>
-                    <span className="text-2xl">{SPECIES_EMOJI[pet.species]}</span>
-                  </div>
-                  {pet.breed && <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{pet.breed}</p>}
-                  {/* Badge row */}
-                  <div className="flex flex-wrap gap-1.5 mt-2.5">
-                    {ageLabel && <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2.5 py-1 rounded-full font-medium">{ageLabel}</span>}
-                    {genderLabel && <span className="text-xs bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 px-2.5 py-1 rounded-full font-medium border border-blue-100 dark:border-blue-900">{genderLabel}</span>}
-                    {pet.is_neutered && <span className="text-xs bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 px-2.5 py-1 rounded-full font-medium border border-teal-100 dark:border-teal-900">✂️ {t('neutered')}</span>}
-                    {pet.chip_id && <span className="text-xs bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2.5 py-1 rounded-full font-mono border border-gray-200 dark:border-gray-700">🔖 {pet.chip_id}</span>}
-                  </div>
-                </div>
-
-                {/* Edit button */}
-                {isOwner && (
-                  <Link
-                    href={`/pets/${id}/edit`}
-                    className="shrink-0 text-xs bg-orange-50 dark:bg-orange-950 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800 px-3 py-1.5 rounded-xl font-medium hover:bg-orange-100 dark:hover:bg-orange-900 transition"
-                  >
-                    ✏️ Edytuj profil
-                  </Link>
-                )}
+          {/* ── Identity — flows from hero ── */}
+          <div className="max-w-3xl mx-auto px-5 sm:px-8 -mt-20 relative z-10">
+            <div className="flex items-end gap-5 mb-5">
+              {/* Avatar */}
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shrink-0 ring-2 ring-orange-500/40 shadow-xl shadow-black/60 bg-[#1a1a1a]">
+                {primaryPhoto
+                  ? <Image src={getPhotoUrl(primaryPhoto.storage_path)} alt={petName} width={112} height={112} className="w-full h-full object-cover" />
+                  : <div className="w-full h-full flex items-center justify-center text-5xl opacity-40">{SPECIES_EMOJI[pet.species]}</div>
+                }
               </div>
 
-              {/* Bio */}
-              {pet.description && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 italic leading-relaxed mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                  „{pet.description}"
-                </p>
+              {/* Name + meta */}
+              <div className="flex-1 min-w-0 pb-1">
+                <div className="flex items-center gap-2.5 mb-1 flex-wrap">
+                  <h1 className="text-3xl sm:text-4xl font-black text-white leading-none tracking-tight">{petName}</h1>
+                  <span className="text-2xl">{SPECIES_EMOJI[pet.species]}</span>
+                </div>
+                {pet.breed && <p className="text-sm text-gray-500 mb-2.5">{pet.breed}</p>}
+                <div className="flex flex-wrap gap-2">
+                  {ageLabel && <span className="text-xs bg-white/8 text-gray-300 px-3 py-1 rounded-full border border-white/10 font-medium">{ageLabel}</span>}
+                  {genderLabel && <span className="text-xs bg-white/8 text-gray-300 px-3 py-1 rounded-full border border-white/10 font-medium">{genderLabel}</span>}
+                  {pet.is_neutered && <span className="text-xs bg-teal-500/15 text-teal-400 px-3 py-1 rounded-full border border-teal-500/20 font-medium">✂️ {t('neutered')}</span>}
+                  {pet.chip_id && <span className="text-xs bg-white/8 text-gray-400 px-3 py-1 rounded-full border border-white/10 font-mono">🔖 {pet.chip_id}</span>}
+                </div>
+              </div>
+
+              {isOwner && (
+                <Link href={`/pets/${id}/edit`} className="shrink-0 mb-1 text-xs bg-white/8 hover:bg-white/15 text-gray-300 border border-white/10 px-3 py-2 rounded-xl font-medium transition">
+                  ✏️ Edytuj
+                </Link>
               )}
             </div>
-          </div>
 
-          {/* ── Tabs ── */}
-          <div className="max-w-3xl mx-auto px-4 lg:px-6 mt-5">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-              <PetTabNav tabs={[
-                { key: 'overview',   label: 'Przegląd',   icon: '🐾' },
-                { key: 'history',    label: 'Historia',   icon: '📅', count: vaccinations.length + medicalRecords.length },
-                { key: 'health',     label: 'Zdrowie',    icon: '💊', count: vaccinations.length },
-                { key: 'documents',  label: 'Dokumenty',  icon: '📄', count: vetDocsWithUrls.length },
-                { key: 'incidents',  label: 'Incydenty',  icon: '📡' },
-                { key: 'contacts',   label: 'Kontakty',   icon: '👥', count: linkedContacts.length },
-              ]} />
+            {pet.description && (
+              <p className="text-gray-400 italic text-sm leading-relaxed mb-7 pl-1">„{pet.description}"</p>
+            )}
+
+            {/* ── Tabs ── */}
+            <div className="flex gap-0 border-b border-white/8 mb-6 overflow-x-auto scrollbar-none">
+              {[
+                { key: 'overview',  label: 'Przegląd',  icon: '🐾' },
+                { key: 'history',   label: 'Historia',  icon: '📅', count: vaccinations.length + medicalRecords.length },
+                { key: 'health',    label: 'Zdrowie',   icon: '💊', count: vaccinations.length },
+                { key: 'documents', label: 'Dokumenty', icon: '📄', count: vetDocsWithUrls.length },
+                { key: 'incidents', label: 'Incydenty', icon: '📡' },
+                { key: 'contacts',  label: 'Kontakty',  icon: '👥', count: linkedContacts.length },
+              ].map(tabItem => {
+                const isActive = tab === tabItem.key
+                return (
+                  <Link
+                    key={tabItem.key}
+                    href={`/pets/${id}?tab=${tabItem.key}`}
+                    className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all ${
+                      isActive
+                        ? 'border-orange-500 text-white'
+                        : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-700'
+                    }`}
+                  >
+                    <span>{tabItem.icon}</span>
+                    <span className="hidden sm:inline">{tabItem.label}</span>
+                    {tabItem.count !== undefined && tabItem.count > 0 && (
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isActive ? 'bg-orange-500/20 text-orange-400' : 'bg-white/8 text-gray-500'}`}>
+                        {tabItem.count}
+                      </span>
+                    )}
+                  </Link>
+                )
+              })}
             </div>
           </div>
 
           {/* ── Tab content ── */}
-          <div className="max-w-3xl mx-auto px-4 lg:px-6 mt-4">
+          <div className="max-w-3xl mx-auto px-5 sm:px-8 pb-16">
 
             {/* ── PRZEGLĄD — 3-column ── */}
             {tab === 'overview' && (
@@ -616,7 +604,7 @@ export default async function PetDetailPage({
                         </div>
                       ))}
                     </div>
-                    <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-800">
+                    <div className="px-5 py-3 border-t border-white/8">
                       <Link href="/contacts" className="text-xs text-orange-500 hover:text-orange-600 transition">
                         Zarządzaj wszystkimi kontaktami →
                       </Link>
@@ -626,7 +614,7 @@ export default async function PetDetailPage({
               </div>
             )}
           </div>
-        </>
+        </div>
       )}
 
       {/* ══ LOST/FOUND PET — two-column layout ══ */}
