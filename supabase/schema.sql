@@ -480,3 +480,14 @@ create policy "pet_photos_storage_delete" on storage.objects
     bucket_id = 'pet-photos' and
     auth.uid()::text = (storage.foldername(name))[1]
   );
+
+-- ============================================================
+-- Pet profile type (standalone digital identity, not a report)
+-- ============================================================
+alter table pets drop constraint if exists pets_type_check;
+alter table pets add constraint pets_type_check check (type in ('lost', 'found', 'profile'));
+
+-- Allow null description and location for profile-type pets
+alter table pets alter column description drop not null;
+alter table pets alter column last_seen_lat drop not null;
+alter table pets alter column last_seen_lng drop not null;

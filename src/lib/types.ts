@@ -1,4 +1,4 @@
-export type PetType = 'lost' | 'found'
+export type PetType = 'lost' | 'found' | 'profile'
 export type PetSpecies = 'dog' | 'cat' | 'bird' | 'rabbit' | 'other'
 export type PetStatus = 'active' | 'resolved'
 export type PetGender = 'male' | 'female' | 'unknown'
@@ -10,7 +10,7 @@ export interface Pet {
   species: PetSpecies
   name: string | null
   breed: string | null
-  description: string
+  description: string | null
   color: string | null
   gender: PetGender
   birth_date: string | null
@@ -18,8 +18,8 @@ export interface Pet {
   character: string | null
   allergies: string | null
   is_neutered: boolean | null
-  last_seen_lat: number
-  last_seen_lng: number
+  last_seen_lat: number | null
+  last_seen_lng: number | null
   last_seen_address: string | null
   contact_phone: string | null
   contact_email: string | null

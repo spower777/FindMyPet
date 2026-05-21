@@ -24,9 +24,9 @@ interface Props {
   interactive?: boolean
 }
 
-function makeReportIcon(type: 'lost' | 'found') {
-  const color = type === 'lost' ? '#ef4444' : '#22c55e'
-  const border = type === 'lost' ? '#b91c1c' : '#15803d'
+function makeReportIcon(type: 'lost' | 'found' | 'profile') {
+  const color = type === 'lost' ? '#ef4444' : type === 'found' ? '#22c55e' : '#f97316'
+  const border = type === 'lost' ? '#b91c1c' : type === 'found' ? '#15803d' : '#ea580c'
   return divIcon({
     html: `<div style="width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${color};border:3px solid ${border};box-shadow:0 2px 6px rgba(0,0,0,0.35)"></div>`,
     className: '',
@@ -86,10 +86,10 @@ export default function LeafletMap({
 
       {/* Report markers — clustered */}
       <MarkerClusterGroup chunkedLoading maxClusterRadius={60}>
-        {pets.map(pet => (
+        {pets.filter(pet => pet.last_seen_lat != null && pet.last_seen_lng != null).map(pet => (
           <Marker
             key={pet.id}
-            position={[pet.last_seen_lat, pet.last_seen_lng]}
+            position={[pet.last_seen_lat!, pet.last_seen_lng!]}
             icon={makeReportIcon(pet.type)}
           >
             <Popup maxWidth={220}>
