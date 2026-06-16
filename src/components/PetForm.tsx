@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { createPet } from '@/app/actions/pets'
+import { resizeImage } from '@/lib/resizeImage'
 import LocationPicker from './LocationPicker'
 import { useTranslations } from 'next-intl'
 import type { PetSpecies, PetType, PetGender } from '@/lib/types'
@@ -71,11 +72,12 @@ export default function PetForm({ type }: { type: PetType }) {
 
       const photoPaths: string[] = []
       for (const file of photos) {
-        const ext = file.name.split('.').pop()
+        const resized = await resizeImage(file)
+        const ext = resized.name.split('.').pop()
         const path = `${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
         const { error: uploadError } = await supabase.storage
           .from('pet-photos')
-          .upload(path, file, { upsert: false })
+          .upload(path, resized, { upsert: false })
         if (!uploadError) photoPaths.push(path)
       }
 

@@ -20,6 +20,16 @@ export async function runMatching(petId: string) {
 
   if (!pet) return
 
+  // Skip re-run if pet already has matches and is older than 5 minutes
+  const ageMs = Date.now() - new Date(pet.created_at).getTime()
+  if (ageMs > 5 * 60 * 1000) {
+    const { count } = await supabase
+      .from('matches')
+      .select('id', { count: 'exact', head: true })
+      .or(`lost_pet_id.eq.${petId},found_pet_id.eq.${petId}`)
+    if ((count ?? 0) > 0) return
+  }
+
   const oppositeType = pet.type === 'lost' ? 'found' : 'lost'
   const { data: candidates } = await supabase
     .from('pets')

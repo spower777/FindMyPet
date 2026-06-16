@@ -167,6 +167,82 @@ export async function createPetProfile(data: {
   redirect({ href: `/pets/${pet.id}`, locale })
 }
 
+export async function updatePetProfile(
+  petId: string,
+  data: {
+    species: string
+    name: string
+    breed: string
+    color: string
+    bio: string
+    gender: string
+    birth_date: string
+    chip_id: string
+    character: string
+    allergies: string
+    is_neutered: boolean | null
+    contact_phone: string
+    contact_email: string
+    new_photo_paths: string[]
+    delete_photo_ids: string[]
+  }
+): Promise<{ error: string } | void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const locale = await getLocale()
+  if (!user) return redirect({ href: '/auth/login', locale })
+
+  const { data: existing } = await supabase.from('pets').select('user_id').eq('id', petId).single()
+  if (!existing || existing.user_id !== user.id) return { error: 'Brak dostępu' }
+
+  const { error } = await supabase
+    .from('pets')
+    .update({
+      species: data.species,
+      name: data.name.trim() || null,
+      breed: data.breed.trim() || null,
+      color: data.color.trim() || null,
+      gender: data.gender || 'unknown',
+      birth_date: data.birth_date || null,
+      chip_id: data.chip_id.trim() || null,
+      character: data.character.trim() || null,
+      allergies: data.allergies.trim() || null,
+      is_neutered: data.is_neutered,
+      description: data.bio.trim() || null,
+      contact_phone: data.contact_phone.trim() || null,
+      contact_email: data.contact_email.trim() || user.email,
+    })
+    .eq('id', petId)
+
+  if (error) return { error: error.message }
+
+  if (data.delete_photo_ids.length > 0) {
+    await supabase.from('pet_photos').delete().in('id', data.delete_photo_ids).eq('pet_id', petId)
+  }
+
+  const { data: remaining } = await supabase
+    .from('pet_photos')
+    .select('id, is_primary')
+    .eq('pet_id', petId)
+  const hasPrimary = (remaining ?? []).some((p: { is_primary: boolean }) => p.is_primary)
+
+  if (data.new_photo_paths.length > 0) {
+    await supabase.from('pet_photos').insert(
+      data.new_photo_paths.map((path, i) => ({
+        pet_id: petId,
+        storage_path: path,
+        is_primary: !hasPrimary && i === 0,
+      }))
+    )
+  } else if (!hasPrimary && (remaining ?? []).length > 0) {
+    await supabase.from('pet_photos').update({ is_primary: true }).eq('id', (remaining as { id: string }[])[0].id)
+  }
+
+  revalidatePath(`/pets/${petId}`)
+  revalidatePath('/profile')
+  redirect({ href: `/pets/${petId}`, locale })
+}
+
 export async function updateMatchStatus(matchId: string, status: 'accepted' | 'rejected') {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

@@ -162,6 +162,21 @@ export default async function PetDetailPage({
     : { data: [] }
   const linkedContacts = (linkedContactsData ?? []) as UserContact[]
 
+  // Incidents — lost/found reports by the same owner (profile only)
+  const { data: incidentsData } = isProfile
+    ? await supabase
+        .from('pets')
+        .select('*, photos:pet_photos(*)')
+        .eq('user_id', pet.user_id)
+        .in('type', ['lost', 'found'])
+        .order('created_at', { ascending: false })
+        .limit(20)
+    : { data: [] }
+  const incidents = (incidentsData ?? []).map((p) => {
+    const ph = (p.photos ?? []).find((x: { is_primary: boolean }) => x.is_primary) ?? (p.photos ?? [])[0]
+    return { ...p, photos: p.photos ?? [], primary_photo_url: ph ? getPhotoUrl(ph.storage_path) : null }
+  }) as PetWithPhotos[]
+
   const petName = pet.name ?? ts(pet.species as 'dog' | 'cat' | 'bird' | 'rabbit' | 'other')
   const ageInfo = pet.birth_date ? calcAge(pet.birth_date) : null
   const ageLabel = ageInfo
@@ -294,7 +309,7 @@ export default async function PetDetailPage({
                     { key: 'history',   label: 'Historia',  icon: '📅', count: vaccinations.length + medicalRecords.length },
                     { key: 'health',    label: 'Zdrowie',   icon: '💊', count: vaccinations.length },
                     { key: 'documents', label: 'Dokumenty', icon: '📄', count: vetDocsWithUrls.length },
-                    { key: 'incidents', label: 'Incydenty', icon: '📡' },
+                    { key: 'incidents', label: 'Incydenty', icon: '📡', count: incidents.length },
                     { key: 'contacts',  label: 'Kontakty',  icon: '👥', count: linkedContacts.length },
                   ].map(tabItem => {
                     const isActive = tab === tabItem.key
@@ -660,13 +675,73 @@ export default async function PetDetailPage({
 
                 {/* ── INCYDENTY ── */}
                 {tab === 'incidents' && (
-                  <div className="bg-[#161616] border border-[#262626] rounded-2xl p-8 text-center">
-                    <p className="text-4xl mb-3">📡</p>
-                    <p className="font-semibold text-gray-300 text-sm">Incydenty — Trop</p>
-                    <p className="text-xs text-gray-600 mt-1 mb-5">Historyczne zgłoszenia zaginięcia powiązane z {petName}</p>
-                    <Link href="/report/lost" className="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition">
-                      📡 Zgłoś zaginięcie
-                    </Link>
+                  <div className="space-y-4 max-w-3xl">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-gray-500">Zgłoszenia zaginięcia i znalezienia powiązane z właścicielem</p>
+                      {isOwner && (
+                        <Link href="/report/lost" className="flex items-center gap-1.5 text-xs bg-red-500/10 hover:bg-red-500/20 border border-red-500/25 text-red-400 font-semibold px-3 py-1.5 rounded-xl transition">
+                          + Nowe zgłoszenie
+                        </Link>
+                      )}
+                    </div>
+                    {incidents.length === 0 ? (
+                      <div className="bg-[#161616] border border-[#262626] rounded-2xl p-10 text-center">
+                        <p className="text-4xl mb-3">📡</p>
+                        <p className="text-sm text-gray-400 font-medium">Brak incydentów</p>
+                        <p className="text-xs text-gray-600 mt-1.5">Historyczne zgłoszenia zaginięcia pojawią się tutaj</p>
+                        {isOwner && (
+                          <Link href="/report/lost" className="mt-5 inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition">
+                            🚨 Zgłoś zaginięcie
+                          </Link>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="bg-[#161616] border border-[#262626] rounded-2xl overflow-hidden">
+                        <div className="divide-y divide-[#222]">
+                          {incidents.map(incident => {
+                            const isLostIncident = incident.type === 'lost'
+                            const isResolved = incident.status === 'resolved'
+                            const reportDate = new Date(incident.created_at).toLocaleDateString('pl', { day: 'numeric', month: 'short', year: 'numeric' })
+                            return (
+                              <Link key={incident.id} href={`/pets/${incident.id}`}
+                                className="flex items-center gap-4 px-5 py-4 hover:bg-white/3 transition group">
+                                <div className="w-12 h-12 rounded-xl bg-[#1e1e1e] border border-[#2a2a2a] overflow-hidden shrink-0">
+                                  {incident.primary_photo_url
+                                    ? <img src={incident.primary_photo_url} alt="" className="w-full h-full object-cover" />
+                                    : <div className="w-full h-full flex items-center justify-center text-xl">{isLostIncident ? '🚨' : '🐾'}</div>
+                                  }
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                      isLostIncident
+                                        ? 'bg-red-500/15 text-red-400 border-red-500/25'
+                                        : 'bg-green-500/15 text-green-400 border-green-500/25'
+                                    }`}>
+                                      {isLostIncident ? '● Zaginiony' : '● Znaleziony'}
+                                    </span>
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                      isResolved
+                                        ? 'bg-gray-500/15 text-gray-400 border-gray-500/25'
+                                        : 'bg-orange-500/15 text-orange-400 border-orange-500/25'
+                                    }`}>
+                                      {isResolved ? 'Zakończony' : 'Aktywny'}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm font-semibold text-gray-200 group-hover:text-white transition truncate">
+                                    {incident.name ?? incident.species}
+                                  </p>
+                                  <p className="text-xs text-gray-500 mt-0.5 truncate">
+                                    {reportDate}{incident.last_seen_address ? ` · ${incident.last_seen_address}` : ''}
+                                  </p>
+                                </div>
+                                <span className="text-gray-700 group-hover:text-gray-400 transition shrink-0">›</span>
+                              </Link>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 

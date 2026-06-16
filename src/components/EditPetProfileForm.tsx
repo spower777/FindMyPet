@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { createPetProfile } from '@/app/actions/pets'
+import { updatePetProfile } from '@/app/actions/pets'
 import { resizeImage } from '@/lib/resizeImage'
 import { useTranslations } from 'next-intl'
 import type { PetSpecies, PetGender } from '@/lib/types'
@@ -15,25 +15,58 @@ const SPECIES_LIST: { value: PetSpecies; emoji: string }[] = [
   { value: 'other', emoji: '🐾' },
 ]
 
-export default function PetProfileForm() {
+interface ExistingPhoto {
+  id: string
+  url: string
+  is_primary: boolean
+}
+
+interface InitialData {
+  species: PetSpecies
+  name: string
+  breed: string
+  color: string
+  bio: string
+  gender: PetGender
+  birth_date: string
+  chip_id: string
+  character: string
+  allergies: string
+  is_neutered: boolean | null
+  contact_phone: string
+  contact_email: string
+}
+
+export default function EditPetProfileForm({
+  petId,
+  initialData,
+  existingPhotos,
+}: {
+  petId: string
+  initialData: InitialData
+  existingPhotos: ExistingPhoto[]
+}) {
   const t = useTranslations('form')
   const ts = useTranslations('species')
 
-  const [species, setSpecies] = useState<PetSpecies>('dog')
-  const [name, setName] = useState('')
-  const [breed, setBreed] = useState('')
-  const [color, setColor] = useState('')
-  const [bio, setBio] = useState('')
-  const [gender, setGender] = useState<PetGender>('unknown')
-  const [birthDate, setBirthDate] = useState('')
-  const [chipId, setChipId] = useState('')
-  const [character, setCharacter] = useState('')
-  const [allergies, setAllergies] = useState('')
-  const [isNeutered, setIsNeutered] = useState<boolean | null>(null)
-  const [contactPhone, setContactPhone] = useState('')
-  const [contactEmail, setContactEmail] = useState('')
-  const [photos, setPhotos] = useState<File[]>([])
-  const [previews, setPreviews] = useState<string[]>([])
+  const [species, setSpecies] = useState<PetSpecies>(initialData.species)
+  const [name, setName] = useState(initialData.name)
+  const [breed, setBreed] = useState(initialData.breed)
+  const [color, setColor] = useState(initialData.color)
+  const [bio, setBio] = useState(initialData.bio)
+  const [gender, setGender] = useState<PetGender>(initialData.gender)
+  const [birthDate, setBirthDate] = useState(initialData.birth_date)
+  const [chipId, setChipId] = useState(initialData.chip_id)
+  const [character, setCharacter] = useState(initialData.character)
+  const [allergies, setAllergies] = useState(initialData.allergies)
+  const [isNeutered, setIsNeutered] = useState<boolean | null>(initialData.is_neutered)
+  const [contactPhone, setContactPhone] = useState(initialData.contact_phone)
+  const [contactEmail, setContactEmail] = useState(initialData.contact_email)
+
+  const [deletedPhotoIds, setDeletedPhotoIds] = useState<string[]>([])
+  const [newPhotos, setNewPhotos] = useState<File[]>([])
+  const [newPreviews, setNewPreviews] = useState<string[]>([])
+
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -41,16 +74,23 @@ export default function PetProfileForm() {
   const inputCls = 'input-field'
   const labelCls = 'label'
 
+  const visibleExisting = existingPhotos.filter(p => !deletedPhotoIds.includes(p.id))
+
   function handleFiles(files: FileList | null) {
     if (!files) return
-    const newFiles = Array.from(files).slice(0, 5 - photos.length)
-    setPhotos(prev => [...prev, ...newFiles])
-    newFiles.forEach(file => setPreviews(prev => [...prev, URL.createObjectURL(file)]))
+    const totalPhotos = visibleExisting.length + newPhotos.length
+    const newFiles = Array.from(files).slice(0, 5 - totalPhotos)
+    setNewPhotos(prev => [...prev, ...newFiles])
+    newFiles.forEach(file => setNewPreviews(prev => [...prev, URL.createObjectURL(file)]))
   }
 
-  function removePhoto(i: number) {
-    setPhotos(prev => prev.filter((_, idx) => idx !== i))
-    setPreviews(prev => prev.filter((_, idx) => idx !== i))
+  function removeExistingPhoto(id: string) {
+    setDeletedPhotoIds(prev => [...prev, id])
+  }
+
+  function removeNewPhoto(i: number) {
+    setNewPhotos(prev => prev.filter((_, idx) => idx !== i))
+    setNewPreviews(prev => prev.filter((_, idx) => idx !== i))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -63,20 +103,20 @@ export default function PetProfileForm() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setError('Zaloguj się'); setSubmitting(false); return }
 
-      const photoPaths: string[] = []
-      for (const file of photos) {
+      const newPhotoPaths: string[] = []
+      for (const file of newPhotos) {
         const resized = await resizeImage(file)
         const ext = resized.name.split('.').pop()
         const path = `${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
         const { error: upErr } = await supabase.storage.from('pet-photos').upload(path, resized, { upsert: false })
-        if (!upErr) photoPaths.push(path)
+        if (!upErr) newPhotoPaths.push(path)
       }
 
-      const result = await createPetProfile({
-        species, name, breed, color, bio, gender, birth_date: birthDate,
-        chip_id: chipId, character, allergies, is_neutered: isNeutered,
-        contact_phone: contactPhone, contact_email: contactEmail,
-        photo_paths: photoPaths,
+      const result = await updatePetProfile(petId, {
+        species, name, breed, color, bio, gender,
+        birth_date: birthDate, chip_id: chipId, character, allergies,
+        is_neutered: isNeutered, contact_phone: contactPhone, contact_email: contactEmail,
+        new_photo_paths: newPhotoPaths, delete_photo_ids: deletedPhotoIds,
       })
       if (result?.error) {
         setError(result.error)
@@ -194,24 +234,46 @@ export default function PetProfileForm() {
       {/* Photos */}
       <div>
         <label className={labelCls}>{t('photos')} (max 5)</label>
-        <div className="mt-1 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl p-5 text-center cursor-pointer hover:border-orange-300 transition"
-          onClick={() => fileInputRef.current?.click()}
-          onDragOver={e => e.preventDefault()}
-          onDrop={e => { e.preventDefault(); handleFiles(e.dataTransfer.files) }}>
-          <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={e => handleFiles(e.target.files)} />
-          <p className="text-2xl mb-1">📷</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Kliknij lub przeciągnij zdjęcia</p>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">JPG, PNG — do 10 MB każde</p>
-        </div>
-        {previews.length > 0 && (
-          <div className="flex gap-2 mt-3 flex-wrap">
-            {previews.map((url, i) => (
+
+        {/* Existing photos */}
+        {visibleExisting.length > 0 && (
+          <div className="flex gap-2 mt-2 flex-wrap">
+            {visibleExisting.map(photo => (
+              <div key={photo.id} className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photo.url} alt="" className="w-20 h-20 object-cover rounded-xl" />
+                <button type="button" onClick={() => removeExistingPhoto(photo.id)}
+                  className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-sm">×</button>
+                {photo.is_primary && (
+                  <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] text-center rounded-b-xl py-0.5">główne</span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* New photo upload */}
+        {visibleExisting.length + newPhotos.length < 5 && (
+          <div className="mt-2 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl p-4 text-center cursor-pointer hover:border-orange-300 transition"
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={e => e.preventDefault()}
+            onDrop={e => { e.preventDefault(); handleFiles(e.dataTransfer.files) }}>
+            <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={e => handleFiles(e.target.files)} />
+            <p className="text-xl mb-0.5">📷</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Dodaj zdjęcia</p>
+          </div>
+        )}
+
+        {/* New photo previews */}
+        {newPreviews.length > 0 && (
+          <div className="flex gap-2 mt-2 flex-wrap">
+            {newPreviews.map((url, i) => (
               <div key={i} className="relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt="" className="w-20 h-20 object-cover rounded-xl" />
-                <button type="button" onClick={() => removePhoto(i)}
+                <img src={url} alt="" className="w-20 h-20 object-cover rounded-xl opacity-80" />
+                <button type="button" onClick={() => removeNewPhoto(i)}
                   className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-sm">×</button>
-                {i === 0 && <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] text-center rounded-b-xl py-0.5">główne</span>}
+                <span className="absolute bottom-0 left-0 right-0 bg-orange-500/70 text-white text-[10px] text-center rounded-b-xl py-0.5">nowe</span>
               </div>
             ))}
           </div>
@@ -236,7 +298,7 @@ export default function PetProfileForm() {
 
       <button type="submit" disabled={submitting}
         className="w-full py-4 rounded-2xl font-semibold text-white bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 shadow-sm shadow-orange-100 dark:shadow-orange-900 transition text-base active:scale-[0.98]">
-        {submitting ? '⏳ Zapisuję...' : (t('submit_profile') || 'Zapisz profil pupila')}
+        {submitting ? '⏳ Zapisuję...' : 'Zapisz zmiany'}
       </button>
     </form>
   )
