@@ -64,7 +64,7 @@ export default function ShareButton({ petName, petType }: Props) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="bg-black/40 backdrop-blur-sm hover:bg-black/60 text-white rounded-full w-10 h-10 flex items-center justify-center transition"
+        className="bg-white/20 hover:bg-white/35 backdrop-blur-sm text-white rounded-full w-10 h-10 flex items-center justify-center transition"
         aria-label="Udostępnij"
         title="Udostępnij"
       >

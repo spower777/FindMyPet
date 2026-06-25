@@ -975,50 +975,60 @@ export default async function PetDetailPage({
       {/* ══ LOST/FOUND PET — two-column layout ══ */}
       {!isProfile && (
         <>
-        {/* ── Hero photo / identity ── */}
-        <div className={`relative w-full overflow-hidden ${isLost ? 'bg-red-950' : 'bg-green-950'}`} style={{ minHeight: 260, maxHeight: 420 }}>
-          {primaryPhoto ? (
-            <Image
-              src={getPhotoUrl(primaryPhoto.storage_path)}
-              alt={petName}
-              fill
-              className="object-cover object-top"
-              priority
-            />
-          ) : (
-            <div className={`absolute inset-0 flex items-center justify-center text-[10rem] opacity-10 ${isLost ? 'bg-gradient-to-br from-red-900 to-red-950' : 'bg-gradient-to-br from-green-900 to-green-950'}`}>
-              {SPECIES_EMOJI[pet.species]}
+        {/* ── Hero identity banner ── */}
+        <div className={`relative w-full ${
+          isLost
+            ? 'bg-gradient-to-r from-red-500 to-red-600 dark:from-red-950 dark:to-red-900'
+            : 'bg-gradient-to-r from-emerald-500 to-emerald-600 dark:from-emerald-950 dark:to-emerald-900'
+        }`}>
+          {/* subtle dot texture */}
+          <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
+
+          <div className="relative z-10 flex items-center gap-3 px-4 py-4 max-w-6xl mx-auto">
+            {/* Back */}
+            <Link href="/" className="shrink-0 w-9 h-9 bg-white/20 hover:bg-white/35 backdrop-blur-sm text-white rounded-full flex items-center justify-center transition text-base font-bold">←</Link>
+
+            {/* Identity */}
+            <div className="flex-1 min-w-0">
+              <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full mb-1 ${
+                isLost
+                  ? 'bg-white/20 text-white'
+                  : 'bg-white/20 text-white'
+              }`}>
+                {isLost
+                  ? <><span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse shrink-0" />{t('lost')}</>
+                  : <><span className="text-[10px]">✓</span>{t('found')}</>
+                }
+              </span>
+              <h1 className="text-xl font-black text-white leading-tight tracking-tight truncate">
+                {SPECIES_EMOJI[pet.species]} {petName}
+              </h1>
+              {pet.breed && <p className="text-xs text-white/70 mt-0.5 truncate">{pet.breed}</p>}
+              {pet.status === 'resolved' && (
+                <span className="mt-1 inline-block text-[11px] bg-white/20 text-white/90 px-2 py-0.5 rounded-full">{t('resolved')}</span>
+              )}
             </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-          {/* Back */}
-          <Link href="/" className="absolute top-4 left-4 z-10 bg-black/40 backdrop-blur-md text-white rounded-full w-9 h-9 flex items-center justify-center hover:bg-black/60 transition text-lg">←</Link>
-
-          {/* Share */}
-          <div className="absolute top-4 right-4 z-10">
-            <ShareButton petName={petName} petType={pet.type as 'lost' | 'found'} />
-          </div>
-
-          {/* Identity */}
-          <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 z-10">
-            <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full mb-3 ${
-              isLost
-                ? 'bg-red-500 text-white shadow-lg shadow-red-500/30'
-                : 'bg-green-500 text-white shadow-lg shadow-green-500/30'
-            }`}>
-              {isLost
-                ? <><span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />{t('lost')}</>
-                : <><span className="text-[10px]">✓</span>{t('found')}</>
-              }
-            </span>
-            <h1 className="text-3xl font-black text-white leading-tight tracking-tight drop-shadow-lg">
-              {SPECIES_EMOJI[pet.species]} {petName}
-            </h1>
-            {pet.breed && <p className="text-sm text-gray-300 mt-1">{pet.breed}</p>}
-            {pet.status === 'resolved' && (
-              <span className="mt-2 inline-block text-xs bg-gray-500/60 text-gray-200 px-2.5 py-1 rounded-full">{t('resolved')}</span>
-            )}
+            {/* Photo thumbnail + share */}
+            <div className="flex flex-col items-end gap-2 shrink-0">
+              <ShareButton petName={petName} petType={pet.type as 'lost' | 'found'} />
+              {primaryPhoto ? (
+                <div className="w-14 h-14 rounded-2xl overflow-hidden ring-2 ring-white/30 shadow-lg">
+                  <Image
+                    src={getPhotoUrl(primaryPhoto.storage_path)}
+                    alt={petName}
+                    width={56}
+                    height={56}
+                    className="object-cover w-full h-full"
+                    priority
+                  />
+                </div>
+              ) : (
+                <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-2xl">
+                  {SPECIES_EMOJI[pet.species]}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
