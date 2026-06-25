@@ -168,14 +168,14 @@ function ModuleGrid({ cards }: { cards: { href: string; icon: string; label: str
           <Link
             key={c.href + c.label}
             href={c.href}
-            className="group bg-[#161616] border border-[#242424] hover:border-orange-500/30 rounded-2xl p-4 flex flex-col gap-3 transition"
+            className="group bg-[#161616] border border-[#242424] hover:border-orange-500/30 rounded-2xl p-4 flex flex-col gap-3 transition overflow-hidden"
           >
             <span className="text-2xl">{c.icon}</span>
-            <div>
-              <p className="text-sm font-bold text-white group-hover:text-orange-400 transition leading-snug">
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-white group-hover:text-orange-400 transition leading-snug line-clamp-1">
                 {c.label}
               </p>
-              <p className="text-xs text-gray-500 mt-0.5 leading-snug">{c.sub}</p>
+              <p className="text-xs text-gray-500 mt-0.5 leading-snug line-clamp-2">{c.sub}</p>
             </div>
           </Link>
         ))}
@@ -251,7 +251,7 @@ function PageShell({
         */}
         <div className="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-6 items-start">
           <div className="min-w-0 space-y-6">{left}</div>
-          <div className="lg:sticky lg:top-20">{right}</div>
+          <div className="hidden lg:block lg:sticky lg:top-20">{right}</div>
         </div>
       </div>
     </div>

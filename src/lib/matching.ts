@@ -18,7 +18,7 @@ export async function runMatching(petId: string) {
     .eq('id', petId)
     .single() as { data: PetWithPhoto | null }
 
-  if (!pet) return
+  if (!pet || pet.type === 'profile') return
 
   // Skip re-run if pet already has matches and is older than 5 minutes
   const ageMs = Date.now() - new Date(pet.created_at).getTime()
@@ -38,7 +38,7 @@ export async function runMatching(petId: string) {
     .eq('status', 'active')
     .eq('species', pet.species)
     .order('created_at', { ascending: false })
-    .limit(15) as { data: PetWithPhoto[] | null }
+    .limit(50) as { data: PetWithPhoto[] | null }
 
   if (!candidates?.length) return
 

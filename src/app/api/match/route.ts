@@ -1,23 +1,6 @@
 import { NextResponse } from 'next/server'
 import { runMatching } from '@/lib/matching'
 
-// In-memory rate limit: max 10 requests per minute per IP
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
-const RATE_LIMIT = 10
-const WINDOW_MS = 60_000
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const entry = rateLimitMap.get(ip)
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + WINDOW_MS })
-    return true
-  }
-  if (entry.count >= RATE_LIMIT) return false
-  entry.count++
-  return true
-}
-
 export async function POST(request: Request) {
   const configuredSecret = process.env.MATCH_API_SECRET
   const providedSecret = request.headers.get('x-match-secret')
@@ -29,11 +12,6 @@ export async function POST(request: Request) {
 
   if (providedSecret !== configuredSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
-  if (!checkRateLimit(ip)) {
-    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
 
   const { pet_id } = await request.json()

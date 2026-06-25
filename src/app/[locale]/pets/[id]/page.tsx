@@ -974,9 +974,123 @@ export default async function PetDetailPage({
 
       {/* ══ LOST/FOUND PET — two-column layout ══ */}
       {!isProfile && (
+        <>
+        {/* ── Hero photo / identity ── */}
+        <div className={`relative w-full overflow-hidden ${isLost ? 'bg-red-950' : 'bg-green-950'}`} style={{ minHeight: 260, maxHeight: 420 }}>
+          {primaryPhoto ? (
+            <Image
+              src={getPhotoUrl(primaryPhoto.storage_path)}
+              alt={petName}
+              fill
+              className="object-cover object-top"
+              priority
+            />
+          ) : (
+            <div className={`absolute inset-0 flex items-center justify-center text-[10rem] opacity-10 ${isLost ? 'bg-gradient-to-br from-red-900 to-red-950' : 'bg-gradient-to-br from-green-900 to-green-950'}`}>
+              {SPECIES_EMOJI[pet.species]}
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+          {/* Back */}
+          <Link href="/" className="absolute top-4 left-4 z-10 bg-black/40 backdrop-blur-md text-white rounded-full w-9 h-9 flex items-center justify-center hover:bg-black/60 transition text-lg">←</Link>
+
+          {/* Share */}
+          <div className="absolute top-4 right-4 z-10">
+            <ShareButton petName={petName} petType={pet.type as 'lost' | 'found'} />
+          </div>
+
+          {/* Identity */}
+          <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 z-10">
+            <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full mb-3 ${
+              isLost
+                ? 'bg-red-500 text-white shadow-lg shadow-red-500/30'
+                : 'bg-green-500 text-white shadow-lg shadow-green-500/30'
+            }`}>
+              {isLost
+                ? <><span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />{t('lost')}</>
+                : <><span className="text-[10px]">✓</span>{t('found')}</>
+              }
+            </span>
+            <h1 className="text-3xl font-black text-white leading-tight tracking-tight drop-shadow-lg">
+              {SPECIES_EMOJI[pet.species]} {petName}
+            </h1>
+            {pet.breed && <p className="text-sm text-gray-300 mt-1">{pet.breed}</p>}
+            {pet.status === 'resolved' && (
+              <span className="mt-2 inline-block text-xs bg-gray-500/60 text-gray-200 px-2.5 py-1 rounded-full">{t('resolved')}</span>
+            )}
+          </div>
+        </div>
+
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_340px] gap-5 px-4 lg:px-6 mt-5">
 
-          {/* SIDEBAR */}
+          {/* MAIN — first in DOM: on mobile shows photo/desc/map before contact info */}
+          <div className="lg:col-start-1 lg:row-start-1 space-y-4 min-w-0">
+            {(genderLabel || pet.is_neutered) && (
+              <div className="flex flex-wrap gap-2">
+                {genderLabel && <span className="text-xs bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900 px-3 py-1.5 rounded-full font-medium">{genderLabel}</span>}
+                {pet.is_neutered && <span className="text-xs bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-100 dark:border-teal-900 px-3 py-1.5 rounded-full font-medium">✂️ {t('neutered')}</span>}
+              </div>
+            )}
+
+            {(pet.description || pet.character || pet.color || pet.allergies) && (
+              <div className={sectionCls}>
+                <div className={sectionHeaderCls}>
+                  <span className="text-base">📝</span>
+                  <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{t('description')}</h2>
+                </div>
+                <div className="p-5 space-y-4">
+                  {pet.color && <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{pet.color}</p>}
+                  {pet.description && <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{pet.description}</p>}
+                  {characterChips.length > 0 && (
+                    <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                      <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">{t('character_label')}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {characterChips.map((chip, i) => <span key={i} className={`text-xs px-3 py-1 rounded-full font-medium ${CHIP_COLORS[i % CHIP_COLORS.length]}`}>{chip}</span>)}
+                      </div>
+                    </div>
+                  )}
+                  {allergyChips.length > 0 && (
+                    <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                      <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">{t('allergies_label')}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {allergyChips.map((chip, i) => <span key={i} className="text-xs bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900 px-3 py-1 rounded-full font-medium">⚠️ {chip}</span>)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {pet.last_seen_lat != null && pet.last_seen_lng != null && (
+              <div className={sectionCls}>
+                <div className={sectionHeaderCls}>
+                  <span className="text-base">🗺️</span>
+                  <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{t('location_label')}</h2>
+                </div>
+                <div className="h-64">
+                  <MapView pets={[petWithPhoto]} defaultCenter={[pet.last_seen_lat, pet.last_seen_lng]} defaultZoom={15} interactive={false} />
+                </div>
+              </div>
+            )}
+
+            {isOwner && (
+              <div className={sectionCls}>
+                <div className={sectionHeaderCls}>
+                  <span className="text-base">🏥</span>
+                  <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm flex-1">Historia zdrowia</h2>
+                  <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full">
+                    {vaccinations.length + medicalRecords.length + vetDocsWithUrls.length}
+                  </span>
+                </div>
+                <div className="p-5">
+                  <PetTimeline petId={id} vaccinations={vaccinations} medicalRecords={medicalRecords} vetDocs={vetDocsWithUrls} />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* SIDEBAR — second in DOM: on mobile appears after main content */}
           <div className="lg:col-start-2 lg:row-start-1 space-y-4 lg:sticky lg:top-20 lg:self-start">
 
             <div className={sectionCls}>
@@ -1097,73 +1211,8 @@ export default async function PetDetailPage({
               <p className="text-center text-xs text-gray-400 py-1">{t('no_ai_matches')}</p>
             )}
           </div>
-
-          {/* MAIN */}
-          <div className="lg:col-start-1 lg:row-start-1 space-y-4 min-w-0">
-            {(genderLabel || pet.is_neutered) && (
-              <div className="flex flex-wrap gap-2">
-                {genderLabel && <span className="text-xs bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900 px-3 py-1.5 rounded-full font-medium">{genderLabel}</span>}
-                {pet.is_neutered && <span className="text-xs bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-100 dark:border-teal-900 px-3 py-1.5 rounded-full font-medium">✂️ {t('neutered')}</span>}
-              </div>
-            )}
-
-            {(pet.description || pet.character || pet.color || pet.allergies) && (
-              <div className={sectionCls}>
-                <div className={sectionHeaderCls}>
-                  <span className="text-base">📝</span>
-                  <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{t('description')}</h2>
-                </div>
-                <div className="p-5 space-y-4">
-                  {pet.color && <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{pet.color}</p>}
-                  {pet.description && <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{pet.description}</p>}
-                  {characterChips.length > 0 && (
-                    <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-                      <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">{t('character_label')}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {characterChips.map((chip, i) => <span key={i} className={`text-xs px-3 py-1 rounded-full font-medium ${CHIP_COLORS[i % CHIP_COLORS.length]}`}>{chip}</span>)}
-                      </div>
-                    </div>
-                  )}
-                  {allergyChips.length > 0 && (
-                    <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-                      <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">{t('allergies_label')}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {allergyChips.map((chip, i) => <span key={i} className="text-xs bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900 px-3 py-1 rounded-full font-medium">⚠️ {chip}</span>)}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {pet.last_seen_lat != null && pet.last_seen_lng != null && (
-              <div className={sectionCls}>
-                <div className={sectionHeaderCls}>
-                  <span className="text-base">🗺️</span>
-                  <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{t('location_label')}</h2>
-                </div>
-                <div className="h-64">
-                  <MapView pets={[petWithPhoto]} defaultCenter={[pet.last_seen_lat, pet.last_seen_lng]} defaultZoom={15} interactive={false} />
-                </div>
-              </div>
-            )}
-
-            {isOwner && (
-              <div className={sectionCls}>
-                <div className={sectionHeaderCls}>
-                  <span className="text-base">🏥</span>
-                  <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm flex-1">Historia zdrowia</h2>
-                  <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full">
-                    {vaccinations.length + medicalRecords.length + vetDocsWithUrls.length}
-                  </span>
-                </div>
-                <div className="p-5">
-                  <PetTimeline petId={id} vaccinations={vaccinations} medicalRecords={medicalRecords} vetDocs={vetDocsWithUrls} />
-                </div>
-              </div>
-            )}
-          </div>
         </div>
+        </>
       )}
     </div>
   )

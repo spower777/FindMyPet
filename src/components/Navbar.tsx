@@ -22,9 +22,11 @@ export default async function Navbar() {
       <div className="flex-1" />
 
       <div className="flex items-center gap-2">
-        <ThemeSwitcher />
+        <span className="hidden sm:contents">
+          <ThemeSwitcher />
+          <LanguageSwitcher />
+        </span>
         <ThemeToggle />
-        <LanguageSwitcher />
         <NavbarAuth user={user} />
       </div>
     </nav>
