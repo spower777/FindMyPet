@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { Link } from '@/i18n/navigation'
 import EditContactForm from './EditContactForm'
 import { useTranslations } from 'next-intl'
 import type { UserContact, ContactType, AnimalType, PetSummary } from '@/lib/types'
@@ -47,6 +46,8 @@ interface Props {
 export default function ContactCard({ contact, pets, linkedPet }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [editing, setEditing] = useState(false)
+  const [composing, setComposing] = useState(false)
+  const [message, setMessage] = useState('')
   const t = useTranslations('contacts_page')
   const tc = useTranslations('contact_types')
   const meta = CONTACT_TYPE_META[contact.type] ?? CONTACT_TYPE_META.other
@@ -152,10 +153,10 @@ export default function ContactCard({ contact, pets, linkedPet }: Props) {
                 ✉️ <span className="text-xs">Email</span>
               </a>
             )}
-            <Link href={`/chat?compose=${encodeURIComponent(contact.name)}`}
+            <button onClick={() => { setComposing(true); setEditing(false) }}
               className="flex-1 flex items-center justify-center gap-1.5 py-3 text-sm text-gray-400 dark:text-gray-500 hover:bg-orange-50 dark:hover:bg-orange-950 hover:text-orange-500 transition font-medium">
               💬 <span className="text-xs">Wiadomość</span>
-            </Link>
+            </button>
             <button onClick={() => setEditing(true)}
               className="flex-1 flex items-center justify-center gap-1.5 py-3 text-sm text-gray-400 dark:text-gray-500 hover:bg-orange-50 dark:hover:bg-orange-950 hover:text-orange-500 transition font-medium">
               ✏️ <span className="text-xs">{t('edit')}</span>
@@ -168,6 +169,47 @@ export default function ContactCard({ contact, pets, linkedPet }: Props) {
       {editing && (
         <div className="border-t border-gray-100 dark:border-gray-800 p-4">
           <EditContactForm contact={contact} pets={pets} onClose={() => { setEditing(false); setExpanded(false) }} />
+        </div>
+      )}
+
+      {/* Compose message */}
+      {composing && (
+        <div className="border-t border-gray-100 dark:border-gray-800 p-4 space-y-3">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            Wiadomość do {contact.name}
+          </p>
+          <textarea
+            autoFocus
+            value={message}
+            onChange={e => setMessage(e.target.value)}
+            placeholder="Napisz wiadomość..."
+            rows={3}
+            className="w-full text-sm border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-400"
+          />
+          <div className="flex gap-2">
+            {contact.email && (
+              <a
+                href={`mailto:${contact.email}?subject=Wiadomość+z+FindMyPet&body=${encodeURIComponent(message)}`}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-orange-500 hover:bg-orange-400 text-white font-semibold text-xs py-2.5 rounded-xl transition"
+              >
+                ✉️ Wyślij email
+              </a>
+            )}
+            {contact.phone && (
+              <a
+                href={`sms:${contact.phone}${message ? `?body=${encodeURIComponent(message)}` : ''}`}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-green-500 hover:bg-green-400 text-white font-semibold text-xs py-2.5 rounded-xl transition"
+              >
+                💬 Wyślij SMS
+              </a>
+            )}
+            <button
+              onClick={() => { setComposing(false); setMessage('') }}
+              className="px-4 py-2.5 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-xl transition"
+            >
+              Anuluj
+            </button>
+          </div>
         </div>
       )}
     </div>
