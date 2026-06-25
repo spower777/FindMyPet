@@ -32,7 +32,12 @@ const TYPE_COLOR: Record<string, string> = {
   found: 'bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400',
 }
 
-export default async function ChatListPage() {
+export default async function ChatListPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ compose?: string }>
+}) {
+  const { compose } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const locale = await getLocale()
@@ -69,7 +74,7 @@ export default async function ChatListPage() {
             <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">{conversations.length} rozmów</p>
           )}
         </div>
-        <NewConversationButton />
+        <NewConversationButton initialQuery={compose} />
       </div>
 
       {conversations.length === 0 ? (
@@ -77,7 +82,7 @@ export default async function ChatListPage() {
           <p className="text-5xl mb-4">💬</p>
           <p className="font-semibold text-gray-600 dark:text-gray-300 text-lg">{t('no_messages')}</p>
           <p className="text-sm mt-2 mb-6">{t('no_messages_hint')}</p>
-          <NewConversationButton prominent />
+          <NewConversationButton prominent initialQuery={compose} />
         </div>
       ) : (
         <div className="space-y-2">
