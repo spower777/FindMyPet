@@ -41,15 +41,18 @@ export async function POST(request: Request) {
 
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const results = []
 
-  for (const candidate of candidates) {
-    const primary = candidate.photos?.find(p => p.is_primary) ?? candidate.photos?.[0]
-    if (!primary) continue
+  const comparisons = candidates
+    .map(candidate => {
+      const primary = candidate.photos?.find(p => p.is_primary) ?? candidate.photos?.[0]
+      if (!primary) return null
+      const candidateUrl = `${supabaseUrl}/storage/v1/object/public/pet-photos/${primary.storage_path}`
+      return { candidate, candidateUrl }
+    })
+    .filter(Boolean) as { candidate: Candidate; candidateUrl: string }[]
 
-    const candidateUrl = `${supabaseUrl}/storage/v1/object/public/pet-photos/${primary.storage_path}`
-
-    try {
+  const settled = await Promise.allSettled(
+    comparisons.map(async ({ candidate, candidateUrl }) => {
       const response = await openai.chat.completions.create({
         model: 'gpt-4o',
         messages: [{
@@ -66,27 +69,28 @@ export async function POST(request: Request) {
         response_format: { type: 'json_object' },
         max_tokens: 150,
       })
-
       const parsed = JSON.parse(response.choices[0].message.content ?? '{}')
       const score = Math.max(0, Math.min(1, Number(parsed.score) || 0))
+      return { candidate, candidateUrl, score, reasoning: String(parsed.reasoning || '') }
+    })
+  )
 
-      if (score >= SEARCH_THRESHOLD) {
-        results.push({
-          id: candidate.id,
-          name: candidate.name,
-          type: candidate.type,
-          species: candidate.species,
-          score,
-          reasoning: String(parsed.reasoning || ''),
-          photo_url: candidateUrl,
-          last_seen_address: candidate.last_seen_address,
-        })
+  const results = settled
+    .filter(r => r.status === 'fulfilled' && r.value.score >= SEARCH_THRESHOLD)
+    .map(r => {
+      const { candidate, candidateUrl, score, reasoning } = (r as PromiseFulfilledResult<{ candidate: Candidate; candidateUrl: string; score: number; reasoning: string }>).value
+      return {
+        id: candidate.id,
+        name: candidate.name,
+        type: candidate.type,
+        species: candidate.species,
+        score,
+        reasoning,
+        photo_url: candidateUrl,
+        last_seen_address: candidate.last_seen_address,
       }
-    } catch {
-      // skip failed comparisons
-    }
-  }
+    })
+    .sort((a, b) => b.score - a.score)
 
-  results.sort((a, b) => b.score - a.score)
   return NextResponse.json({ results })
 }
