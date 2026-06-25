@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { Link } from '@/i18n/navigation'
 import MapView from '@/components/MapView'
+import PhotoSearch from '@/components/PhotoSearch'
 import type { PetWithPhotos, VetProfile, UserContact, PetVaccination, PetMedicalRecord } from '@/lib/types'
 
 const SPECIES_EMOJI: Record<string, string> = {
@@ -540,6 +541,9 @@ export default function HomeClient({
               </div>
             </Card>
           )}
+
+          {/* ── AI Photo Search ── */}
+          <PhotoSearch />
 
           {/* ── Module grid ── */}
           <ModuleGrid
