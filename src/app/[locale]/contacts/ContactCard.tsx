@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { Link } from '@/i18n/navigation'
 import EditContactForm from './EditContactForm'
 import { useTranslations } from 'next-intl'
 import type { UserContact, ContactType, AnimalType, PetSummary } from '@/lib/types'
@@ -151,6 +152,10 @@ export default function ContactCard({ contact, pets, linkedPet }: Props) {
                 ✉️ <span className="text-xs">Email</span>
               </a>
             )}
+            <Link href="/chat"
+              className="flex-1 flex items-center justify-center gap-1.5 py-3 text-sm text-gray-400 dark:text-gray-500 hover:bg-orange-50 dark:hover:bg-orange-950 hover:text-orange-500 transition font-medium">
+              💬 <span className="text-xs">Wiadomość</span>
+            </Link>
             <button onClick={() => setEditing(true)}
               className="flex-1 flex items-center justify-center gap-1.5 py-3 text-sm text-gray-400 dark:text-gray-500 hover:bg-orange-50 dark:hover:bg-orange-950 hover:text-orange-500 transition font-medium">
               ✏️ <span className="text-xs">{t('edit')}</span>

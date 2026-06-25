@@ -40,15 +40,46 @@ export default function NewConversationButton({ prominent }: { prominent?: boole
     setError(null)
     if (q.trim().length < 2) { setResults([]); return }
     setLoading(true)
-    const { data } = await supabase
-      .from('pets')
-      .select('id, name, species, type, last_seen_address, user_id')
-      .in('type', ['lost', 'found'])
-      .eq('status', 'active')
-      .ilike('name', `%${q}%`)
-      .limit(10)
-    // exclude own pets
-    const filtered = ((data ?? []) as PetResult[]).filter(p => p.user_id !== currentUserId)
+
+    // Search by pet name AND by owner full_name (via profiles)
+    const [petRes, profileRes] = await Promise.all([
+      supabase
+        .from('pets')
+        .select('id, name, species, type, last_seen_address, user_id')
+        .in('type', ['lost', 'found'])
+        .eq('status', 'active')
+        .ilike('name', `%${q}%`)
+        .limit(10),
+      supabase
+        .from('profiles')
+        .select('id')
+        .ilike('full_name', `%${q}%`)
+        .limit(5),
+    ])
+
+    const byName = (petRes.data ?? []) as PetResult[]
+    const profileIds = ((profileRes.data ?? []) as { id: string }[]).map(p => p.id)
+
+    let byOwner: PetResult[] = []
+    if (profileIds.length > 0) {
+      const { data } = await supabase
+        .from('pets')
+        .select('id, name, species, type, last_seen_address, user_id')
+        .in('type', ['lost', 'found'])
+        .eq('status', 'active')
+        .in('user_id', profileIds)
+        .limit(10)
+      byOwner = (data ?? []) as PetResult[]
+    }
+
+    // Merge, deduplicate, exclude own pets
+    const seen = new Set<string>()
+    const filtered = [...byName, ...byOwner].filter(p => {
+      if (p.user_id === currentUserId || seen.has(p.id)) return false
+      seen.add(p.id)
+      return true
+    })
+
     setResults(filtered)
     setLoading(false)
   }
@@ -107,7 +138,7 @@ export default function NewConversationButton({ prominent }: { prominent?: boole
                 autoFocus
                 value={query}
                 onChange={e => search(e.target.value)}
-                placeholder="Wpisz imię zwierzaka (min. 2 litery)..."
+                placeholder="Wpisz imię zwierzaka lub właściciela..."
                 className="w-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
               />
             </div>
