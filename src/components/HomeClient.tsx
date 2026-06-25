@@ -83,6 +83,11 @@ function RadarSidebar({
         <p className="text-xs text-gray-500">Zgłoszenia zaginięć w Polsce</p>
       </div>
 
+      {/* AI Photo Search — above report CTAs */}
+      <div className="border-b border-gray-100 dark:border-[#222]">
+        <PhotoSearch compact />
+      </div>
+
       {/* CTAs */}
       <div className="px-4 py-3 flex flex-col gap-2 border-b border-gray-100 dark:border-[#222]">
         <Link
@@ -588,12 +593,7 @@ export default function HomeClient({
           <RecentReports radarPets={radarPets} />
         </>
       }
-      right={
-        <>
-          {radar}
-          <PhotoSearch />
-        </>
-      }
+      right={radar}
     />
   )
 }

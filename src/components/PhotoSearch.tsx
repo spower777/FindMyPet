@@ -42,7 +42,7 @@ function resizeImage(file: File, maxSize = 512): Promise<string> {
   })
 }
 
-export default function PhotoSearch() {
+export default function PhotoSearch({ compact = false }: { compact?: boolean }) {
   const [preview, setPreview] = useState<string | null>(null)
   const [imageData, setImageData] = useState<string | null>(null)
   const [species, setSpecies] = useState('')
@@ -96,18 +96,14 @@ export default function PhotoSearch() {
     }
   }
 
-  return (
-    <div className="bg-white dark:bg-[#161616] border border-gray-100 dark:border-[#242424] rounded-2xl overflow-hidden">
-      {/* Header */}
-      <div className="px-5 py-4 border-b border-gray-100 dark:border-[#242424] flex items-center gap-3">
-        <span className="text-xl">🤖</span>
-        <div className="flex-1 min-w-0">
-          <h2 className="font-bold text-gray-900 dark:text-white text-sm">Wyszukaj zwierzę po zdjęciu</h2>
-          <p className="text-xs text-gray-500 mt-0.5">Wrzuć zdjęcie — AI porówna je ze wszystkimi zgłoszeniami w bazie</p>
+  const inner = (
+    <div className={compact ? 'px-4 py-3 space-y-3' : 'p-5 space-y-4'}>
+      {compact && (
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-base">🤖</span>
+          <p className="text-xs font-bold text-gray-900 dark:text-white">Wyszukaj po zdjęciu</p>
         </div>
-      </div>
-
-      <div className="p-5 space-y-4">
+      )}
         {/* Drop zone */}
         <div
           role="button"
@@ -137,10 +133,12 @@ export default function PhotoSearch() {
               </button>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center gap-2 py-10 text-gray-400 dark:text-gray-600">
-              <span className="text-4xl">📸</span>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Przeciągnij lub kliknij, aby dodać zdjęcie</p>
-              <p className="text-xs">JPG, PNG, WEBP</p>
+            <div className={`flex flex-col items-center justify-center gap-1.5 text-gray-400 dark:text-gray-600 ${compact ? 'py-5' : 'py-10 gap-2'}`}>
+              <span className={compact ? 'text-2xl' : 'text-4xl'}>📸</span>
+              <p className={`font-medium text-gray-500 dark:text-gray-400 ${compact ? 'text-xs' : 'text-sm'}`}>
+                {compact ? 'Kliknij lub przeciągnij zdjęcie' : 'Przeciągnij lub kliknij, aby dodać zdjęcie'}
+              </p>
+              {!compact && <p className="text-xs">JPG, PNG, WEBP</p>}
             </div>
           )}
           <input
@@ -243,6 +241,20 @@ export default function PhotoSearch() {
           </div>
         )}
       </div>
+  )
+
+  if (compact) return inner
+
+  return (
+    <div className="bg-white dark:bg-[#161616] border border-gray-100 dark:border-[#242424] rounded-2xl overflow-hidden">
+      <div className="px-5 py-4 border-b border-gray-100 dark:border-[#242424] flex items-center gap-3">
+        <span className="text-xl">🤖</span>
+        <div className="flex-1 min-w-0">
+          <h2 className="font-bold text-gray-900 dark:text-white text-sm">Wyszukaj zwierzę po zdjęciu</h2>
+          <p className="text-xs text-gray-500 mt-0.5">Wrzuć zdjęcie — AI porówna je ze wszystkimi zgłoszeniami w bazie</p>
+        </div>
+      </div>
+      {inner}
     </div>
   )
 }
