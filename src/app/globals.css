@@ -19,6 +19,12 @@
   animation: fade-in 0.3s ease both;
 }
 
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.animate-marquee { animation: marquee 35s linear infinite; }
+
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;

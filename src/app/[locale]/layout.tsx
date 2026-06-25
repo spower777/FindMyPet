@@ -5,6 +5,7 @@ import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/Navbar'
 import BottomNav from '@/components/BottomNav'
+import MarqueeBanner from '@/components/MarqueeBanner'
 
 export default async function LocaleLayout({
   children,
@@ -24,6 +25,7 @@ export default async function LocaleLayout({
     <>
       <NextIntlClientProvider locale={locale} messages={messages}>
         <Navbar />
+        <MarqueeBanner />
         <main className="flex-1 flex flex-col pb-16 lg:pb-0">{children}</main>
         <BottomNav isLoggedIn={!!user} />
       </NextIntlClientProvider>
