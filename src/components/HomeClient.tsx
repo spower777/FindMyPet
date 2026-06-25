@@ -424,7 +424,7 @@ export default function HomeClient({
               )}
 
               {/* Top-right: profile link */}
-              <div className="absolute top-4 right-4 z-10">
+              <div className="absolute top-4 right-4 z-20">
                 <Link
                   href={`/pets/${pet.id}`}
                   className="bg-black/50 backdrop-blur-sm hover:bg-black/70 text-white text-xs font-semibold px-3 py-1.5 rounded-full border border-white/15 transition"
@@ -542,9 +542,6 @@ export default function HomeClient({
             </Card>
           )}
 
-          {/* ── AI Photo Search ── */}
-          <PhotoSearch />
-
           {/* ── Module grid ── */}
           <ModuleGrid
             cards={[
@@ -591,7 +588,12 @@ export default function HomeClient({
           <RecentReports radarPets={radarPets} />
         </>
       }
-      right={radar}
+      right={
+        <>
+          {radar}
+          <PhotoSearch />
+        </>
+      }
     />
   )
 }
