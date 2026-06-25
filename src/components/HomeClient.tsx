@@ -23,7 +23,7 @@ function calcAge(birthDate: string): string {
 
 function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`bg-[#161616] border border-[#242424] rounded-2xl overflow-hidden ${className}`}>
+    <div className={`bg-white dark:bg-[#161616] border border-gray-100 dark:border-[#242424] rounded-2xl overflow-hidden ${className}`}>
       {children}
     </div>
   )
@@ -71,10 +71,10 @@ function RadarSidebar({
       </div>
 
       {/* Header */}
-      <div className="px-4 pt-4 pb-3 border-b border-[#222]">
+      <div className="px-4 pt-4 pb-3 border-b border-gray-100 dark:border-[#222]">
         <div className="flex items-center gap-2 mb-1">
           <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse shrink-0" />
-          <span className="text-sm font-bold text-white flex-1">PetRadar</span>
+          <span className="text-sm font-bold text-gray-900 dark:text-white flex-1">PetRadar</span>
           <span className="text-[10px] bg-orange-500/15 text-orange-400 border border-orange-500/20 px-2 py-0.5 rounded-full font-bold">
             {radarActiveCount} aktywnych
           </span>
@@ -83,7 +83,7 @@ function RadarSidebar({
       </div>
 
       {/* CTAs */}
-      <div className="px-4 py-3 flex flex-col gap-2 border-b border-[#222]">
+      <div className="px-4 py-3 flex flex-col gap-2 border-b border-gray-100 dark:border-[#222]">
         <Link
           href="/report/lost"
           className="flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/25 text-red-400 font-semibold text-xs py-2.5 rounded-xl transition"
@@ -106,14 +106,14 @@ function RadarSidebar({
         {radarPets.length === 0 ? (
           <p className="text-xs text-gray-600 text-center py-6">Brak aktywnych zgłoszeń</p>
         ) : (
-          <div className="divide-y divide-[#1e1e1e]">
+          <div className="divide-y divide-gray-100 dark:divide-[#1e1e1e]">
             {radarPets.map(rp => (
               <Link
                 key={rp.id}
                 href={`/pets/${rp.id}`}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-white/3 transition"
+                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-white/3 transition"
               >
-                <div className="w-10 h-10 rounded-xl bg-[#1a1a1a] border border-[#2a2a2a] overflow-hidden shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] overflow-hidden shrink-0">
                   {rp.primary_photo_url ? (
                     <img
                       src={rp.primary_photo_url}
@@ -136,8 +136,8 @@ function RadarSidebar({
                   >
                     {rp.type === 'lost' ? '● Zaginiony' : '● Znaleziony'}
                   </span>
-                  <p className="text-sm font-semibold text-gray-200 truncate">{rp.name ?? 'Nieznane'}</p>
-                  <p className="text-xs text-gray-600 truncate">{rp.last_seen_address ?? ''}</p>
+                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">{rp.name ?? 'Nieznane'}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-600 truncate">{rp.last_seen_address ?? ''}</p>
                 </div>
               </Link>
             ))}
@@ -145,7 +145,7 @@ function RadarSidebar({
         )}
       </div>
 
-      <div className="px-4 py-3 border-t border-[#222]">
+      <div className="px-4 py-3 border-t border-gray-100 dark:border-[#222]">
         <Link
           href="/radar"
           className="flex items-center justify-center gap-1.5 text-xs text-orange-500 hover:text-orange-400 font-semibold transition"
@@ -168,11 +168,11 @@ function ModuleGrid({ cards }: { cards: { href: string; icon: string; label: str
           <Link
             key={c.href + c.label}
             href={c.href}
-            className="group bg-[#161616] border border-[#242424] hover:border-orange-500/30 rounded-2xl p-4 flex flex-col gap-3 transition overflow-hidden"
+            className="group bg-white dark:bg-[#161616] border border-gray-100 dark:border-[#242424] hover:border-orange-500/30 rounded-2xl p-4 flex flex-col gap-3 transition overflow-hidden"
           >
             <span className="text-2xl">{c.icon}</span>
             <div className="min-w-0">
-              <p className="text-sm font-bold text-white group-hover:text-orange-400 transition leading-snug line-clamp-1">
+              <p className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-orange-500 transition leading-snug line-clamp-1">
                 {c.label}
               </p>
               <p className="text-xs text-gray-500 mt-0.5 leading-snug line-clamp-2">{c.sub}</p>
@@ -196,9 +196,9 @@ function RecentReports({ radarPets }: { radarPets: PetWithPhotos[] }) {
           <Link
             key={rp.id}
             href={`/pets/${rp.id}`}
-            className="flex items-center gap-4 bg-[#161616] border border-[#242424] hover:border-orange-500/30 rounded-2xl p-4 transition group"
+            className="flex items-center gap-4 bg-white dark:bg-[#161616] border border-gray-100 dark:border-[#242424] hover:border-orange-500/30 rounded-2xl p-4 transition group"
           >
-            <div className="w-12 h-12 rounded-xl bg-[#1e1e1e] border border-[#2a2a2a] overflow-hidden shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#2a2a2a] overflow-hidden shrink-0">
               {rp.primary_photo_url ? (
                 <img
                   src={rp.primary_photo_url}
@@ -221,10 +221,10 @@ function RecentReports({ radarPets }: { radarPets: PetWithPhotos[] }) {
               >
                 {rp.type === 'lost' ? '● Zaginiony' : '● Znaleziony'}
               </span>
-              <p className="text-sm font-bold text-white truncate group-hover:text-orange-400 transition">
+              <p className="text-sm font-bold text-gray-900 dark:text-white truncate group-hover:text-orange-500 transition">
                 {rp.name ?? 'Nieznane'}
               </p>
-              <p className="text-xs text-gray-600 truncate">{rp.last_seen_address ?? ''}</p>
+              <p className="text-xs text-gray-400 dark:text-gray-600 truncate">{rp.last_seen_address ?? ''}</p>
             </div>
           </Link>
         ))}
@@ -243,7 +243,7 @@ function PageShell({
   right: React.ReactNode
 }) {
   return (
-    <div className="bg-[#0e0e0e] min-h-screen">
+    <div className="bg-gray-50 dark:bg-[#0e0e0e] min-h-screen">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/*
           Two-column at lg (1024px+): left flex-1, right fixed 340px.
